@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript">
+
+    $(document).ready(function() {
+
+      function getURLParameter(name) {
+        return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+      }
+
+      function functionToLoadFile(){
+        jQuery.get('/brpm/automation_results/' + getURLParameter('request') + '.log', function(data) {
+          mustScroll = false;
+
+          if($(window).scrollTop() + $(window).height() == $(document).height()){
+            mustScroll = true;
+          }
+
+          $('#text-file-container').html(data);
+
+          if(mustScroll){
+            window.scrollTo(0,document.body.scrollHeight);
+          }
+
+          setTimeout(functionToLoadFile, 2000);
+        });
+      }
+
+      setTimeout(functionToLoadFile, 10);
+    });
+
+  </script>
+</head>
+<body>
+<pre id="text-file-container"></pre>
+</body>
+</html>

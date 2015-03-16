@@ -1,0 +1,6 @@
+dependencies:
+
+integration_servers:
+ - BladeLogic
+
+version: 1.0.0

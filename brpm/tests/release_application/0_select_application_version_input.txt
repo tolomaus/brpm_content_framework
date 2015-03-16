@@ -1,0 +1,15 @@
+# configuration management variables
+
+# script variables
+application_id: 18
+application_version: '1.0.0'
+
+# debug
+local_debug: 'true'
+
+# server settings
+
+# BRPM REST API variables
+SS_base_url: 'http://server/brpm'
+SS_api_token: '********'
+

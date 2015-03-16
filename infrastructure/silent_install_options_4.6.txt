@@ -1,0 +1,93 @@
+###############################################################################
+#
+# Product: BMC Release Lifecycle Management 4.6.00
+#
+# To invoke in silent mode with options file:
+#   ./setup.sh -i silent -DOPTIONS_FILE=/tmp/Options.txt
+# To generate a silent options file:
+#   ./setup.sh -DGENERATE_OPTIONS_FILE=/tmp/OutputOptionsFileName.txt
+#
+# ATENTION!!!
+# All passwords are set by default to value '********'.
+# Please change it to your own password(s) before using.
+# You can generate hash for password by running maintenance utility (tab 'Encrypt'):
+#  - Windows:
+#      utility\BRPMMaintenanceTool.cmd
+# - Linux/Solaris:
+#      utility/BRPMMaintenanceTool.sh
+#
+###############################################################################
+# Install Path
+-P installLocation=/opt/bmc/RLM
+
+#------------ Feature Choices ----------#
+-A featureBRPM
+-A PostgreSQL
+
+#------------ BRPM Install Options ----------#
+#-J BMC_BRPM_INSTALL_TYPE=PARTIAL_PRIVILEGE
+-J IS_MULTIPLE_INSTANCE_CAPABLE=true
+-J ADD_REMOVE_PROGRAMS_DEFAULT_KEY=BRPM
+-J USE_BMC_BUNDLED_JRE=true
+-J BMC_JAVA_JDK_PATH=
+-J BMC_JAVA_JRE_PATH=C:\Program Files\BMC Software\BRPM\lib\jre
+-J BRPM_USER=admin
+-J USE_BMC_BUNDLED_JRE=true
+-J BMC_BRPM_HTTP_PORT=8088
+-J BRPM_USE_HTTPS=
+# HTTPS Certificate Options
+
+-J BMC_SUPERUSER_FIRSTNAME=John
+-J BMC_SUPERUSER_LASTNAME=Administrator
+-J BMC_SUPERUSER_EMAIL=admin@example.com
+-J BMC_SUPERUSER_LOGIN=admin
+-J BMC_SUPERUSER_PASSWORD=DES\:a751b8161238d051e4e986421d24d2dcd1cff043003f0e35
+-J BMC_SUPERUSER_CONFIRM_PASSWORD=DES\:a751b8161238d051e4e986421d24d2dcd1cff043003f0e35
+
+#------------ BRPM Database Information ----------#
+# Options SQL_SERVER, ORACLE, POSTGRESQL
+# -J BMC_DB_TYPE=SQL_SERVER
+# -J BMC_DB_TYPE=ORACLE
+-J BMC_DB_TYPE=POSTGRESQL
+-J BMC_DB_HOST=localhost
+-J BMC_DB_PORT=5432
+# -J BMC_DB_PORT=1433 # SQL_SERVER
+# -J BMC_DB_PORT=1521 # Oracle
+-J BMC_DB_NAME=bmc_rpm_db
+-J BMC_DB_USER_NAME=rlm_user
+-J BMC_DB_USER_PASSWORD=DES\:a751b8161238d051e4e986421d24d2dcd1cff043003f0e35
+
+#------------ BRPM Migration Information ----------#
+# Options true, false
+-J BMC_MIGRATE_EXISTING_BRPM_INSTALLATION=false
+-J BMC_REFERENCE_BRPM_INSTALLATION_PATH=/opt/bmc/RLM/releases/4.6.00/RPM
+# Options USE_SAME_DATABASE, USE_SAME_DATABASE_EMPTY_DATABASE_CONTENTS
+-J BMC_BRPM_DATABASE_MIGRATION=USE_SAME_DATABASE
+# Options 4.4.00, BRLM_4_3_00, BRPM_2_6
+-J BMC_BRPM_MIGRATION_VERSION=4.4.00
+# Options COPY_CONFIGURATION, DISCARD
+-J BMC_OTHER_SETTINGS=COPY_CONFIGURATION
+-J BMC_BRPM_SKIP_DB_MODIFICATION_FOR_CLUSTER=false
+
+#------------ Email Information ----------#
+-J BMC_SENDMAIL_FROM=admin@example.com
+-J MAIL_NOTIFICATIONS=USE_SMTP
+-J BMC_SMTP_HOST=smtp.mycorp.com
+-J BMC_SMTP_PORT=25
+-J BMC_SMTP_DOMAIN_NAME=mycorp.com
+-J BMC_SMTP_USER_NAME=smtpuser@company.com
+-J BMC_SMTP_USER_PASSWORD=DES\:a751b8161238d051e4e986421d24d2dcd1cff043003f0e35
+-J BMC_SMTP_AUTHENTICATION=login
+-J BMC_SMTP_TLS=true
+
+#------------ BRPM Torquebox superuser ----------#
+-J BMC_TORQUEBOX_SUPERUSER_LOGIN=superuser
+-J BMC_TORQUEBOX_SUPERUSER_PASSWORD=DES\:a751b8161238d051e4e986421d24d2dcd1cff043003f0e35
+-J BMC_TORQUEBOX_SUPERUSER_CONFIRM_PASSWORD=DES\:a751b8161238d051e4e986421d24d2dcd1cff043003f0e35
+
+#------------ Messaging Host ----------#
+-J BMC_MESSAGING_SYSTEM_HOST=127.0.0.1
+-J BMC_MESSAGING_SYSTEM_PORT=5445
+-J BMC_MESSAGING_SYSTEM_USER_NAME=msguser
+-J BMC_MESSAGING_SYSTEM_USER_PASSWORD=DES\:a751b8161238d051e4e986421d24d2dcd1cff043003f0e35
+-J BMC_MESSAGING_SYSTEM_USER_CONFIRM_PASSWORD=DES\:a751b8161238d051e4e986421d24d2dcd1cff043003f0e35

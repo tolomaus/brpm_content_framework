@@ -1,0 +1,8 @@
+###
+# instance_name:
+#   name: instance_name
+#   required: yes
+###
+require "#{params["SS_script_support_path"]}/v2/bootstrap.rb"
+
+execute_script_from_module("docker/delete_brpm_instance", params)
