@@ -4,7 +4,7 @@ chkconfig iptables off
 yum update
 yum install -y wget nano curl unzip
 read -p "What is the location of the RLM package?" ftp_location
-wget -O RML.zip $ftp_location
+wget -O RLM.zip $ftp_location
 unzip RLM.zip
 cd BRLM/Disk1/
 read -p "What is the location of the silent install file?" silent_install_file_location
