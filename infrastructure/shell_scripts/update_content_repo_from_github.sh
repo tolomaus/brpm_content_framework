@@ -14,9 +14,9 @@ cd $CONTENT_REPO_PATH
 git pull
 cd $tmp_dir
 
-cp $CONTENT_REPO_PATH/framework/bootstrap.rb $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/v2
+cp $CONTENT_REPO_PATH/framework/bootstrap.rb $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support
 cp $CONTENT_REPO_PATH/framework/log.html $BRPM_HOME/automation_results
 
-cp $CONTENT_REPO_PATH/infrastructure/shell_scripts/* /root/shell_scripts/v2
+cp $CONTENT_REPO_PATH/infrastructure/shell_scripts/* /root/shell_scripts
 
 echo "Done."

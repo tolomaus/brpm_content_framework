@@ -15,11 +15,11 @@ cd $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
 git clone git@github.com:BMC-RLM/brpm_content.git
 cd $tmp_dir
 
-mkdir -p $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/v2
-cp $CONTENT_REPO_PATH/framework/bootstrap.rb $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/v2
+mkdir -p $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support
+cp $CONTENT_REPO_PATH/framework/bootstrap.rb $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support
 cp $CONTENT_REPO_PATH/framework/log.html $BRPM_HOME/automation_results
 
-mkdir -p /root/shell_scripts/v2
-cp $CONTENT_REPO_PATH/infrastructure/shell_scripts/* /root/shell_scripts/v2
+mkdir -p /root/shell_scripts
+cp $CONTENT_REPO_PATH/infrastructure/shell_scripts/* /root/shell_scripts
 
 echo "Done."

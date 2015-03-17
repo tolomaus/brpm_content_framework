@@ -1,4 +1,5 @@
 dependencies:
+ - brpm
 
 integration_servers:
  - BladeLogic

@@ -3,7 +3,7 @@
 # [integration_id=5]
 #=== End ===#
 
-require "#{params["SS_script_support_path"]}/v2/bootstrap.rb"
+require "#{params["SS_script_support_path"]}/bootstrap.rb"
 
 params["SS_integration_dns"] = SS_hudson_dns
 params["SS_integration_username"] = SS_hudson_username

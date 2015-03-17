@@ -30,18 +30,18 @@ unzip ~/brpm_content-master.zip -d $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/
 echo "Renaming the directory to $CONTENT_REPO_PATH..."
 mv $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos/brpm_content-master $CONTENT_REPO_PATH
 
-if [ ! -d "$BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/v2" ]; then
-  echo "Creating directory $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/v2..."
-  mkdir -p $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/v2
+if [ ! -d "$BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support" ]; then
+  echo "Creating directory $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support..."
+  mkdir -p $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support
 fi
 
-cp $CONTENT_REPO_PATH/framework/bootstrap.rb $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/v2
+cp $CONTENT_REPO_PATH/framework/bootstrap.rb $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support
 cp $CONTENT_REPO_PATH/framework/log.html $BRPM_HOME/automation_results
 
-if [ ! -d "/root/shell_scripts/v2" ]; then
-  mkdir -p /root/shell_scripts/v2
+if [ ! -d "/root/shell_scripts" ]; then
+  mkdir -p /root/shell_scripts
 fi
 
-cp $CONTENT_REPO_PATH/infrastructure/shell_scripts/* /root/shell_scripts/v2
+cp $CONTENT_REPO_PATH/infrastructure/shell_scripts/* /root/shell_scripts
 
 echo "Done."
