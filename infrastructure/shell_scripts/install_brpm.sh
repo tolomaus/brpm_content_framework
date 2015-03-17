@@ -4,7 +4,7 @@ chkconfig iptables off
 yum update
 yum install -y wget nano curl unzip
 read -p "What is the location of the RLM package?" ftp_location
-wget $ftp_location > RML.zip # doesnt work: it still saves it under RLM_...zip
+wget -O RML.zip $ftp_location # doesnt work: it still saves it under RLM_...zip
 unzip RLM.zip
 cd BRLM/Disk1/
 read -p "Press [enter] to modify silent_install_options.txt..."
