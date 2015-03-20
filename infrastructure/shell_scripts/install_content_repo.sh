@@ -33,7 +33,7 @@ if [ -z "$LOCATION" ]; then
   tmp_dir=$(pwd)
   mkdir -p $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
   cd $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
-  git clone git@github.com:BMC-RLM/brpm_content.git
+  git clone https://github.com/BMC-RLM/brpm_content.git
   cd $tmp_dir
 else
   echo "Unzipping $LOCATION..."
