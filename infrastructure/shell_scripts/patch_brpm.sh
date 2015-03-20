@@ -3,6 +3,8 @@
 # Usage:
 # patch_brpm.sh <new version>
 
+NEW_VERSION=$1
+
 if [ -z "$BRPM_HOME" ]; then
     echo "BRPM_HOME is not set (e.g. /opt/bmc/RLM). Aborting the patch installation."
     exit 1
@@ -44,7 +46,6 @@ echo "Stopping BRPM..."
 /etc/init.d/bmcrpm-4.6.00 stop
 
 OLD_VERSION=$(eval "sed -n \"s=  root: $BRPM_HOME/releases/\(.*\)/RPM=\1=p\" $BRPM_HOME/server/jboss/standalone/deployments/RPM-knob.yml")
-NEW_VERSION=$1
 
 echo "Migrating BRPM from version $OLD_VERSION to version $NEW_VERSION... "
 
