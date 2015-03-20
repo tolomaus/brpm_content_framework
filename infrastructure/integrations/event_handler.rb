@@ -3,7 +3,7 @@ require 'rubygems'
 require 'torquebox'
 require 'torquebox-messaging'
 require 'xmlsimple'
-require "#{File.dirname(__FILE__)}/../../bootstrap"
+require "#{File.dirname(__FILE__)}/../../framework/bootstrap"
 
 Logger.initialize({ "log_file" => ENV["EVENT_HANDLER_LOG_FILE"] })
 
