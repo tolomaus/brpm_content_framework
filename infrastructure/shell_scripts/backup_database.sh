@@ -6,7 +6,7 @@ if [ -z "$BRPM_HOME" ]; then
 fi
 
 BRPM_DB_NAME=bmc_rpm_db
-BRPM_DB_USER=brpmuser
+BRPM_DB_USER=rlm_user
 
 if [ ! -d "/root/database_backups" ]; then
   mkdir -p /root/database_backups
