@@ -3,7 +3,7 @@ require 'rubygems'
 require 'json'
 require 'rest-client'
 require 'webrick'
-require "#{File.dirname(__FILE__)}/../bootstrap"
+require "#{File.dirname(__FILE__)}/../../bootstrap"
 
 Logger.initialize({ "log_file" => ENV["WEBHOOK_RECEIVER_LOG_FILE"] })
 
