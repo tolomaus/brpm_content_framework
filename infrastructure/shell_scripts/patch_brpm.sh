@@ -57,8 +57,11 @@ echo "Copying over the config files from $BRPM_HOME/releases/$OLD_VERSION/RPM/co
 /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/config/smtp_settings.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/config
 /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/config/wicked_pdf_config.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/config
 /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/config/carrierwave_settings.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/config
-/bin/cp -R $BRPM_HOME/releases/$OLD_VERSION/RPM/lib/script_support/git_repos $BRPM_HOME/releases/$NEW_VERSION/RPM/lib/script_support
-/bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/lib/script_support/bootstrap.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/lib/script_support
+
+if [ -f $BRPM_HOME/releases/$OLD_VERSION/RPM/lib/script_support/bootstrap.rb ]; then
+  /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/lib/script_support/bootstrap.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/lib/script_support
+  /bin/cp -R $BRPM_HOME/releases/$OLD_VERSION/RPM/lib/script_support/git_repos $BRPM_HOME/releases/$NEW_VERSION/RPM/lib/script_support
+fi
 
 echo "Replacing the version number in RPM-knob.yml ..."
 sed -i -e s/$OLD_VERSION/$NEW_VERSION/g $BRPM_HOME/server/jboss/standalone/deployments/RPM-knob.yml
