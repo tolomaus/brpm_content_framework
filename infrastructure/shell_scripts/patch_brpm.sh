@@ -38,10 +38,6 @@ if [ -f ~/backup_database.sh ]; then
     echo ""
 fi
 
-read -p "What is the public hostname? [$(hostname)]" EXTERNAL_HOSTNAME
-CURRENT_HOSTNAME=$(hostname)
-BRPM_HOSTNAME=${EXTERNAL_HOSTNAME:-$CURRENT_HOSTNAME}
-
 echo "Stopping BRPM..."
 /etc/init.d/bmcrpm-4.6.00 stop
 
@@ -51,7 +47,7 @@ echo "Migrating BRPM from version $OLD_VERSION to version $NEW_VERSION... "
 
 echo "Installing the war file ..."
 mkdir -p $BRPM_HOME/releases/$NEW_VERSION/RPM
-mv ~/brpm.war $BRPM_HOME/releases/$NEW_VERSION/RPM
+mv $LOCATION $BRPM_HOME/releases/$NEW_VERSION/RPM
 cd $BRPM_HOME/releases/$NEW_VERSION/RPM
 unzip -d $BRPM_HOME/releases/$NEW_VERSION/RPM $BRPM_HOME/releases/$NEW_VERSION/RPM/brpm.war
 
@@ -67,8 +63,8 @@ echo "Copying over the config files from $BRPM_HOME/releases/$OLD_VERSION/RPM/co
 echo "Replacing the version number in RPM-knob.yml ..."
 sed -i -e s/$OLD_VERSION/$NEW_VERSION/g $BRPM_HOME/server/jboss/standalone/deployments/RPM-knob.yml
 
-echo "Replacing the host to the public hostname in torquebox.yml ..."
-CURRENT_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml")
+echo "Replacing the hostname to the public hostname in torquebox.yml ..."
+CURRENT_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$OLD_VERSION/RPM/config/torquebox.yml")
 sed -i -e s/$CURRENT_HOSTNAME/$BRPM_HOSTNAME/g $BRPM_HOME/releases/$NEW_VERSION/RPM/config/torquebox.yml
 
 echo "Migrating the database ..."

@@ -12,8 +12,8 @@ if [ -z "$LOCATION" ]; then
 fi
 
 if [[ "$LOCATION" == ftp://* ]]; then
-  wget -O RLM.zip $LOCATION
-  LOCATION=RLM.zip
+  wget -O ./RLM.zip $LOCATION
+  LOCATION=./RLM.zip
 fi
 
 if [ ! -f "$LOCATION" ]; then
@@ -47,7 +47,7 @@ BRPM_HOSTNAME=${EXTERNAL_HOSTNAME:-$CURRENT_HOSTNAME}
 echo "Stopping BRPM..."
 /etc/init.d/bmcrpm-4.6.00 stop
 
-echo "Replacing the host to the public hostname in torquebox.yml ..."
+echo "Replacing the hostname to the public hostname in torquebox.yml ..."
 CURRENT_VERSION=$(eval "sed -n \"s=  root: $BRPM_HOME/releases/\(.*\)/RPM=\1=p\" $BRPM_HOME/server/jboss/standalone/deployments/RPM-knob.yml")
 CURRENT_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml")
 sed -i -e s/$CURRENT_HOSTNAME/$BRPM_HOSTNAME/g $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml
