@@ -12,7 +12,7 @@ username = ENV["EVENT_HANDLER_MESSAGING_USERNAME"]
 password = ENV["EVENT_HANDLER_MESSAGING_PASSWORD"]
 process_event_script = ENV["EVENT_HANDLER_PROCESS_EVENT_SCRIPT"]
 
-require "#{File.dirname(__FILE__)}/../#{process_event_script}"
+require process_event_script
 
 class MessagingProcessor < TorqueBox::Messaging::MessageProcessor
 
