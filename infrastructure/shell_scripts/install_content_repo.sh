@@ -23,8 +23,8 @@ if [ ! -d "$BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
 fi
 
 if [ -d "$CONTENT_REPO_PATH" ]; then
-  echo "Archiving current content repo to ${CONTENT_REPO_PATH}_${DATE}..."
   DATE=$(date +"%Y%m%d%H%M")
+  echo "Archiving current content repo to ${CONTENT_REPO_PATH}_${DATE}..."
   mv ${CONTENT_REPO_PATH} ${CONTENT_REPO_PATH}_${DATE}
 fi
 
