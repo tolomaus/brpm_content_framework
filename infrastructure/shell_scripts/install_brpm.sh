@@ -57,5 +57,7 @@ echo "Restarting BRPM..."
 
 echo "Done."
 
+echo "Make sure that the BRPM and stomp ports are open."
+
 
 

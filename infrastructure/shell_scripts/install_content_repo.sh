@@ -53,3 +53,5 @@ fi
 cp $CONTENT_REPO_PATH/infrastructure/shell_scripts/* /root/shell_scripts
 
 echo "Done."
+
+echo "Make sure that the following item is added to Metadata > Lists > AutomationErrors: '******** ERROR ********'"
