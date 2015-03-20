@@ -28,7 +28,7 @@ if [[ "$LOCATION" == ftp://* ]]; then
 fi
 
 if [ ! -f "$LOCATION" ]; then
-    echo "The specified location is not a patch file. Aborting the installation."
+    echo "The specified location is not a file. Aborting the installation."
     exit 1
 fi
 

@@ -5,9 +5,13 @@ if [ -z "$BRPM_HOME" ]; then
     exit 1
 fi
 
-if [ ! -f ~/brpm_content-master.zip ]; then
-    echo "~/brpm_content-master.zip not found. Aborting the installation."
+read -p "What is the location of the content zip file? (empty will do a git clone from github)" LOCATION
+
+if [ ! -z "$LOCATION" ]; then
+  if [ ! -f "$LOCATION" ]; then
+    echo "The specified location is not a file. Aborting the installation."
     exit 1
+  fi
 fi
 
 CURRENT_VERSION=$(eval "sed -n \"s=  root: $BRPM_HOME/releases/\(.*\)/RPM=\1=p\" $BRPM_HOME/server/jboss/standalone/deployments/RPM-knob.yml")
@@ -24,15 +28,19 @@ if [ -d "$CONTENT_REPO_PATH" ]; then
   mv ${CONTENT_REPO_PATH} ${CONTENT_REPO_PATH}_${DATE}
 fi
 
-echo "Unzipping ~/brpm_content-master.zip..."
-unzip ~/brpm_content-master.zip -d $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
+if [ -z "$LOCATION" ]; then
+  echo "Doing a git clone git@github.com:BMC-RLM/brpm_content.git on $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos..."
+  tmp_dir=$(pwd)
+  mkdir -p $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
+  cd $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
+  git clone git@github.com:BMC-RLM/brpm_content.git
+  cd $tmp_dir
+else
+  echo "Unzipping $LOCATION..."
+  unzip "$LOCATION" -d $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
 
-echo "Renaming the directory to $CONTENT_REPO_PATH..."
-mv $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos/brpm_content-master $CONTENT_REPO_PATH
-
-if [ ! -d "$BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support" ]; then
-  echo "Creating directory $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support..."
-  mkdir -p $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support
+  echo "Renaming the directory to $CONTENT_REPO_PATH..."
+  mv $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos/brpm_content-master $CONTENT_REPO_PATH
 fi
 
 cp $CONTENT_REPO_PATH/framework/bootstrap.rb $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support
