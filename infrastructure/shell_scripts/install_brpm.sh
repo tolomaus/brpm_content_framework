@@ -1,25 +1,56 @@
 #!/bin/bash
 service iptables stop
 chkconfig iptables off
-yum update
-yum install -y wget nano curl unzip
-read -p "What is the location of the RLM package?" ftp_location
-wget -O RLM.zip $ftp_location
-unzip RLM.zip
-cd BRLM/Disk1/
-read -p "What is the location of the silent install file?" silent_install_file_location
-chmod +x setup.sh
-./setup.sh -i silent -DOPTIONS_FILE=$silent_install_file_location
+yum update -y
+yum install -y git wget nano curl unzip
 
-echo "The hostname is $(hostname)"
-read -p "Make sure the $(hostname) is a publicly available url to allow the stomp stuff to work (nano /etc/sysconfig/network), then press [enter]"
+read -p "What is the location of the RLM package? (either ftp link or local file system)" LOCATION
+
+if [ -z "$LOCATION" ]; then
+    echo "The location was not specified. Aborting the installation."
+    exit 1
+fi
+
+if [[ "$LOCATION" == ftp://* ]]; then
+  wget -O RLM.zip $LOCATION
+  LOCATION=RLM.zip
+fi
+
+if [ ! -f "$LOCATION" ]; then
+    echo "The specified location is not a patch file. Aborting the installation."
+    exit 1
+fi
+
+unzip $LOCATION
+cd BRLM/Disk1/
+
+read -p "What is the location of the silent install file?" SILENT_INSTALL_FILE_LOCATION
+
+if [ ! -f "$SILENT_INSTALL_FILE_LOCATION" ]; then
+    echo "The silent install file was not found. Aborting the installation."
+    exit 1
+fi
+
+BRPM_HOME=$(eval "sed -n \"s/-P installLocation=\(.*\)/\1/p\" $SILENT_INSTALL_FILE_LOCATION")
+if [ -z "$BRPM_HOME" ]; then
+    echo "The specified location is not a silent install file. Aborting the installation."
+    exit 1
+fi
+
+chmod +x setup.sh
+./setup.sh -i silent -DOPTIONS_FILE=$SILENT_INSTALL_FILE_LOCATION
+
+read -p "What is the public hostname? [$(hostname)]" EXTERNAL_HOSTNAME
+CURRENT_HOSTNAME=$(hostname)
+BRPM_HOSTNAME=${EXTERNAL_HOSTNAME:-$CURRENT_HOSTNAME}
 
 echo "Stopping BRPM..."
 /etc/init.d/bmcrpm-4.6.00 stop
 
-echo "Replacing localhost to the public hostname in torquebox.yml ..."
+echo "Replacing the host to the public hostname in torquebox.yml ..."
 CURRENT_VERSION=$(eval "sed -n \"s=  root: $BRPM_HOME/releases/\(.*\)/RPM=\1=p\" $BRPM_HOME/server/jboss/standalone/deployments/RPM-knob.yml")
-sed -i -e s/localhost/$(hostname)/g $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml
+CURRENT_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml")
+sed -i -e s/$CURRENT_HOSTNAME/$BRPM_HOSTNAME/g $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml
 
 echo "Restarting BRPM..."
 /etc/init.d/bmcrpm-4.6.00 start

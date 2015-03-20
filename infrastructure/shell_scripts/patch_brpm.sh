@@ -3,10 +3,6 @@
 # Usage:
 # patch_brpm.sh <new version>
 
-# Pre-conditions:
-# put the brpm.war file in the home directory:
-# wget <link to the brpm.war file>
-
 if [ -z "$BRPM_HOME" ]; then
     echo "BRPM_HOME is not set (e.g. /opt/bmc/RLM). Aborting the patch installation."
     exit 1
@@ -17,8 +13,20 @@ if [ -z "$NEW_VERSION" ]; then
     exit 1
 fi
 
-if [ ! -f ~/brpm.war ]; then
-    echo "~/brpm.war not found. Aborting the patch installation."
+read -p "What is the location of the patch file? (either ftp link or local file system)" LOCATION
+
+if [ -z "$LOCATION" ]; then
+    echo "The location was not specified. Aborting the installation."
+    exit 1
+fi
+
+if [[ "$LOCATION" == ftp://* ]]; then
+  wget -O brpm.war $LOCATION
+  LOCATION=brpm.war
+fi
+
+if [ ! -f "$LOCATION" ]; then
+    echo "The specified location is not a patch file. Aborting the installation."
     exit 1
 fi
 
@@ -27,6 +35,10 @@ if [ -f ~/backup_database.sh ]; then
     ~/backup_database.sh
     echo ""
 fi
+
+read -p "What is the public hostname? [$(hostname)]" EXTERNAL_HOSTNAME
+CURRENT_HOSTNAME=$(hostname)
+BRPM_HOSTNAME=${EXTERNAL_HOSTNAME:-$CURRENT_HOSTNAME}
 
 echo "Stopping BRPM..."
 /etc/init.d/bmcrpm-4.6.00 stop
@@ -54,8 +66,9 @@ echo "Copying over the config files from $BRPM_HOME/releases/$OLD_VERSION/RPM/co
 echo "Replacing the version number in RPM-knob.yml ..."
 sed -i -e s/$OLD_VERSION/$NEW_VERSION/g $BRPM_HOME/server/jboss/standalone/deployments/RPM-knob.yml
 
-echo "Replacing localhost to the public hostname in torquebox.yml ..."
-sed -i -e s/localhost/$(hostname)/g $BRPM_HOME/releases/$NEW_VERSION/RPM/config/torquebox.yml
+echo "Replacing the host to the public hostname in torquebox.yml ..."
+CURRENT_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml")
+sed -i -e s/$CURRENT_HOSTNAME/$BRPM_HOSTNAME/g $BRPM_HOME/releases/$NEW_VERSION/RPM/config/torquebox.yml
 
 echo "Migrating the database ..."
 . $BRPM_HOME/bin/setenv.sh
