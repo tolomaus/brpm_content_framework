@@ -63,7 +63,7 @@ def process_plan_event(event)
 
     Logger.log "Plan '#{plan["name"][0]}' created"
 
-    create_release_in_jira(plan_new_state)
+    create_release_in_jira(plan)
 
   elsif event["event"][0] == "update"
     plan_old_state = event["plan"].find { |item| item["type"] == "old" }
