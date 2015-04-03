@@ -117,7 +117,7 @@ module Jira
     def get_option_for_dropdown_custom_field(custom_field_id, option_value)
       # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
 
-      url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/custom_field_#{custom_field_id}"
+      url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/customfield_#{custom_field_id}"
       custom_field_options = rest_get(url, { :username => @username, :password => @password })["response"]
 
       custom_field_id.find { |custom_field_option| custom_field_option["optionvalue"] == option_value }
@@ -126,7 +126,7 @@ module Jira
     def create_option_for_dropdown_custom_field(custom_field_id, option_value)
       # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
 
-      url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}"
+      url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/customfield_#{custom_field_id}"
       data = {:optionvalue => option_value }
 
       rest_post(url, data, { :username => @username, :password => @password })["response"]
@@ -138,7 +138,7 @@ module Jira
       custom_field_option_to_update = get_option_for_dropdown_custom_field(custom_field_id, old_option_value)
 
       if custom_field_option_to_update
-        url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
+        url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/customfield_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
         data = {:optionvalue => new_option_value }
 
         rest_put(url, data, { :username => @username, :password => @password })["response"]
@@ -153,7 +153,7 @@ module Jira
       custom_field_option_to_delete = get_option_for_dropdown_custom_field(custom_field_id, option_value)
 
       if custom_field_option_to_delete
-        url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
+        url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/customfield_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
 
         rest_delete(url, { :username => @username, :password => @password })["response"]
       end
