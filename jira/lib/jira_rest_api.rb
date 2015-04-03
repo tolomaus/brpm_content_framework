@@ -161,7 +161,7 @@ module Jira
       custom_field_option_to_delete = get_option_for_dropdown_custom_field(custom_field_id, option_value)
 
       if custom_field_option_to_delete
-        url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/customfield_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
+        url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/customfield_#{custom_field_id}/#{custom_field_option_to_delete["id"]}"
 
         rest_delete(url, { :username => @username, :password => @password })["response"]
       else
