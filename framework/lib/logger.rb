@@ -13,6 +13,10 @@ class Logger
     "#{@params["SS_automation_results_dir"]}/#{@params["request_id"]}_#{@params["step_id"]}_#{@params["SS_run_key"]}.log"
   end
 
+  def self.get_log_file_location
+    @params["log_file"]
+  end
+
   def self.log(message)
     message = message.to_s # in case booleans or whatever are passed
     timestamp = "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}"

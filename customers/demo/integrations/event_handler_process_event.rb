@@ -137,19 +137,19 @@ end
 
 def create_release_in_jira(plan)
   params = {}
+  params["log_file"] = Logger.get_log_file_location
   params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
   params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["release_name"] = plan["name"][0]["content"]
 
-  Logger.log("Executing jira/create_release...")
   execute_script_from_module("jira", "create_release", params)
-  Logger.log("Done.")
 end
 
 def update_release_in_jira(old_plan, new_plan)
   params = {}
+  params["log_file"] = Logger.get_log_file_location
   params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
   params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
@@ -162,6 +162,7 @@ end
 
 def delete_release_in_jira(plan)
   params = {}
+  params["log_file"] = Logger.get_log_file_location
   params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
   params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
