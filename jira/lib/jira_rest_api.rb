@@ -120,7 +120,7 @@ module Jira
       url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/customfield_#{custom_field_id}"
       custom_field_options = rest_get(url, { :username => @username, :password => @password })["response"]
 
-      custom_field_id.find { |custom_field_option| custom_field_option["optionvalue"] == option_value }
+      custom_field_options.find { |custom_field_option| custom_field_option["optionvalue"] == option_value }
     end
 
     def create_option_for_dropdown_custom_field(custom_field_id, option_value)
