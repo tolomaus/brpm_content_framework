@@ -33,9 +33,9 @@ class MessagingProcessor < TorqueBox::Messaging::MessageProcessor
   def run
     begin
       xml = "<root>#{@destination.receive}</root>"
-      event = XmlSimple.xml_in(xml)
-
       Logger.log xml if ENV["EVENT_HANDLER_LOG_EVENT"]=="1"
+
+      event = XmlSimple.xml_in(xml)
 
       Logger.log "Processing new event..."
       process_event(event)

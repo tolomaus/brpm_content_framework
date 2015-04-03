@@ -1,6 +1,7 @@
 require 'json'
-require 'rest-client'
+require 'framework/lib/rest_api'
 require 'uri'
+require 'framework/lib/logger'
 
 #=============================================================================#
 # Jira Rest Module                                                            #
@@ -32,21 +33,21 @@ module Jira
     # POST /auth/api/1/session
     def login()
       login = {:username => "#{@username}", :password => "#{@password}"}.to_json
-      resp = post("#{@auth_url}/session", login)
+      resp = rest_post("#{@auth_url}/session", login)
       @cookie = resp.cookies
       @password = ''		# clear password as not needed once we login
     end
 
     # DELETE /auth/api/1/session
     def logout()
-      resp = delete("#{@auth_url}/session")
+      resp = rest_delete("#{@auth_url}/session", { "cookies" => @cookie })
       @cookie = ''
     end
 
     # POST /rest/api/2/issue/{issueIdOrKey}/comment
     def create_comment(issue_id, comment_body = 'Dummy Comment')
       cmmnt = {:body => comment_body}.to_json
-      post_json("#{@api_url}/issue/#{issue_id}/comment", cmmnt)
+      rest_post("#{@api_url}/issue/#{issue_id}/comment", cmmnt)["response"]
     end
 
     # GET /rest/api/2/issue/{issueIdOrKey}/transitions[?expand=transitions.fields]
@@ -55,7 +56,7 @@ module Jira
       if expand_transition
         url = "#{url}?expand=transitions.fields"
       end
-      get_json(url)
+      rest_get(url)["response"]
     end
 
     # GET /rest/api/2/issue/{issueIdOrKey}/transitions?transitionId={transistion_id}[&expand=transitions.fields]
@@ -64,7 +65,7 @@ module Jira
       if expand_transition
           url = "#{url}&expand=transitions.fields"
       end
-      get_json(url)
+      rest_get(url)["response"]
     end
 
     # POST /rest/api/2/issue/{issueIdOrKey}/transitions[?expand=transitions.fields]
@@ -75,12 +76,12 @@ module Jira
       end
       transition = {:update=>{:comment =>[{:add => {:body => "#{comment}"}}]}, :transition => {:id => "#{transition_id}"}}.to_json
       #Simple post as only return code is returned
-      post(url, transition)
+      rest_post(url, transition)["response"]
     end
 
     # GET /rest/api/2/project
     def get_projects()
-      get_json("#{@api_url}/project")
+      rest_get("#{@api_url}/project")["response"]
     end
 
     def set_issue_to_status(issue_id, status)
@@ -105,7 +106,7 @@ module Jira
       url = "#{url}&maxResults=#{max_results}" unless max_results == 50
       url = "#{url}&fields=#{fields}" unless fields == ''
       url = "#{url}&expand=#{expand}" unless expand == ''
-      get_json(url)
+      rest_get(url)["response"]
     end
 
     # GET /rest/api/2/issue/{issueIdOrKey}[?fields=<field,field,...>&expand=<param,param,...>]
@@ -123,14 +124,14 @@ module Jira
           url = "#{url}?expand=#{expand}"
         end
       end
-      get_json(url)
+      rest_get(url)["response"]
     end
 
     def get_option_for_dropdown_custom_field(custom_field_id, option_value)
       # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
 
       url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/custom_field_#{custom_field_id}"
-      custom_field_options = get_json(url)
+      custom_field_options = rest_get(url)["response"]
 
       custom_field_id.find { |custom_field_option| custom_field_option["optionvalue"] == option_value }
     end
@@ -141,7 +142,7 @@ module Jira
       url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}"
       data = {:optionvalue => option_value }.to_json
 
-      post_json(url, data)
+      rest_post(url, data)["response"]
     end
 
     def update_option_for_dropdown_custom_field(custom_field_id, old_option_value, new_option_value)
@@ -153,7 +154,7 @@ module Jira
         url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
         data = {:optionvalue => new_option_value }.to_json
 
-        put_json(url, data)
+        rest_put(url, data)["response"]
       else
         create_option_for_dropdown_custom_field(custom_field_id, new_option_value)
       end
@@ -167,66 +168,8 @@ module Jira
       if custom_field_option_to_delete
         url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
 
-        delete_json(url)
+        rest_delete(url)["response"]
       end
-    end
-
-    private
-    # JSON Styled RESTful GET
-    def get_json(url)
-      JSON.parse(get(url, :json, :json))
-    end
-
-    # JSON Styled RESTful POST
-    def post_json(url, data)
-      JSON.parse(post(url, data, :json, :json))
-    end
-
-    # JSON Styled RESTful PUT
-    def put_json(url, data)
-      JSON.parse(put(url, data, :json, :json))
-    end
-
-    # JSON Styled RESTful DELETE
-    def delete_json(url)
-      JSON.parse(delete(url, :json, :json))
-    end
-
-    # Build REST client that supports basic SSL with no cert verification (for use with private certs)
-    def build_rest_client(url)
-      RestClient::Resource.new(URI.encode(url), :verify_ssl => OpenSSL::SSL::VERIFY_NONE)
-    end
-
-    # RESTful GET request
-    def get(url, content_type = :json, accept = :json)
-      client = build_rest_client(url)
-      client.get(:cookies => @cookie, :content_type => content_type, :accept => accept)
-    rescue => e
-      raise "GET Exception: Problem retrieving data (#{e.to_s})"
-    end
-
-    # RESTful POST request
-    def post(url, data, content_type = :json, accept = :json)
-      client = build_rest_client(url)
-      client.post(data, :cookies => @cookie, :content_type => content_type, :accept => accept)
-    rescue => e
-      raise "POST Exception: Problem creating data (#{e.to_s})"
-    end
-
-    # RESTful PUT request
-    def put(url, data, content_type = :json, accept = :json)
-      client = build_rest_client(url)
-      client.put(data, :cookies => @cookie, :content_type => content_type, :accept => accept)
-    rescue => e
-      raise "PUT Exception: Problem modifying data (#{e.to_s})"
-    end
-
-    # RESTful DELETE request
-    def delete(url, content_type = :json, accept = :json)
-      client = build_rest_client(url)
-      client.delete(:cookies => @cookie, :content_type => content_type, :accept => accept)
-    rescue => e
-      raise "DELETE Exception: Problem removing data (#{e.to_s})"
     end
   end
 end

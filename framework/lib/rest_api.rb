@@ -55,8 +55,9 @@ def rest_call(url, method, options = {})
       Logger.log "\tPost Data: #{rest_params[:payload].inspect}" unless options.has_key?("quiet")
     end
 
-    rest_params.merge!({:headers => { :accept => :json, :content_type => :json }}) unless rest_params.has_key?(:headers)
-    rest_params.merge!({:verify_ssl => OpenSSL::SSL::VERIFY_NONE}) unless rest_params.has_key?(:verify_ssl)
+    rest_params.merge!({:headers => { :accept => :json, :content_type => :json }})
+    rest_params.merge!({:verify_ssl => OpenSSL::SSL::VERIFY_NONE})
+    rest_params.merge!({:cookies => options["cookies"] }) if options.has_key?("cookies")
 
     Logger.log rest_params.inspect if options.has_key?("verbose")
 
