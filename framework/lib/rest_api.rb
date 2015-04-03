@@ -76,6 +76,7 @@ def rest_call(url, method, options = {})
       result["status"] = "success"
       result["code"] = response.code
       result["response"] = parsed_response
+      result["cookies"] = response.cookies if options.has_key?("cookies")
     else
       result["status"] = "error"
       result["code"] = response.code
