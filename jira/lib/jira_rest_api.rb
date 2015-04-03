@@ -126,6 +126,13 @@ module Jira
     def create_option_for_dropdown_custom_field(custom_field_id, option_value)
       # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
 
+      custom_field_option = get_option_for_dropdown_custom_field(custom_field_id, old_option_value)
+
+      if custom_field_option
+        Logger.log "The option already exists, nothing to do."
+        return custom_field_option
+      end
+
       url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/customfield_#{custom_field_id}"
       data = {:optionvalue => option_value }
 
@@ -143,6 +150,7 @@ module Jira
 
         rest_put(url, data, { :username => @username, :password => @password })["response"]
       else
+        Logger.log "The option doesn't exist yet, creating it instead of updating..."
         create_option_for_dropdown_custom_field(custom_field_id, new_option_value)
       end
     end
@@ -156,6 +164,8 @@ module Jira
         url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/customfield_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
 
         rest_delete(url, { :username => @username, :password => @password })["response"]
+      else
+        Logger.log "The option doesn't exist, nothing to do."
       end
     end
 
