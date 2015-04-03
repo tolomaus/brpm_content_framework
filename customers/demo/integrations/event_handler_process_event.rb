@@ -141,7 +141,7 @@ def create_release_in_jira(plan)
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
   params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
-  params["release_name"] = plan["name"][0]["content"]
+  params["release_name"] = plan["name"][0]
 
   execute_script_from_module("jira", "create_release", params)
 end
@@ -152,8 +152,8 @@ def update_release_in_jira(old_plan, new_plan)
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
   params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
-  params["old_release_name"] = old_plan["name"][0]["content"]
-  params["new_release_name"] = new_plan["name"][0]["content"]
+  params["old_release_name"] = old_plan["name"][0]
+  params["new_release_name"] = new_plan["name"][0]
 
   execute_script_from_module("jira", "update_release", params)
 end
@@ -164,7 +164,7 @@ def delete_release_in_jira(plan)
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
   params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
-  params["release_name"] = plan["name"][0]["content"]
+  params["release_name"] = plan["name"][0]
 
   execute_script_from_module("jira", "delete_release", params)
 end
