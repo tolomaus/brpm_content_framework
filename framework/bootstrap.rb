@@ -87,24 +87,6 @@ def load_all(directory)
   end
 end
 
-def get_automation_script_dir(params)
-  if params.has_key?("automation_script_dir")
-    automation_script_dir = params["automation_script_dir"]
-  else
-    if params.has_key?("local_debug") && params["local_debug"]=='true'
-      target_directory = "/Users/niek/src/bmc"
-    else
-      target_directory = "#{params["SS_script_support_path"]}/git_repos"
-    end
-
-    automation_script_dir = "#{target_directory}/brpm_content"
-  end
-
-  $params = params
-
-  automation_script_dir
-end
-
 def execute_script_from_module(modul, name, params)
   begin
     Logger.initialize(params)
@@ -113,7 +95,7 @@ def execute_script_from_module(modul, name, params)
     Logger.log ">>>>>>>>>>>>>> START automation #{name}"
     start_time = Time.now
 
-    automation_script_dir = "#{get_automation_script_dir(params)}/#{modul}/automations/#{name}"
+    automation_script_dir = "#{modul}/automations/#{name}"
 
     Logger.log "Requiring all scripts from #{automation_script_dir}..."
     require_all("#{automation_script_dir}/**/*.rb")
@@ -146,7 +128,7 @@ def execute_resource_automation_script_from_module(modul, name, params, parent_i
     Logger.log ">>>>>>>>>>>>>> START resource automation #{name}"
     start_time = Time.now
 
-    automation_script_dir = "#{get_automation_script_dir(params)}/#{modul}/resource_automations/#{name}"
+    automation_script_dir = "#{modul}/resource_automations/#{name}"
 
     Logger.log "Loading all scripts from #{automation_script_dir}..."
     load_all("#{automation_script_dir}/**/*.rb")
