@@ -143,7 +143,9 @@ def create_release_in_jira(plan)
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["release_name"] = plan["name"][0]["content"]
 
+  Logger.log("Executing jira/create_release...")
   execute_script_from_module("jira", "create_release", params)
+  Logger.log("Done.")
 end
 
 def update_release_in_jira(old_plan, new_plan)
