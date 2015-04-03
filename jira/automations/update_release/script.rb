@@ -7,7 +7,7 @@ def execute_script(params)
 
   Logger.log "Logging in to JIRA instance #{params["SS_integration_dns"]} with username #{params["SS_integration_username"]}..."
   jira_client.login()
-  Logger.log "Creating a new option for release #{params["new_release_name"]} in the JIRA dropdown custom field with id #{params["jira_release_field_id"]}..."
-  jira_client.create_option_for_dropdown_custom_field(params["jira_release_field_id"], params["release_name"])
+  Logger.log "Updating option for release from #{params["old_release_name"]} to #{params["new_release_name"]} in the JIRA dropdown custom field with id #{params["jira_release_field_id"]}..."
+  jira_client.update_option_for_dropdown_custom_field(params["jira_release_field_id"], params["old_release_name"], params["new_release_name"])
   jira_client.logout()
 end

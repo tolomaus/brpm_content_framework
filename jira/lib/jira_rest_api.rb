@@ -126,13 +126,49 @@ module Jira
       get_json(url)
     end
 
+    def get_option_for_dropdown_custom_field(custom_field_id, option_value)
+      # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
+
+      url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/custom_field_#{custom_field_id}"
+      custom_field_options = get_json(url)
+
+      custom_field_id.find { |custom_field_option| custom_field_option["optionvalue"] == option_value }
+    end
+
     def create_option_for_dropdown_custom_field(custom_field_id, option_value)
       # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
 
       url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}"
-      transition = {:optionvalue => option_value }.to_json
-      #Simple post as only return code is returned
-      post(url, transition)
+      data = {:optionvalue => option_value }.to_json
+
+      post_json(url, data)
+    end
+
+    def update_option_for_dropdown_custom_field(custom_field_id, old_option_value, new_option_value)
+      # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
+
+      custom_field_option_to_update = get_option_for_dropdown_custom_field(custom_field_id, old_option_value)
+
+      if custom_field_option_to_update
+        url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
+        data = {:optionvalue => new_option_value }.to_json
+
+        put_json(url, data)
+      else
+        create_option_for_dropdown_custom_field(custom_field_id, new_option_value)
+      end
+    end
+
+    def delete_option_for_dropdown_custom_field(custom_field_id, option_value)
+      # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
+
+      custom_field_option_to_delete = get_option_for_dropdown_custom_field(custom_field_id, option_value)
+
+      if custom_field_option_to_delete
+        url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
+
+        delete_json(url)
+      end
     end
 
     private
