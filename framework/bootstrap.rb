@@ -59,8 +59,8 @@ def execute_script_from_module(modul, name, params)
 
     automation_script_dir = "#{modul}/automations/#{name}"
 
-    Logger.log "Requiring #{automation_script_dir}/script.rb..."
-    require "#{automation_script_dir}/script.rb"
+    Logger.log "Loading #{automation_script_dir}/script.rb..."
+    load "#{automation_script_dir}/script.rb"
 
     Logger.log "Calling execute_script(params)..."
     execute_script(params)
@@ -92,7 +92,7 @@ def execute_resource_automation_script_from_module(modul, name, params, parent_i
 
     automation_script_dir = "#{modul}/resource_automations/#{name}"
 
-    Logger.log "Loading cript #{automation_script_dir}/script.rb..."
+    Logger.log "Loading #{automation_script_dir}/script.rb..."
     load "#{automation_script_dir}/script.rb"
 
     Logger.log "Calling execute_resource_automation_script(params, parent_id, offset, max_records)..."
