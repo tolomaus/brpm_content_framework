@@ -89,7 +89,7 @@ end
 
 def execute_script_from_module(modul, name, params)
   begin
-    Logger.initialize(params)
+    Logger.initialize(params) if not Logger.is_initialized?
 
     Logger.log ""
     Logger.log ">>>>>>>>>>>>>> START automation #{name}"
@@ -122,7 +122,7 @@ end
 
 def execute_resource_automation_script_from_module(modul, name, params, parent_id, offset, max_records)
   begin
-    Logger.initialize(params)
+    Logger.initialize(params) if not Logger.is_initialized?
 
     Logger.log ""
     Logger.log ">>>>>>>>>>>>>> START resource automation #{name}"

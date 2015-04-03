@@ -3,6 +3,11 @@ class Logger
 
   def self.initialize(params)
     @params = params
+    @is_initialized = true
+  end
+
+  def self.is_initialized?
+    return @is_initialized
   end
 
   def self.get_request_log_file_path

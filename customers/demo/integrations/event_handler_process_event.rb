@@ -137,7 +137,6 @@ end
 
 def create_release_in_jira(plan)
   params = {}
-  params["log_file"] = Logger.get_log_file_location
   params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
   params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
@@ -149,7 +148,6 @@ end
 
 def update_release_in_jira(old_plan, new_plan)
   params = {}
-  params["log_file"] = Logger.get_log_file_location
   params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
   params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
@@ -162,7 +160,6 @@ end
 
 def delete_release_in_jira(plan)
   params = {}
-  params["log_file"] = Logger.get_log_file_location
   params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
   params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
