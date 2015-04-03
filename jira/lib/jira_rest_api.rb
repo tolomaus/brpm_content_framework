@@ -30,24 +30,10 @@ module Jira
     attr_reader :api_url
     attr_reader :auth_url
 
-    # POST /auth/api/1/session
-    def login()
-      login = { :username => @username, :password => @password }
-      response = rest_post("#{@auth_url}/session", login)
-      @cookie = response["cookies"]
-      @password = ''		# clear password as not needed once we login
-    end
-
-    # DELETE /auth/api/1/session
-    def logout()
-      resp = rest_delete("#{@auth_url}/session", { "cookies" => @cookie })
-      @cookie = ''
-    end
-
     # POST /rest/api/2/issue/{issueIdOrKey}/comment
     def create_comment(issue_id, comment_body = 'Dummy Comment')
       cmmnt = {:body => comment_body}
-      rest_post("#{@api_url}/issue/#{issue_id}/comment", cmmnt, { "cookies" => @cookie })["response"]
+      rest_post("#{@api_url}/issue/#{issue_id}/comment", cmmnt, { :username => @username, :password => @password })["response"]
     end
 
     # GET /rest/api/2/issue/{issueIdOrKey}/transitions[?expand=transitions.fields]
@@ -65,7 +51,7 @@ module Jira
       if expand_transition
           url = "#{url}&expand=transitions.fields"
       end
-      rest_get(url, { "cookies" => @cookie })["response"]
+      rest_get(url, { :username => @username, :password => @password })["response"]
     end
 
     # POST /rest/api/2/issue/{issueIdOrKey}/transitions[?expand=transitions.fields]
@@ -76,12 +62,12 @@ module Jira
       end
       transition = {:update=>{:comment =>[{:add => {:body => "#{comment}"}}]}, :transition => {:id => "#{transition_id}"}}
       #Simple post as only return code is returned
-      rest_post(url, transition, { "cookies" => @cookie })["response"]
+      rest_post(url, transition, { :username => @username, :password => @password })["response"]
     end
 
     # GET /rest/api/2/project
     def get_projects()
-      rest_get("#{@api_url}/project", { "cookies" => @cookie })["response"]
+      rest_get("#{@api_url}/project", { :username => @username, :password => @password })["response"]
     end
 
     def set_issue_to_status(issue_id, status)
@@ -107,7 +93,7 @@ module Jira
       url = "#{url}&fields=#{fields}" unless fields == ''
       url = "#{url}&expand=#{expand}" unless expand == ''
 
-      rest_get(url, { "cookies" => @cookie })["response"]
+      rest_get(url, { :username => @username, :password => @password })["response"]
     end
 
     # GET /rest/api/2/issue/{issueIdOrKey}[?fields=<field,field,...>&expand=<param,param,...>]
@@ -125,14 +111,14 @@ module Jira
           url = "#{url}?expand=#{expand}"
         end
       end
-      rest_get(url, { "cookies" => @cookie })["response"]
+      rest_get(url, { :username => @username, :password => @password })["response"]
     end
 
     def get_option_for_dropdown_custom_field(custom_field_id, option_value)
       # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
 
       url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/custom_field_#{custom_field_id}"
-      custom_field_options = rest_get(url, { "cookies" => @cookie })["response"]
+      custom_field_options = rest_get(url, { :username => @username, :password => @password })["response"]
 
       custom_field_id.find { |custom_field_option| custom_field_option["optionvalue"] == option_value }
     end
@@ -143,7 +129,7 @@ module Jira
       url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}"
       data = {:optionvalue => option_value }
 
-      rest_post(url, data, { "cookies" => @cookie })["response"]
+      rest_post(url, data, { :username => @username, :password => @password })["response"]
     end
 
     def update_option_for_dropdown_custom_field(custom_field_id, old_option_value, new_option_value)
@@ -155,7 +141,7 @@ module Jira
         url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
         data = {:optionvalue => new_option_value }
 
-        rest_put(url, data, { "cookies" => @cookie })["response"]
+        rest_put(url, data, { :username => @username, :password => @password })["response"]
       else
         create_option_for_dropdown_custom_field(custom_field_id, new_option_value)
       end
@@ -169,7 +155,7 @@ module Jira
       if custom_field_option_to_delete
         url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
 
-        rest_delete(url, { "cookies" => @cookie })["response"]
+        rest_delete(url, { :username => @username, :password => @password })["response"]
       end
     end
 
