@@ -49,47 +49,9 @@ def first_defined(first, second)
   end
 end
 
-def get_scripts_from_git_repo(git_url, git_repo_name, target_directory)
-  root_git_repo_dir = "#{target_directory}"
-  git_repo_dir = "#{root_git_repo_dir}/#{git_repo_name}"
-
-  Dir.mkdir(root_git_repo_dir) unless Dir.exists?(root_git_repo_dir)
-
-  if Dir.exists?("#{git_repo_dir}/.git")
-    Logger.log "Pulling git repository in #{git_repo_dir} ..."
-    pwd = Dir.pwd
-    Dir.chdir(git_repo_dir)
-    exec_command("git checkout .")
-    exec_command("git pull")
-    Dir.chdir(pwd)
-  else
-    Dir.mkdir(git_repo_dir) unless Dir.exists?(git_repo_dir)
-    Logger.log "git clone #{git_url}/#{git_repo_name}.git #{git_repo_dir} ..."
-    exec_command("git clone #{git_url}/#{git_repo_name}.git #{git_repo_dir}")
-  end
-end
-
-def require_all(directory)
-  Dir[directory].each do |file|
-    File.expand_path(file)
-    if File.file?(file) && !File.expand_path(file).split("/").include?("spec")
-      require file
-    end
-  end
-end
-
-def load_all(directory)
-  Dir[directory].each do |file|
-    File.expand_path(file)
-    if File.file?(file) && !File.expand_path(file).split("/").include?("spec")
-      load file
-    end
-  end
-end
-
 def execute_script_from_module(modul, name, params)
   begin
-    Logger.initialize(params) if not Logger.is_initialized?
+    Logger.initialize(params) unless Logger.is_initialized?
 
     Logger.log ""
     Logger.log ">>>>>>>>>>>>>> START automation #{name}"
@@ -97,8 +59,8 @@ def execute_script_from_module(modul, name, params)
 
     automation_script_dir = "#{modul}/automations/#{name}"
 
-    Logger.log "Requiring all scripts from #{automation_script_dir}..."
-    require_all("#{automation_script_dir}/**/*.rb")
+    Logger.log "Requiring #{automation_script_dir}/script.rb..."
+    require "#{automation_script_dir}/script.rb"
 
     Logger.log "Calling execute_script(params)..."
     execute_script(params)
@@ -130,8 +92,8 @@ def execute_resource_automation_script_from_module(modul, name, params, parent_i
 
     automation_script_dir = "#{modul}/resource_automations/#{name}"
 
-    Logger.log "Loading all scripts from #{automation_script_dir}..."
-    load_all("#{automation_script_dir}/**/*.rb")
+    Logger.log "Loading cript #{automation_script_dir}/script.rb..."
+    load "#{automation_script_dir}/script.rb"
 
     Logger.log "Calling execute_resource_automation_script(params, parent_id, offset, max_records)..."
     execute_resource_automation_script(params, parent_id, offset, max_records)
