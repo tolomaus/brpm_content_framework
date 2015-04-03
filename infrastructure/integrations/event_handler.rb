@@ -19,7 +19,7 @@ class MessagingProcessor < TorqueBox::Messaging::MessageProcessor
 
   MESSAGING_PATH = '/topics/messaging/brpm_event_queue'
 
-  def initialize(port, username, password)
+  def initialize(host, port, username, password)
     Logger.log "Initializing the message processor..."
     @destination = TorqueBox::Messaging::Topic.new(
         MESSAGING_PATH,
@@ -47,7 +47,7 @@ class MessagingProcessor < TorqueBox::Messaging::MessageProcessor
 end
 
 begin
-  consumer = MessagingProcessor.new(port, username, password)
+  consumer = MessagingProcessor.new(host, port, username, password)
   Logger.log "Starting to listen for events ..."
   loop do
     consumer.run
