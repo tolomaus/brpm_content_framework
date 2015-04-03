@@ -7,6 +7,7 @@ require "#{File.dirname(__FILE__)}/../../framework/bootstrap"
 
 Logger.initialize({ "log_file" => ENV["EVENT_HANDLER_LOG_FILE"] })
 
+host = ENV["EVENT_HANDLER_BRPM_HOST"]
 port = ENV["EVENT_HANDLER_MESSAGING_PORT"]
 username = ENV["EVENT_HANDLER_MESSAGING_USERNAME"]
 password = ENV["EVENT_HANDLER_MESSAGING_PASSWORD"]
@@ -22,7 +23,7 @@ class MessagingProcessor < TorqueBox::Messaging::MessageProcessor
     Logger.log "Initializing the message processor..."
     @destination = TorqueBox::Messaging::Topic.new(
         MESSAGING_PATH,
-        :host => 'localhost',
+        :host => host,
         :port => port,
         :username => username,
         :password => password

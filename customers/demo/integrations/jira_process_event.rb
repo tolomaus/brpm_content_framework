@@ -4,7 +4,7 @@ require "#{File.dirname(__FILE__)}/jira_mappings"
 def process_event(event)
   Logger.log "Processing event #{event["id"]} ..."
 
-  set_brpm_rest_api_url("http://localhost:#{ENV["WEBHOOK_RECEIVER_BRPM_PORT"]}/brpm")
+  set_brpm_rest_api_url("http://#{ENV["WEBHOOK_RECEIVER_BRPM_HOST"]}:#{ENV["WEBHOOK_RECEIVER_BRPM_PORT"]}/brpm")
   set_brpm_rest_api_token(ENV["WEBHOOK_RECEIVER_BRPM_TOKEN"])
 
   issue = event["issue"]

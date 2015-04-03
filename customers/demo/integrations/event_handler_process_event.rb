@@ -3,7 +3,7 @@ require "jira/lib/jira_rest_api"
 require "#{File.dirname(__FILE__)}/jira_mappings"
 
 def process_event(event)
-  set_brpm_rest_api_url("http://localhost:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm")
+  set_brpm_rest_api_url("http://#{ENV["EVENT_HANDLER_BRPM_HOST"]}:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm")
   set_brpm_rest_api_token(ENV["EVENT_HANDLER_BRPM_TOKEN"])
 
   if event.has_key?("request")
@@ -12,6 +12,9 @@ def process_event(event)
   elsif event.has_key?("run")
     Logger.log  "The event is for a run #{event["event"][0]}..."
     process_run_event(event)
+  elsif event.has_key?("plan")
+    Logger.log  "The event is for a plan #{event["event"][0]}..."
+    process_plan_event(event)
   end
 end
 
@@ -39,6 +42,19 @@ def process_run_event(event)
       Logger.log "Run '#{run_new_state["name"][0]}' moved from state '#{run_old_state["aasm-state"][0]}' to state '#{run_new_state["aasm-state"][0]}'"
 
       update_tickets_in_jira_by_run(run_new_state)
+    end
+  end
+end
+
+def process_plan_event(event)
+  if  event["event"][0] == "update"
+    plan_old_state = event["plan"].find { |item| item["type"] == "old" }
+    plan_new_state = event["plan"].find { |item| item["type"] == "new" }
+
+    if plan_old_state["aasm-state"][0] != plan_new_state["aasm-state"][0]
+      Logger.log "Plan '#{plan_new_state["name"][0]}' moved from state '#{plan_old_state["aasm-state"][0]}' to state '#{plan_new_state["aasm-state"][0]}'"
+
+      create_release_in_jira(plan_new_state)
     end
   end
 end
@@ -95,6 +111,18 @@ def update_tickets_in_jira_by_run(run)
   end
 end
 
+def create_release_in_jira(plan)
+  if plan["aasm-state"][0] == "created"
+    params = {}
+    params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
+    params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
+    params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
+    params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
+    params["new_release_name"] = plan["name"][0]["content"]
+
+    execute_script_from_module("jira", "create_release", params)
+  end
+end
 
 
 

@@ -17,6 +17,7 @@ module Jira
     def initialize(user, pw, url)
       @username = user
       @password = pw
+      @url = url
       @api_url  = "#{url}/rest/api/2"
       @auth_url = "#{url}/rest/auth/1"
     end
@@ -24,6 +25,7 @@ module Jira
     attr_reader :username
     attr_reader :password
     attr_reader :cookie
+    attr_reader :url
     attr_reader :api_url
     attr_reader :auth_url
 
@@ -122,6 +124,15 @@ module Jira
         end
       end
       get_json(url)
+    end
+
+    def create_option_for_dropdown_custom_field(custom_field_id, option_value)
+      # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
+
+      url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/custom_field_#{custom_field_id}"
+      transition = {:optionvalue => option_value }.to_json
+      #Simple post as only return code is returned
+      post(url, transition)
     end
 
     private
