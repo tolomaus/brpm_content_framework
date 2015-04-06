@@ -1,7 +1,7 @@
 require 'json'
-require 'framework/lib/rest_api'
 require 'uri'
 require 'framework/lib/logger'
+require 'framework/lib/rest_api'
 
 #=============================================================================#
 # Jira Rest Module                                                            #
