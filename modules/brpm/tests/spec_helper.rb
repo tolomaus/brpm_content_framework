@@ -1,7 +1,7 @@
 require "#{File.dirname(__FILE__)}/../../framework/bootstrap"
 require 'fileutils'
 
-Dir.mkdir_p "/tmp/brpm_content/"
+FileUtils.mkdir_p "/tmp/brpm_content/"
 Logger.initialize({ "log_file" => "/tmp/brpm_content/tests.log" }) # TODO clean up
 
 require "brpm/lib/brpm_rest_api"
