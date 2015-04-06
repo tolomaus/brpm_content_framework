@@ -1,8 +1,0 @@
-###
-# brpm_version:
-#   name: brpm_version
-#   required: no
-###
-require "#{params["SS_script_support_path"]}/bootstrap.rb"
-
-execute_script_from_module("docker_brpm", "create_image_for_brpm_application_input_params", params)

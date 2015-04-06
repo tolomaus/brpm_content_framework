@@ -5,7 +5,7 @@ if [ -z "$BRPM_HOME" ]; then
     exit 1
 fi
 
-read -p "What is the location of the content zip file? (empty will do a git clone from github)" LOCATION
+read -p "What is the location of the content zip file? (leave empty to do a git clone from github)" LOCATION
 
 if [ ! -z "$LOCATION" ]; then
   if [ ! -f "$LOCATION" ]; then
@@ -43,7 +43,6 @@ else
   mv $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos/brpm_content-master $CONTENT_REPO_PATH
 fi
 
-cp $CONTENT_REPO_PATH/framework/bootstrap.rb $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support
 cp $CONTENT_REPO_PATH/framework/log.html $BRPM_HOME/automation_results
 
 if [ ! -d "/root/shell_scripts" ]; then

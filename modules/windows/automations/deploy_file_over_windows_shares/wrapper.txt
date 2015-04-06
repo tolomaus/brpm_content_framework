@@ -1,0 +1,21 @@
+###
+# repo_directory:
+#   name: Directory on the software repository
+#   required: yes
+#   position: A1:D1
+# file_name:
+#   name: File name
+#   required: yes
+#   position: A2:D2
+# target_server_directory:
+#   name: Target server directory
+#   required: yes
+#   position: A3:D3
+###
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/bootstrap.rb"
+
+#=== General Integration Server: Software repo over windows file share ===#
+# [integration_id=9]
+#=== End ===#
+
+execute_script_from_module("windows", "deploy_file_over_windows_shares", params)

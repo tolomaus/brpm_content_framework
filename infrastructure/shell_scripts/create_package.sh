@@ -2,7 +2,7 @@
 . /opt/bmc/RLM/bin/setenv.sh
 
 jruby <<-EORUBY
-require "bootstrap"
+require "modules/framework/bootstrap"
 
 require "brpm/lib/brpm_rest_api"
 set_brpm_rest_api_url("http://$BRPM_HOST:$BRPM_PORT/brpm")
@@ -22,6 +22,6 @@ params["SS_integration_details"]["role"] = "$SS_INTEGRATION_DETAILS_ROLE"
 params["log_file"] = "$LOG_FILE"
 params["automation_script_dir"] = "."
 
-execute_script_from_module("bladelgic", "create_package", params)
+execute_script_from_module("bladelogic", "create_package", params)
 EORUBY
 

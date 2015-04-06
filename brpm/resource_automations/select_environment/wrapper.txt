@@ -1,5 +1,0 @@
-require "#{params["SS_script_support_path"]}/bootstrap.rb"
-
-def execute(script_params, parent_id, offset, max_records)
-  execute_resource_automation_script_from_module("brpm", "select_environment", script_params, parent_id, offset, max_records)
-end

@@ -2,7 +2,7 @@
 . /opt/bmc/RLM/bin/setenv.sh
 
 jruby <<-EORUBY
-require "bootstrap"
+require "modules/framework/bootstrap"
 
 require "brpm/lib/brpm_rest_api"
 set_brpm_rest_api_url("http://$BRPM_HOST:$BRPM_PORT/brpm")

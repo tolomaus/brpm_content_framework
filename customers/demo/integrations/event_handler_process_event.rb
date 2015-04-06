@@ -116,6 +116,9 @@ def update_tickets_in_jira_by_request(request)
   params = {}
   params["request_id"] = request["id"][0]["content"]
 
+  Logger.log  "Getting the stage of this request..."
+  stage = get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
+
   Logger.log "Getting the target status for the issues in JIRA..."
   params["target_issue_status"] = map_stage_to_issue_status(stage_name)
 
