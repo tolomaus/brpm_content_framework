@@ -12,17 +12,10 @@ if [ -z "$DUMP_FILE" ]; then
     exit 1
 fi
 
-TARGET_DB_NAME=$2
-
-if [ -z "TARGET_DB_NAME" ]; then
-    echo "TARGET_DB_NAME is not specified. Aborting the restore."
-    exit 1
-fi
-
 BRPM_DB_NAME=bmc_rpm_db
 BRPM_DB_USER=rlm_user
 
 echo "Restoring database from /root/database_backups/brpm_database_dump_$DATE.sql to $TARGET_DB_NAME..."
-$BRPM_HOME/pgsql/bin/psql -U $BRPM_DB_USER $BRPM_DB_NAME -d $TARGET_DB_NAME -f $DUMP_FILE
+$BRPM_HOME/pgsql/bin/psql -U $BRPM_DB_USER -d $BRPM_DB_NAME -f $DUMP_FILE
 
 echo "Done."
