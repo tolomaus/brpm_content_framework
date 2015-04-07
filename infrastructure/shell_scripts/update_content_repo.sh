@@ -14,7 +14,7 @@ cd $CONTENT_REPO_PATH
 git pull
 cd $tmp_dir
 
-cp $CONTENT_REPO_PATH/framework/log.html $BRPM_HOME/automation_results
+cp $CONTENT_REPO_PATH/modules/framework/log.html $BRPM_HOME/automation_results
 
 cp $CONTENT_REPO_PATH/infrastructure/shell_scripts/* /root/shell_scripts
 

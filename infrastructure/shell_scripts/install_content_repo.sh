@@ -43,7 +43,7 @@ else
   mv $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos/brpm_content-master $CONTENT_REPO_PATH
 fi
 
-cp $CONTENT_REPO_PATH/framework/log.html $BRPM_HOME/automation_results
+cp $CONTENT_REPO_PATH/modules/framework/log.html $BRPM_HOME/automation_results
 
 if [ ! -d "/root/shell_scripts" ]; then
   mkdir -p /root/shell_scripts
