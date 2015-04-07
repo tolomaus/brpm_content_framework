@@ -9,6 +9,7 @@ require "framework/lib/request_params"
 
 def get_default_params
   params = {}
+  params['debug'] = 'true'
   params['SS_base_url'] = 'http://brpm-content.pulsar-it.be:8088/brpm' # TODO "http://#{ENV["BRPM_HOST"]}:#{ENV["BRPM_PORT"]}/brpm"
   params['SS_api_token'] = ENV["BRPM_API_TOKEN"]
 
@@ -26,4 +27,41 @@ end
 def get_request_params_manager
   params = get_default_params
   Framework::RequestParamsManager.new(params["SS_output_dir"])
+end
+
+def cleanup_request_data_file
+  file = get_request_params_manager.get_request_params_file_location
+  File.delete(file) if File.exist?(file) # TODO clean up
+end
+
+def cleanup_requests_and_plans_for_app(app_name)
+  brpm_client = get_brpm_client
+
+  app = brpm_client.get_app_by_name(app_name)
+
+  requests = brpm_client.get_requests_by({ "app_id" => app["id"]})
+
+  requests.each do |request|
+    brpm_client.delete_request(request["id"]) unless request.has_key?("request_template")
+  end
+
+  plan_template = brpm_client.get_plan_template_by_name("#{app_name} Release Plan")
+
+  plans = brpm_client.get_plans_by({ "plan_template_id" => plan_template["id"]})
+  plans.each do |plan|
+    brpm_client.cancel_plan(plan["id"])
+    brpm_client.delete_plan(plan["id"])
+  end
+end
+
+def cleanup_version_tags_for_app(app_name)
+  brpm_client = get_brpm_client
+
+  app = brpm_client.get_app_by_name(app_name)
+
+  version_tags = brpm_client.get_version_tags_by({ "app_id" => app["id"]})
+
+  version_tags.each do |version_tag|
+    brpm_client.delete_version_tag(version_tag["id"])
+  end
 end

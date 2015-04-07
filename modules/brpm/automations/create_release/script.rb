@@ -4,8 +4,10 @@ require "brpm/lib/brpm_rest_api"
 require 'fileutils'
 
 def execute_script(params)
+  brpm_client = Brpm::Client.new(params["SS_base_url"], params["SS_api_token"])
+
   Logger.log "Retrieving the application..."
-  application = get_app_by_name(params["application_name"])
+  application = brpm_client.get_app_by_name(params["application_name"])
   application_version = params["application_version"]
 
   release_request_template_name = params["release_request_template_name"] || "Release application"
@@ -15,16 +17,16 @@ def execute_script(params)
 
   if release_plan_template_name
     Logger.log "Creating a new plan from template '#{release_plan_template_name}' for #{application["name"]} v#{application_version} ..."
-    plan = create_plan(release_plan_template_name, "Release #{params["application_name"]} v#{application_version}", Time.now)
+    plan = brpm_client.create_plan(release_plan_template_name, "Release #{params["application_name"]} v#{application_version}", Time.now)
 
     Logger.log "Planning the plan ..."
-    plan_plan(plan["id"])
+    brpm_client.plan_plan(plan["id"])
 
     Logger.log "Starting the plan ..."
-    start_plan(plan["id"])
+    brpm_client.start_plan(plan["id"])
 
     Logger.log "Creating a new request '#{request_name}' from template '#{release_request_template_name}' for application '#{application["name"]}' and plan #{plan["name"]}..."
-    target_request = create_request_for_plan_from_template(
+    target_request = brpm_client.create_request_for_plan_from_template(
         plan["id"],
         "Release",
         release_request_template_name,
@@ -35,7 +37,7 @@ def execute_script(params)
     )
   else
     Logger.log "Creating a new request '#{request_name}' from template '#{release_request_template_name}' for application '#{application["name"]}'..."
-    target_request = create_request(
+    target_request = brpm_client.create_request(
         release_request_template_name,
         request_name,
         "release",
@@ -49,7 +51,7 @@ def execute_script(params)
     request = {}
     request["id"] = target_request["id"]
     request["app_ids"] = [application["id"]]
-    target_request = update_request_from_hash(request)
+    target_request = brpm_client.update_request_from_hash(request)
 
     # TODO workaround bug fix where the request params are not transferred to the updated application's directory
     Dir.mkdir "#{params["SS_automation_results_dir"]}/request/#{application["name"]}/#{1000 + target_request["id"].to_i}"
@@ -58,28 +60,31 @@ def execute_script(params)
     Logger.log "Setting the owner of the manual steps to the groups that belong to application '#{application["name"]}'..."
     target_request["steps"].select{ |step| step["manual"] }.each do |step|
       Logger.log "Retrieving the details of step #{step["id"]} '#{step["name"]}'..."
-      step_details = get_step_by_id(step["id"])
+      step_details = brpm_client.get_step_by_id(step["id"])
 
       next if step_details["procedure"]
 
       group_name = "#{step_details["owner"]["name"]} - #{application["name"]}"
 
       Logger.log "Retrieving group #{group_name}..."
-      group = get_group_by_name(group_name)
+      group = brpm_client.get_group_by_name(group_name)
       raise "Group '#{group_name}' doesn't exist" if group.nil?
 
       step_to_update = {}
       step_to_update["id"] = step["id"]
       step_to_update["owner_id"] = group["id"]
       step_to_update["owner_type"] = "Group"
-      update_step_from_hash step_to_update
+      brpm_client.update_step_from_hash step_to_update
     end
   end
 
   Logger.log "Planning the request ... "
-  plan_request(target_request["id"])
+  brpm_client.plan_request(target_request["id"])
 
   Logger.log "Starting the request ... "
-  start_request(target_request["id"])
+  brpm_client.start_request(target_request["id"])
+
+  params["result"] = {}
+  params["result"]["request_id"] = target_request["id"]
 end
 

@@ -536,6 +536,14 @@ module Brpm
       result_hash
     end
 
+    def delete_version_tag(version_tag_id)
+      result = brpm_delete "v1/version_tags/#{version_tag_id}"
+
+      unless result["status"] == "success"
+        raise "Could not delete version tag: #{result["error_message"]}"
+      end
+    end
+
     def get_version_tag(app_name, component_name, environment_name, version_tag_name)
       result = brpm_get "v1/version_tags?filters[app_name]=#{app_name}&filters[component_name]=#{component_name}&filters[environment_name]=#{environment_name}&filters[name]=#{version_tag_name}"
 
@@ -598,6 +606,22 @@ module Brpm
       end
     end
 
+    def get_plan_template_by_name(plan_template_name)
+      result = brpm_get "v1/plan_templates?filters[name]=#{plan_template_name}"
+
+      if result["status"] == "success"
+        result_hash = result["response"].first
+      else
+        if result["code"] == 404
+          result_hash=nil
+        else
+          raise "Error searching for plan template #{plan_template_name}: #{result["error_message"]}"
+        end
+      end
+
+      result_hash
+    end
+
     def create_plan(template_name, plan_name, date)
       plan = {}
       plan["plan_template_name"] = template_name
@@ -620,6 +644,14 @@ module Brpm
       result_hash
     end
 
+    def delete_plan(plan_id)
+      result = brpm_delete "v1/plans/#{plan_id}"
+
+      unless result["status"] == "success"
+        raise "Could not delete plan: #{result["error_message"]}"
+      end
+    end
+
     def plan_plan(plan_id)
       plan = {}
       plan["aasm_event"] = "plan_it"
@@ -639,6 +671,17 @@ module Brpm
 
       unless result["status"] == "success"
         raise "Could not start plan: #{result["error_message"]}"
+      end
+    end
+
+    def cancel_plan(plan_id)
+      plan = {}
+      plan["aasm_event"] = "cancel"
+
+      result = brpm_put "v1/plans/#{plan_id}", { :plan => plan}
+
+      unless result["status"] == "success"
+        raise "Could not cancel plan: #{result["error_message"]}"
       end
     end
 
@@ -664,6 +707,28 @@ module Brpm
           result_hash=nil
         else
           raise "Error searching for plan #{plan_name}: #{result["error_message"]}"
+        end
+      end
+
+      result_hash
+    end
+
+    def get_plans_by(filter)
+      filter_string = "?"
+      filter.each do |key, value|
+        filter_string += "filters[#{key}]=#{value}&"
+      end
+      filter_string = filter_string[0..-1]
+
+      result = brpm_get "v1/plans#{filter_string}"
+
+      if result["status"] == "success"
+        result_hash = result["response"]
+      else
+        if result["code"] == 404
+          result_hash = {}
+        else
+          raise "Error searching for plans by #{filter_string}: #{result["error_message"]}"
         end
       end
 
@@ -832,6 +897,14 @@ module Brpm
       end
 
       result["response"]
+    end
+
+    def delete_request(request_id)
+      result = brpm_delete "v1/requests/#{request_id}"
+
+      unless result["status"] == "success"
+        raise "Could not delete request: #{result["error_message"]}"
+      end
     end
 
     def move_request_to_plan_and_stage(request_id, plan_id, stage_name)

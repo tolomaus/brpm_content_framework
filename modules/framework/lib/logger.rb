@@ -51,7 +51,7 @@ class Logger
       end
     end
 
-    print(log_message) if @params.has_key?("local_debug") && @params["local_debug"]=='true'
+    print(log_message) if @params.has_key?('debug') && @params['debug']=='true'
   end
 
   def self.log_error(message)
