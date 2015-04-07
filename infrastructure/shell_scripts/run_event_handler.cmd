@@ -3,7 +3,7 @@ set EVENT_HANDLER_MESSAGING_PORT=5445
 set EVENT_HANDLER_MESSAGING_USERNAME=msguser
 set EVENT_HANDLER_MESSAGING_PASSWORD=
 set EVENT_HANDLER_LOG_FILE=c:/tmp/event_handler.log
-set EVENT_HANDLER_PROCESS_EVENT_SCRIPT=customers/demo/integrations/event_handler_process_event.rb
+set EVENT_HANDLER_PROCESS_EVENT_SCRIPT=customers/demo/integrations/brpm/process_event_handler_event.rb
 
 # custom settings
 set EVENT_HANDLER_BRPM_PORT=29418

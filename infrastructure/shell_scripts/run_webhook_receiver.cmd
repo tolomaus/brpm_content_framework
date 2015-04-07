@@ -3,7 +3,7 @@ set WEBHOOK_RECEIVER_PORT=8089
 set WEBHOOK_RECEIVER_MOUNT_POINT=webhooks
 set WEBHOOK_RECEIVER_LOG_FILE=c:/tmp/webhook_receiver.log
 set WEBHOOK_RECEIVER_INTEGRATION_ID=4
-set WEBHOOK_RECEIVER_PROCESS_EVENT_SCRIPT=customers/demo/integrations/jira_process_event.rb
+set WEBHOOK_RECEIVER_PROCESS_EVENT_SCRIPT=customers/demo/integrations/jira/process_webhook_event.rb
 
 rem custom settings
 set WEBHOOK_RECEIVER_BRPM_PORT=8080

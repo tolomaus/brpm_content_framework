@@ -1,5 +1,5 @@
 require "brpm/lib/brpm_rest_api"
-require "#{File.dirname(__FILE__)}/jira_mappings"
+require "#{File.dirname(__FILE__)}/../../jira_mappings"
 
 def process_event(event)
   Logger.log "Processing event #{event["id"]} ..."

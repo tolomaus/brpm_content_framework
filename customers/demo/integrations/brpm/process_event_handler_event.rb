@@ -1,6 +1,6 @@
 require "brpm/lib/brpm_rest_api"
 require "jira/lib/jira_rest_api"
-require "#{File.dirname(__FILE__)}/jira_mappings"
+require "#{File.dirname(__FILE__)}/../../jira_mappings"
 
 def process_event(event)
   @brpm_client = Brpm::Client.new("http://#{ENV["EVENT_HANDLER_BRPM_HOST"]}:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm", ENV["EVENT_HANDLER_BRPM_TOKEN"])
@@ -87,18 +87,10 @@ def process_plan_event(event)
 end
 
 #################################
+# BRPM
 
 def get_brpm_client
   Brpm::Client.new("http://#{ENV["EVENT_HANDLER_BRPM_HOST"]}:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm", ENV["EVENT_HANDLER_BRPM_TOKEN"])
-end
-
-def get_jira_integration_details
-  params = {}
-  params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
-  params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
-  params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
-
-  params
 end
 
 def process_app_release_event(request)
@@ -122,6 +114,19 @@ def process_app_release_event(request)
       end
     end
   end
+end
+#################################
+
+#################################
+# JIRA
+
+def get_jira_integration_details
+  params = {}
+  params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
+  params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
+  params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
+
+  params
 end
 
 def update_tickets_in_jira_by_request(request)
@@ -174,3 +179,4 @@ def delete_release_in_jira(plan)
 
   execute_script_from_module("jira", "delete_release", params)
 end
+#################################

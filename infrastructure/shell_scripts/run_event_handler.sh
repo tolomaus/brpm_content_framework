@@ -12,7 +12,7 @@ export EVENT_HANDLER_MESSAGING_PORT=5445
 export EVENT_HANDLER_MESSAGING_USERNAME=msguser
 export EVENT_HANDLER_MESSAGING_PASSWORD=????
 export EVENT_HANDLER_LOG_FILE=/tmp/event_handler.log
-export EVENT_HANDLER_PROCESS_EVENT_SCRIPT=customers/demo/integrations/event_handler_process_event.rb
+export EVENT_HANDLER_PROCESS_EVENT_SCRIPT=customers/demo/integrations/brpm/process_event_handler_event.rb
 
 # custom settings
 export EVENT_HANDLER_BRPM_PORT=8088
