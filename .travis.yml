@@ -3,3 +3,7 @@ rvm:
   - 1.9.3
 
 script: bundle exec rspec ./modules/brpm/tests --format documentation
+
+notifications:
+  email:
+    - niek.bartholomeus@gmail.com
