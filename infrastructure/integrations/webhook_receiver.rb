@@ -11,7 +11,7 @@ port = ENV["WEBHOOK_RECEIVER_PORT"]
 mount_point = "/#{ENV["WEBHOOK_RECEIVER_MOUNT_POINT"]}"
 process_event_script = ENV["WEBHOOK_RECEIVER_PROCESS_EVENT_SCRIPT"]
 
-require process_event_script
+require "#{File.dirname(__FILE__)}/../../#{process_event_script}"
 
 class EventProcessor < WEBrick::HTTPServlet::AbstractServlet
   def do_POST(request, response)
