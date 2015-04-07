@@ -19,6 +19,17 @@ def get_default_params
   params
 end
 
+def get_integration_settings_for_bladelogic
+  params = {}
+  params["SS_integration_dns"] = "https://bladelogic.pulsar-it.be:9843"
+  params["SS_integration_username"] = "BLAdmin"
+  params["SS_integration_password"] = ENV["BLADELOGIC_PASSWORD"]
+  params["SS_integration_details"] = {}
+  params["SS_integration_details"]["role"] = "BLAdmins"
+
+  params
+end
+
 def get_brpm_client
   params = get_default_params
   Brpm::Client.new(params["SS_base_url"], params["SS_api_token"])
@@ -64,4 +75,7 @@ def cleanup_version_tags_for_app(app_name)
   version_tags.each do |version_tag|
     brpm_client.delete_version_tag(version_tag["id"])
   end
+end
+
+def pack_response
 end

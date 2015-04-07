@@ -3,7 +3,7 @@ require "#{File.dirname(__FILE__)}/spec_helper"
 describe 'select application version' do
   describe '' do
     it 'should store the selected application version in the request_params and create version tags' do
-      params = get_default_params()
+      params = get_default_params
       params["application"] = 'E-Finance'
       params["application_version"] = '1.0.0'
 
@@ -28,7 +28,7 @@ describe 'select application version' do
       request_params_manager.add_request_param("auto_created", true)
       request_params_manager.add_request_param("application_version", "2.0.0")
 
-      params = get_default_params()
+      params = get_default_params
       params["application"] = 'E-Finance'
       params["application_version"] = '1.0.0'
 

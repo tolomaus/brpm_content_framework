@@ -1,4 +1,4 @@
-require "bladelogic/lib/core"
+require "bladelogic/lib/bl_rest/core"
 require "framework/lib/rest_api"
 
 module BsaRest

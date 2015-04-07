@@ -3,12 +3,12 @@ require "#{File.dirname(__FILE__)}/spec_helper"
 describe 'create release' do
   describe '' do
     it 'should create a request from template' do
-      params = get_default_params()
+      params = get_default_params
       params["application_name"] = 'E-Finance'
       params["application_version"] = '1.0.0'
       params["release_request_template_name"] = 'Release E-Finance'
 
-      execute_script_from_module("brpm", "create_release", params)
+      execute_script_from_module("brpm", "create_release_request", params)
 
       brpm_client = get_brpm_client
 
@@ -21,13 +21,13 @@ describe 'create release' do
 
   describe 'in plan' do
     it 'should create a plan from template and a request from template in that plan' do
-      params = get_default_params()
+      params = get_default_params
       params["application_name"] = 'E-Finance'
       params["application_version"] = '1.0.1'
       params["release_request_template_name"] = 'Release E-Finance'
       params["release_plan_template_name"] = 'E-Finance Release Plan'
 
-      execute_script_from_module("brpm", "create_release", params)
+      execute_script_from_module("brpm", "create_release_request", params)
 
       brpm_client = get_brpm_client
 

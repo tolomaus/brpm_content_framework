@@ -17,6 +17,6 @@ params["application_version"] = "$APPLICATION_VERSION"
 params["release_request_template_name"] = "$RELEASE_REQUEST_TEMPLATE_NAME"
 params["release_plan_template_name"] = "$RELEASE_PLAN_TEMPLATE_NAME"
 
-execute_script_from_module("brpm", "create_release", params)
+execute_script_from_module("brpm", "create_release_request", params)
 EORUBY
 

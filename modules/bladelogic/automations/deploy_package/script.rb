@@ -11,17 +11,23 @@ def execute_script(params)
 
   bsa_base_url = params["SS_integration_dns"]
   bsa_username = params["SS_integration_username"]
-  bsa_password = decrypt_string_with_prefix(params["SS_integration_password_enc"])
+  bsa_password = params.has_key?("SS_integration_password") ? params["SS_integration_password"] : decrypt_string_with_prefix(params["SS_integration_password_enc"])
+
   bsa_role = params["SS_integration_details"]["role"]
 
-  Logger.log("Getting the server group from the step...")
-  server_group = get_server_group_from_step_id(params["step_id"])
-  params["server_group"] = server_group if server_group # this param may be needed for the tokenizing below
+  environment = params["request_environment"]
+  unless params["server_group"] # can already be populated by the automated tests
+    brpm_client = Brpm::Client.new(params["SS_base_url"], params["SS_api_token"])
+
+    Logger.log("Getting the server group from the step...")
+    params["server_group"] = brpm_client.get_server_group_from_step_id(params["step_id"])
+  end
+  server_group = params["server_group"]
 
   target_type = first_defined(sub_tokens(params, params["target_type"]), "Server group")
   target_path = first_defined(sub_tokens(params, params["target_path"]), "/Applications/#{params["application"]}/#{params["request_environment"]}/#{server_group}")
 
-  deploy_job_name = first_defined(sub_tokens(params, params["deploy_job_name"]), "Deploy #{params["component"]} #{params["component_version"]} in #{params["request_environment"]} - #{Time.now.strftime("%Y-%m-%d %H:%M:%S")}")
+  deploy_job_name = first_defined(sub_tokens(params, params["deploy_job_name"]), "Deploy #{params["component"]} #{params["component_version"]} in #{environment} - #{Time.now.strftime("%Y-%m-%d %H:%M:%S")}")
   deploy_job_group_path = first_defined(sub_tokens(params, params["deploy_job_group_path"]), "/Applications/#{params["application"]}")
 
   depot_group_path = first_defined(sub_tokens(params, params["depot_group_path"]), "/Applications/#{params["application"]}/#{params["component"]}")
@@ -144,5 +150,5 @@ def execute_script(params)
 
   pack_response "results_link", results_full_path
 
-  raise "The Patch Remediation job had errors!" if had_errors
+  raise "The Deploy job had errors!" if had_errors
 end
