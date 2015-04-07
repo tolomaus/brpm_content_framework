@@ -11,7 +11,7 @@ if [ -z "$BRPM_HOME" ]; then
 fi
 
 if [ -z "$NEW_VERSION" ]; then
-    echo "NEW_VERSION is not set. Aborting the patch installation."
+    echo "NEW_VERSION is not specified. Aborting the patch installation."
     exit 1
 fi
 
