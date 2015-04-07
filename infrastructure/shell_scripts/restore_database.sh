@@ -15,7 +15,19 @@ fi
 BRPM_DB_NAME=bmc_rpm_db
 BRPM_DB_USER=rlm_user
 
-echo "Restoring database from /root/database_backups/brpm_database_dump_$DATE.sql to $TARGET_DB_NAME..."
+echo "Stopping BRPM..."
+/etc/init.d/bmcrpm-4.6.00 stop
+
+echo "Dropping existing database $BRPM_DB_NAME..."
+$BRPM_HOME/pgsql/bin/dropdb -U $BRPM_DB_USER $BRPM_DB_NAME
+
+echo "Creating database $BRPM_DB_NAME..."
+$BRPM_HOME/pgsql/bin/createdb -O $BRPM_DB_USER -E UTF8 -U $BRPM_DB_USER $BRPM_DB_NAME
+
+echo "Restoring database from /root/database_backups/brpm_database_dump_$DATE.sql to $BRPM_DB_NAME..."
 $BRPM_HOME/pgsql/bin/psql -U $BRPM_DB_USER -d $BRPM_DB_NAME -f $DUMP_FILE
+
+echo "Restarting BRPM..."
+/etc/init.d/bmcrpm-4.6.00 start
 
 echo "Done."
