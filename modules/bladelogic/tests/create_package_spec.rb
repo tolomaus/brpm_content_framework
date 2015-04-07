@@ -2,7 +2,7 @@ require "#{File.dirname(__FILE__)}/spec_helper"
 
 describe 'create package' do
   describe '' do
-    it 'should create a package in BladeLogic' do  # need to add logic to delete the bl package in Bladelogic
+    skip 'should create a package in BladeLogic' do  # need to add logic to delete the bl package in Bladelogic
       params = get_default_params
       params = params.merge(get_integration_settings_for_bladelogic)
 

@@ -1,7 +1,7 @@
 require "#{File.dirname(__FILE__)}/../../framework/bootstrap"
 require 'fileutils'
 
-FileUtils.mkdir_p "/tmp/brpm_content/"
+FileUtils.mkdir_p "/tmp/brpm_content/step_1"
 Logger.initialize({ "log_file" => "/tmp/brpm_content/tests.log" }) # TODO clean up
 
 require "brpm/lib/brpm_rest_api"
@@ -77,5 +77,6 @@ def cleanup_version_tags_for_app(app_name)
   end
 end
 
-def pack_response
+def pack_response key, value
+  Logger.log "pack_response: #{key}: #{value}"
 end
