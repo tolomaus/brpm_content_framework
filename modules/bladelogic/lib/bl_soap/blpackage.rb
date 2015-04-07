@@ -23,6 +23,18 @@ class BlPackage
     raise "Exception executing #{self.name} function: #{exception.to_s}"
   end
 
+  def self.delete_blpackage_by_group_and_name(url, session_id, options = {})
+    BsaBlPackage.validate_cli_options_hash([:parent_group, :package_name], options)
+    integer_result = BsaBlPackage.execute_cli_with_param_list(url, session_id, self.name, "deleteBlPackageByGroupAndName",
+                                                              [
+                                                                  options[:parent_group],
+                                                                  options[:package_name],
+                                                              ])
+    integer_value = BsaBlPackage.get_cli_return_value(integer_result)
+  rescue => exception
+    raise "Exception executing #{self.name} function: #{exception.to_s}"
+  end
+
   def self.get_dbkey_by_group_and_name(url, session_id, options = {})
     BsaBlPackage.validate_cli_options_hash([:parent_group, :depot_group_path], options)
     integer_result = BsaBlPackage.execute_cli_with_param_list(url, session_id, self.name, "getDBKeyByGroupAndName",

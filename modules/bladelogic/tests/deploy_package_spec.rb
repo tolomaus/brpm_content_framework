@@ -8,7 +8,7 @@ describe 'deploy package' do
 
       params["application"] = 'E-Finance'
       params["component"] = 'EF - Java calculation engine'
-      params["component_version"] = '1.0.0'
+      params["component_version"] = '2.0.0'
       params["request_environment"] = "development"
       params["server_group"] = "EF - java app servers - development"
 

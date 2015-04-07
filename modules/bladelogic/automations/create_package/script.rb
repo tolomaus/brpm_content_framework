@@ -31,11 +31,13 @@ def execute_script(params)
   Logger.log("Creating blpackage #{depot_group_path}/#{package_name}...")
   BlPackage.create_package_from_component(bsa_base_url, session_id, {:package_name => package_name, :depot_group_id => depot_group_id, :component_key => bl_build_component["dbKey"]})
 
+  brpm_client = Brpm::Client.new(params["SS_base_url"], params["SS_api_token"])
+
   Logger.log "Getting all environments of application #{params["application"]} ..."
-  environments = get_environments_of_application(params["application"])
+  environments = brpm_client.get_environments_of_application(params["application"])
 
   environments.each do |environment|
     Logger.log "Creating the version tag for version #{params["component_version"]} of application #{params["application"]} and component #{params["component"]} in environment #{environment["name"]} ..."
-    environment = create_version_tag(params["application"], params["component"], environment["name"], params["component_version"])
+    environment = brpm_client.create_version_tag(params["application"], params["component"], environment["name"], params["component_version"])
   end
 end
