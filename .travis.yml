@@ -2,8 +2,7 @@ language: ruby
 rvm:
   - 1.9.3
 
-script: bundle exec rspec ./modules/brpm/tests --format documentation
-script: bundle exec rspec ./modules/bladelogic/tests --format documentation
+script: ./infrastructure/shell_scripts/run_tests.sh
 
 notifications:
   email:
