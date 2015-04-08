@@ -2,10 +2,12 @@ require "jira/lib/jira_rest_api"
 require "brpm/lib/brpm_rest_api"
 
 def execute_script(params)
+  brpm_client = Brpm::Client.new(params["SS_base_url"], params["SS_api_token"])
+
   run_id = params["request_run_id"] || params["run_id"]
 
   Logger.log  "Getting the tickets that are linked to the requests of this run..."
-  tickets = get_tickets_by_run_id_and_request_state(run_id, "completed")
+  tickets = brpm_client.get_tickets_by_run_id_and_request_state(run_id, "completed")
 
   if tickets.count == 0
     Logger.log "This run has no tickets, nothing further to do."

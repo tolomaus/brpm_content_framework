@@ -2,8 +2,10 @@ require "jira/lib/jira_rest_api"
 require "brpm/lib/brpm_rest_api"
 
 def execute_script(params)
+  brpm_client = Brpm::Client.new(params["SS_base_url"], params["SS_api_token"])
+
   Logger.log  "Getting the tickets that are linked to the request..."
-  tickets = get_tickets_by_request_id(params["request_id"])
+  tickets = brpm_client.get_tickets_by_request_id(params["request_id"])
 
   if tickets.count == 0
     Logger.log "This request has no tickets, nothing further to do."
@@ -12,7 +14,7 @@ def execute_script(params)
 
   unless params["target_issue_status"]
     Logger.log  "Getting the stage of this request..."
-    request_with_details = get_request_by_id(params["request_id"])
+    request_with_details = brpm_client.get_request_by_id(params["request_id"])
 
     if request_with_details.has_key?("plan_member")
       stage_name = request_with_details["plan_member"]["stage"]["name"]

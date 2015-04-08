@@ -1,8 +1,10 @@
 load "brpm/lib/brpm_rest_api.rb"
 
 def execute_resource_automation_script(params, parent_id, offset, max_records)
+  brpm_client = Brpm::Client.new(params["SS_base_url"], params["SS_api_token"])
+
   Logger.log "Finding all request templates for application #{params["application"]}..."
-  request_templates = get_request_templates_by_app(params["application"])
+  request_templates = brpm_client.get_request_templates_by_app(params["application"])
 
   request_templates = request_templates.sort_by { |request_template| request_template["name"] }
 

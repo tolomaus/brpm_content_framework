@@ -1,18 +1,18 @@
 require "framework/lib/request_params"
 require "brpm/lib/brpm_rest_api"
 
-def get_source_requests(params)
-  source_request_ids = get_requests_by_plan_id_and_stage_name_and_app_name(params["request_plan_id"], params["source_stage"], params["application"])
+def get_source_requests(params, brpm_client)
+  source_request_ids = brpm_client.get_requests_by_plan_id_and_stage_name_and_app_name(params["request_plan_id"], params["source_stage"], params["application"])
 
   raise "No requests found for application '#{params["application"]}' in stage '#{params["source_stage"]}' of this plan" if source_request_ids.count == 0
 
-  source_requests = source_request_ids.map { |source_request_id| get_request_by_id(source_request_id) }
+  source_requests = source_request_ids.map { |source_request_id| brpm_client.get_request_by_id(source_request_id) }
                                       .sort_by { |request| request["created_at"] }
 
   source_requests
 end
 
-def step_has_incremental_deployment(correction_source_step, source_steps_with_same_name)
+def step_has_incremental_deployment(correction_source_step, source_steps_with_same_name, brpm_client)
   incremental_deployment = false
   if source_steps_with_same_name.count > 1
     Logger.log "Already multiple steps with the same name, this means that it is a step that has a component with incremental deploy."
@@ -22,7 +22,7 @@ def step_has_incremental_deployment(correction_source_step, source_steps_with_sa
       if source_steps_with_same_name.first["component"]["id"] == correction_source_step["component"]["id"]
         if !source_steps_with_same_name.first["version_tag"].nil? and !correction_source_step["version_tag"].nil?
           Logger.log "Verifying if the associated component '#{correction_source_step["component"]["name"]}' uses incremental deployment ..."
-          component = get_component_by_id(correction_source_step["component"]["id"])
+          component = brpm_client.get_component_by_id(correction_source_step["component"]["id"])
           incremental_deployment = (component.has_key?("properties") and component["properties"].any? { |property| property["name"] == "incremental_deployment" })
 
           if incremental_deployment and source_steps_with_same_name.first["version_tag"]["name"] == correction_source_step["version_tag"]["name"]
@@ -36,9 +36,9 @@ def step_has_incremental_deployment(correction_source_step, source_steps_with_sa
   incremental_deployment
 end
 
-def merge_source_request_steps(source_requests)
+def merge_source_request_steps(source_requests, brpm_client)
   Logger.log "Getting the step details of the initial request ..."
-  source_steps = source_requests.first["steps"].map { |source_step_summary| get_step_by_id(source_step_summary["id"]) }
+  source_steps = source_requests.first["steps"].map { |source_step_summary| brpm_client.get_step_by_id(source_step_summary["id"]) }
                                               .sort_by { |step| step["number"].to_f }
 
   #TODO: use work tasks to find the first post-deploy step
@@ -48,7 +48,7 @@ def merge_source_request_steps(source_requests)
   source_requests[1..source_requests.count].each do |source_request|
     Logger.log "Merging the steps from correction request #{source_request["id"]} - #{source_request["name"] || "<no name>"} (#{source_request["steps"].count} steps)"
     source_request["steps"].sort_by { |step| step["number"].to_f }.each do |correction_source_step_summary|
-      correction_source_step = get_step_by_id(correction_source_step_summary["id"])
+      correction_source_step = brpm_client.get_step_by_id(correction_source_step_summary["id"])
       Logger.log "Merging step '#{correction_source_step["name"]}' ..."
 
       source_steps_with_same_name = source_steps.find_all { |source_step| source_step["name"] == correction_source_step["name"] }
@@ -61,7 +61,7 @@ def merge_source_request_steps(source_requests)
       end
 
       Logger.log "Verifying if the step has a component with incremental deployment ..."
-      incremental_deployment = step_has_incremental_deployment(correction_source_step, source_steps_with_same_name)
+      incremental_deployment = step_has_incremental_deployment(correction_source_step, source_steps_with_same_name, brpm_client)
 
       if incremental_deployment
         Logger.log "This step has a component with incremental deployment so adding it to the list ..."
@@ -78,7 +78,7 @@ def merge_source_request_steps(source_requests)
   source_steps
 end
 
-def create_target_request(initial_source_request, source_steps, params)
+def create_target_request(initial_source_request, source_steps, params, brpm_client)
   target_request = {}
   target_request["name"] = params["request_name"].sub("Release", "Deploy")
   target_request["description"] = initial_source_request["description"]
@@ -88,13 +88,13 @@ def create_target_request(initial_source_request, source_steps, params)
   target_request["deployment_coordinator_id"] = initial_source_request["deployment_coordinator"]["id"]
   target_request["app_ids"] = initial_source_request["apps"][0]["id"]
 
-  plan_stage_id = get_plan_stage_id(params["request_plan_id"], params["target_stage"])
+  plan_stage_id = brpm_client.get_plan_stage_id(params["request_plan_id"], params["target_stage"])
   target_request["plan_member_attributes"] = { "plan_id" => params["request_plan_id"], "plan_stage_id" => plan_stage_id }
   target_request["environment"] = params["target_env"]
   target_request["execute_now"] = (params["execute_target_request"] == 'Yes') #TODO: doesn't work - maybe try starting it explicitly after creation
 
   Logger.log "Creating the target request ..."
-  target_request = create_request_from_hash(target_request)
+  target_request = brpm_client.create_request_from_hash(target_request)
 
   Logger.log "Creating the target steps ..."
   procedure_mapping = {}
@@ -117,7 +117,7 @@ def create_target_request(initial_source_request, source_steps, params)
     target_step["procedure"] = source_step["procedure"]
 
     unless source_step["installed_component"].nil?
-      installed_components = get_installed_components_by({ "app_name" => source_step["installed_component"]["app"]["name"],
+      installed_components = brpm_client.get_installed_components_by({ "app_name" => source_step["installed_component"]["app"]["name"],
                                                            "component_name" => source_step["installed_component"]["component"]["name"],
                                                            "environment_name" => params["target_env"] })
 
@@ -126,7 +126,7 @@ def create_target_request(initial_source_request, source_steps, params)
       target_step["installed_component_id"] = installed_components[0]["id"]
 
       unless source_step["version_tag"].nil?
-        version_tags = get_version_tags_by({ "name" => source_step["version_tag"]["name"],
+        version_tags = brpm_client.get_version_tags_by({ "name" => source_step["version_tag"]["name"],
                                              "app_name" => source_step["installed_component"]["app"]["name"],
                                              "component_name" => source_step["installed_component"]["component"]["name"],
                                              "environment_name" => params["target_env"] })
@@ -153,7 +153,7 @@ def create_target_request(initial_source_request, source_steps, params)
     target_step["phase_id"] = source_step["phase"]["id"] unless source_step["phase"].nil?
     target_step["runtime_phase_id"] = source_step["runtime_phase"]["id"] unless source_step["runtime_phase"].nil?
 
-    target_step = create_step_from_hash(target_step)
+    target_step = brpm_client.create_step_from_hash(target_step)
 
     Logger.log "Created target step for step #{source_step["name"]} (#{target_step["position"]})."
 
@@ -164,28 +164,31 @@ def create_target_request(initial_source_request, source_steps, params)
 end
 
 def execute_script(params)
+  request_params_manager = Framework::RequestParamsManager.new(params["SS_output_dir"])
+  brpm_client = Brpm::Client.new(params["SS_base_url"], params["SS_api_token"])
+
   Logger.log "Getting the source requests ..."
-  source_requests = get_source_requests(params)
+  source_requests = brpm_client.get_source_requests(params)
 
   if params["request_template"].nil? || params["request_template"].empty?
     initial_source_request = source_requests.first
     Logger.log "Found initial source request #{initial_source_request["id"]} - #{initial_source_request["name"] || "<no name>"}"
 
     Logger.log "Merging the source request steps ..."
-    source_steps = merge_source_request_steps(source_requests)
+    source_steps = merge_source_request_steps(source_requests, brpm_client)
 
     Logger.log "Creating the target request ..."
-    target_request = create_target_request(initial_source_request, source_steps, params)
+    target_request = create_target_request(initial_source_request, source_steps, params, brpm_client)
   else
-    target_request = create_request_for_plan_from_template(params["request_plan_id"], params["target_stage"], params["request_template"], params["request_name"].sub("Release", "Deploy"), params["target_env"], (params["execute_target_request"] == 'Yes'))
+    target_request = brpm_client.create_request_for_plan_from_template(params["request_plan_id"], params["target_stage"], params["request_template"], params["request_name"].sub("Release", "Deploy"), params["target_env"], (params["execute_target_request"] == 'Yes'))
   end
 
   Logger.log "Moving the source requests to the stage '#{params["source_stage"]} - Archived' ..."
   source_requests.each do |source_request|
-    move_request_to_plan_and_stage(source_request["id"], params["request_plan_id"], "#{params["source_stage"]} - Archived")
+    brpm_client.move_request_to_plan_and_stage(source_request["id"], params["request_plan_id"], "#{params["source_stage"]} - Archived")
   end
 
   Logger.log "Adding the promoted request' id to the request_params ..."
-  add_request_param("promoted_request_id", target_request["id"])
+  request_params_manager.add_request_param("promoted_request_id", target_request["id"])
 end
 

@@ -1,14 +1,16 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
 
-describe 'create release request' do
+describe 'create/read/update/delete release' do
   describe '' do
-    it 'should create a request from template' do
+    it 'should create/read/update/delete release in jira' do
       params = get_default_params
+      params = params.merge(get_integration_details_for_jira)
+
       params["application_name"] = 'E-Finance'
       params["application_version"] = '1.0.0'
       params["release_request_template_name"] = 'Release E-Finance'
 
-      execute_script_from_module("brpm", "create_release_request", params)
+      execute_script_from_module("jira", "create_release", params)
 
       brpm_client = get_brpm_client
 

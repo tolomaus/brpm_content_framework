@@ -1,9 +1,11 @@
 load "brpm/lib/brpm_rest_api.rb"
 
 def execute_resource_automation_script(params, parent_id, offset, max_records)
+  brpm_client = Brpm::Client.new(params["SS_base_url"], params["SS_api_token"])
+
   if parent_id.nil?
     Logger.log "Finding all requests in the same stage as the current request (plan: #{params["request_plan"]} (id: #{params["request_plan_id"]}), stage: #{params["request_plan_stage"]}) ..."
-    requests = get_requests_by_plan_id_and_stage_name(params["request_plan_id"], params["request_plan_stage"])
+    requests = brpm_client.get_requests_by_plan_id_and_stage_name(params["request_plan_id"], params["request_plan_stage"])
 
     requests = requests.sort_by { |request| request["number"] }
 
@@ -17,7 +19,7 @@ def execute_resource_automation_script(params, parent_id, offset, max_records)
     results
   else
     Logger.log "Finding all steps in the request with id #{parent_id} ..."
-    request = get_request_by_id(parent_id)
+    request = brpm_client.get_request_by_id(parent_id)
 
     return if request.nil?
 
