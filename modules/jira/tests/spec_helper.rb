@@ -1,4 +1,5 @@
 require "#{File.dirname(__FILE__)}/../../framework/bootstrap"
+require "jira/lib/jira_rest_api"
 require 'fileutils'
 
 FileUtils.mkdir_p "/tmp/brpm_content/"
@@ -24,9 +25,27 @@ def get_brpm_client
   Brpm::Client.new(params["SS_base_url"], params["SS_api_token"])
 end
 
+def get_jira_client
+  params = get_integration_details_for_jira
+  jira_client = Jira::Client.new(params["SS_integration_username"],
+                                 params["SS_integration_password"],
+                                 params["SS_integration_dns"])
+end
+
 def get_request_params_manager
   params = get_default_params
   Framework::RequestParamsManager.new(params["SS_output_dir"])
+end
+
+def get_integration_details_for_jira
+  params = {}
+  params["SS_integration_dns"] = 'http://brpm.pulsar-it.be:9090'
+  params["SS_integration_username"] = 'brpm'
+  params["SS_integration_password"] = ENV["JIRA_PASSWORD"]
+
+  params["jira_release_field_id"] = '10000'
+
+  params
 end
 
 def cleanup_request_data_file

@@ -118,9 +118,18 @@ module Jira
       # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
 
       url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoptions/customfield_#{custom_field_id}"
-      custom_field_options = rest_get(url, { :username => @username, :password => @password })["response"]
+      result = rest_get(url, { :username => @username, :password => @password })
 
-      custom_field_options.find { |custom_field_option| custom_field_option["optionvalue"] == option_value }
+      if result["status"] == "success"
+        custom_field_options = result["response"]
+        return custom_field_options.find { |custom_field_option| custom_field_option["optionvalue"] == option_value }
+      else
+        if result["code"] == 404
+          return nil
+        else
+          raise "Error getting option: #{result["error_message"]}"
+        end
+      end
     end
 
     def create_option_for_dropdown_custom_field(custom_field_id, option_value)
@@ -136,7 +145,13 @@ module Jira
       url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/customfield_#{custom_field_id}"
       data = {:optionvalue => option_value }
 
-      rest_post(url, data, { :username => @username, :password => @password })["response"]
+      result = rest_post(url, data, { :username => @username, :password => @password })
+
+      if result["status"] == "success"
+        return result["response"]
+      else
+        raise "Could not create option: #{result["error_message"]}"
+      end
     end
 
     def update_option_for_dropdown_custom_field(custom_field_id, old_option_value, new_option_value)
@@ -148,7 +163,13 @@ module Jira
         url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/customfield_#{custom_field_id}/#{custom_field_option_to_update["id"]}"
         data = {:optionvalue => new_option_value }
 
-        rest_put(url, data, { :username => @username, :password => @password })["response"]
+        result = rest_put(url, data, { :username => @username, :password => @password })
+
+        if result["status"] == "success"
+          return result["response"]
+        else
+          raise "Could not update option: #{result["error_message"]}"
+        end
       else
         Logger.log "The option doesn't exist yet, creating it instead of updating..."
         create_option_for_dropdown_custom_field(custom_field_id, new_option_value)
@@ -163,7 +184,13 @@ module Jira
       if custom_field_option_to_delete
         url = "#{@url}/rest/jiracustomfieldeditorplugin/1.1/user/customfieldoption/customfield_#{custom_field_id}/#{custom_field_option_to_delete["id"]}"
 
-        rest_delete(url, { :username => @username, :password => @password })["response"]
+        result = rest_delete(url, { :username => @username, :password => @password })
+
+        if result["status"] == "success"
+          return result["response"]
+        else
+          raise "Could not delete option: #{result["error_message"]}"
+        end
       else
         Logger.log "The option doesn't exist, nothing to do."
       end
