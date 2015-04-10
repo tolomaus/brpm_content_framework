@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ -z "$BRPM_HOME" ]; then
     echo "BRPM_HOME is not set (e.g. /opt/bmc/RLM). Aborting the script."
@@ -22,4 +22,4 @@ VERSION=$(eval "sed -n \"s=  root: $BRPM_HOME/releases/\(.*\)/RPM=\1=p\" $BRPM_H
 
 . $BRPM_HOME/bin/setenv.sh
 
-jruby $BRPM_HOME/releases/$VERSION/RPM/lib/script_support/git_repos/brpm_content/infrastructure/integrations/webhook_receiver.rb
+jruby -J-Djava.library.path= $BRPM_HOME/releases/$VERSION/RPM/lib/script_support/git_repos/brpm_content/infrastructure/integrations/webhook_receiver.rb

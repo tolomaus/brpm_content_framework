@@ -4,13 +4,12 @@
 jruby <<-EORUBY
 require "modules/framework/bootstrap"
 
-require "brpm/lib/brpm_rest_api"
-set_brpm_rest_api_url("http://$BRPM_HOST:$BRPM_PORT/brpm")
-set_brpm_rest_api_token("$BRPM_TOKEN")
-
 params = {}
 params["log_file"] = "$LOG_FILE"
 params["automation_script_dir"] = "."
+
+params["SS_base_url"] = "http://$BRPM_HOST:$BRPM_PORT/brpm"
+params["SS_api_token"] = "$BRPM_TOKEN"
 
 params["application_name"] = "$APPLICATION_NAME"
 params["application_version"] = "$APPLICATION_VERSION"
