@@ -26,7 +26,7 @@
 # [integration_id=6]
 #=== End ===#
 
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/bootstrap.rb"
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_automation.rb"
 
 params["direct_execute"] = true
 
@@ -37,4 +37,4 @@ params["SS_integration_details"] = YAML.load(SS_integration_details)
 
 params["phase_list"] = { "stage" => "Stage", "commit" => "Stage (if necessary) + Commit" }
 
-execute_script_from_module("patch_process_management", "service_aware_patching/patch_remediation", params)
+BrpmAuto.execute_script_from_module("patch_process_management", "service_aware_patching/patch_remediation", params)

@@ -13,7 +13,7 @@
 
 params["direct_execute"]=true
 
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/bootstrap.rb"
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_automation.rb"
 
 params["SS_integration_dns"] = SS_integration_dns
 params["SS_integration_username"] = SS_integration_username
@@ -26,5 +26,5 @@ params["module_name"] = integration_details["module_name"]
 
 params["workflow_list"] = { "enable-monitoring" => "Enable monitoring", "disable-monitoring" => "Disable monitoring", "add-to-loadbalancer" => "Add app to loadbalancer", "remove-from-loadbalancer" => "Remove app from loadbalancer" }
 
-execute_script_from_module("patch_process_management", "service_aware_patching/execute_workflow", params)
+BrpmAuto.execute_script_from_module("patch_process_management", "service_aware_patching/execute_workflow", params)
 

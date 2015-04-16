@@ -9,6 +9,6 @@
 #   name: port
 #   required: yes
 ###
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/bootstrap.rb"
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_automation.rb"
 
-execute_script_from_module("docker_brpm", "create_brpm_instance_one_shot", params)
+BrpmAuto.execute_script_from_module("docker_brpm", "create_brpm_instance_one_shot", params)

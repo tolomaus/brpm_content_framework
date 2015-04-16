@@ -11,7 +11,7 @@
 
 params["direct_execute"]=true
 
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/bootstrap.rb"
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_automation.rb"
 
 params["SS_integration_dns"] = SS_integration_dns
 params["SS_integration_username"] = SS_integration_username
@@ -22,4 +22,4 @@ integration_details = YAML.load(SS_integration_details)
 params["grid_name"] = integration_details["grid_name"]
 params["module_name"] = integration_details["module_name"]
 
-execute_script_from_module("atrium_orchestrator", "reserve_ip_address", params)
+BrpmAuto.execute_script_from_module("atrium_orchestrator", "reserve_ip_address", params)

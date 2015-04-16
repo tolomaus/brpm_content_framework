@@ -58,8 +58,7 @@ echo "Copying over the config files from $BRPM_HOME/releases/$OLD_VERSION/RPM/co
 /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/config/wicked_pdf_config.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/config
 /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/config/carrierwave_settings.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/config
 
-if [ -f $BRPM_HOME/releases/$OLD_VERSION/RPM/lib/script_support/bootstrap.rb ]; then
-  /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/lib/script_support/bootstrap.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/lib/script_support
+if [ -d $BRPM_HOME/releases/$OLD_VERSION/RPM/lib/script_support/git_repos ]; then
   /bin/cp -R $BRPM_HOME/releases/$OLD_VERSION/RPM/lib/script_support/git_repos $BRPM_HOME/releases/$NEW_VERSION/RPM/lib/script_support
 fi
 

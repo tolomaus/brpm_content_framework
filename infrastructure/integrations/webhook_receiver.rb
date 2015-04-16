@@ -3,7 +3,7 @@ require 'rubygems'
 require 'json'
 require 'rest-client'
 require 'webrick'
-require "#{File.dirname(__FILE__)}/../../modules/framework/bootstrap"
+require "#{File.dirname(__FILE__)}/../../modules/framework/brpm_automation"
 
 Logger.setup(ENV["WEBHOOK_RECEIVER_LOG_FILE"])
 

@@ -3,6 +3,6 @@
 #   name: overwrite_existing_data
 #   required: no
 ###
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/bootstrap.rb"
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_automation.rb"
 
-execute_script_from_module("docker_brpm", "upgrade_database", params)
+BrpmAuto.execute_script_from_module("docker_brpm", "upgrade_database", params)

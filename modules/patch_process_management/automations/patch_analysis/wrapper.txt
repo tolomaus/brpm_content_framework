@@ -21,7 +21,7 @@
 # [integration_id=6]
 1_patch_readiness.rb#=== End ===#
 
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/bootstrap.rb"
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_automation.rb"
 
 params["direct_execute"] = true
 
@@ -30,4 +30,4 @@ params["SS_integration_username"] = SS_integration_username
 params["SS_integration_password_enc"] = SS_integration_password_enc
 params["SS_integration_details"] = YAML.load(SS_integration_details)
 
-execute_script_from_module("patch_process_management", "service_aware_patching/patch_analysis", params)
+BrpmAuto.execute_script_from_module("patch_process_management", "service_aware_patching/patch_analysis", params)

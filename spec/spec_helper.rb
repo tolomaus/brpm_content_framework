@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/../modules/framework/bootstrap"
+require "#{File.dirname(__FILE__)}/../modules/framework/brpm_automation"
 
 Logger.initialize({ "log_file" => "/home/jenkins/logs/test.log" })
 

@@ -1,7 +1,7 @@
 require 'fileutils'
 FileUtils.mkdir_p "/tmp/brpm_content/step_1"
 
-require "#{File.dirname(__FILE__)}/../../framework/bootstrap"
+require "#{File.dirname(__FILE__)}/../../framework/brpm_automation"
 Logger.setup("/tmp/brpm_content/tests.log") # TODO clean up
 RequestParams.setup("/tmp/brpm_content/") # TODO clean up
 

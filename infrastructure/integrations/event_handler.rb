@@ -3,7 +3,7 @@ require 'rubygems'
 require 'torquebox'
 require 'torquebox-messaging'
 require 'xmlsimple'
-require "#{File.dirname(__FILE__)}/../../modules/framework/bootstrap"
+require "#{File.dirname(__FILE__)}/../../modules/framework/brpm_automation"
 
 Logger.setup(ENV["EVENT_HANDLER_LOG_FILE"])
 
