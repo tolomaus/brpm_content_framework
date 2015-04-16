@@ -1,3 +1,0 @@
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/bootstrap.rb"
-
-execute_script_from_module("brpm", "wait_till_promoted_request_is_completed", params)

@@ -5,7 +5,7 @@ require 'rest-client'
 require 'webrick'
 require "#{File.dirname(__FILE__)}/../../modules/framework/bootstrap"
 
-Logger.initialize({ "log_file" => ENV["WEBHOOK_RECEIVER_LOG_FILE"] })
+Logger.setup(ENV["WEBHOOK_RECEIVER_LOG_FILE"])
 
 port = ENV["WEBHOOK_RECEIVER_PORT"]
 mount_point = "/#{ENV["WEBHOOK_RECEIVER_MOUNT_POINT"]}"

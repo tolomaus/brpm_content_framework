@@ -12,7 +12,7 @@ describe 'deploy package' do
       params["request_environment"] = "development"
       params["server_group"] = "EF - java app servers - development"
 
-      execute_script_from_module("bladelogic", "deploy_package", params)
+      BrpmAuto.execute_script_from_module("bladelogic", "deploy_package", params)
     end
   end
 end

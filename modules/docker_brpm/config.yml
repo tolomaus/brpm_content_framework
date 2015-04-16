@@ -1,5 +1,5 @@
 dependencies:
-  - BRPM
+  - brpm
     version: latest
 
 integration_servers:

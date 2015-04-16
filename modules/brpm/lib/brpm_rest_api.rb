@@ -1,14 +1,9 @@
-require "framework/lib/rest_api"
-
-module Brpm
-  class Client
-    def initialize(url, token)
-      @url = url
-      @token = token
+class BrpmRest
+  class << self
+    def setup(base_brpm_url, base_brpm_api_token)
+      @base_brpm_url = base_brpm_url
+      @base_brpm_api_token = base_brpm_api_token
     end
-
-    attr_reader :url
-    attr_reader :token
 
     def get_user_by_id(user_id)
       result = brpm_get "v1/users/#{user_id}"
@@ -83,7 +78,7 @@ module Brpm
       if result["status"] == "success"
         result_hash = result["response"]
       else
-        if already_exists_error(result)
+        if Rest.already_exists_error(result)
           Logger.log "This server already exists."
           result_hash = get_server_by_name(server_name)
           existing_environment_ids = result_hash["environments"].map { |env| env["id"] }
@@ -233,7 +228,7 @@ module Brpm
       if result["status"] == "success"
         result_hash = result["response"]
       else
-        if already_exists_error(result)
+        if Rest.already_exists_error(result)
           Logger.log "This environment already exists. Continuing ..."
           result_hash = get_environment_by_name(environment_name)
         else
@@ -439,7 +434,7 @@ module Brpm
       if result["status"] == "success"
         result_hash = result["response"]
       else
-        if already_exists_error(result)
+        if Rest.already_exists_error(result)
           Logger.log "This installed component already exists."
           result_hash = get_installed_component(component_name, environment_name)
           result_hash = get_installed_component_by_id(result_hash["id"])
@@ -525,7 +520,7 @@ module Brpm
       if result["status"] == "success"
         result_hash = result["response"]
       else
-        if already_exists_error(result)
+        if Rest.already_exists_error(result)
           Logger.log "This version tag already exists. Continuing ..."
           result_hash = get_version_tag(app_name, component_name, environment, version_tag_name)
         else
@@ -633,7 +628,7 @@ module Brpm
       if result["status"] == "success"
         result_hash = result["response"]
       else
-        if already_exists_error(result)
+        if Rest.already_exists_error(result)
           Logger.log "This plan already exists. Continuing ..."
           result_hash = get_plan_by_name(plan_name)
         else
@@ -1398,25 +1393,32 @@ module Brpm
     end
 
     private
+      def get_base_brpm_api_token
+        @base_brpm_api_token || BrpmAuto.base_brpm_api_token
+      end
+
+      def get_base_brpm_url
+        @base_brpm_url || BrpmAuto.base_brpm_url
+      end
 
       def add_token(path)
-        path + (path.include?("?") ? "&" : "?") + "token=#{@token}"
+        path + (path.include?("?") ? "&" : "?") + "token=#{get_base_brpm_api_token}"
       end
 
       def brpm_get(path, options = {})
-        rest_get("#{@url}/#{add_token(path)}", options)
+        Rest.get("#{get_base_brpm_url}/#{add_token(path)}", options)
       end
 
       def brpm_post(path, data, options = {})
-        rest_post("#{@url}/#{add_token(path)}", data, options)
+        Rest.post("#{get_base_brpm_url}/#{add_token(path)}", data, options)
       end
 
       def brpm_put(path, data, options = {})
-        rest_put("#{@url}/#{add_token(path)}", data, options)
+        Rest.put("#{get_base_brpm_url}/#{add_token(path)}", data, options)
       end
 
       def brpm_delete(path, options = {})
-        rest_delete("#{@url}/#{add_token(path)}", options)
+        Rest.delete("#{get_base_brpm_url}/#{add_token(path)}", options)
       end
   end
 end

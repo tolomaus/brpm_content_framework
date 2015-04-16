@@ -1,5 +1,4 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
-require "bladelogic/lib/bl_soap/blpackage"
 
 describe 'create package' do
   describe '' do
@@ -11,11 +10,9 @@ describe 'create package' do
       params["component"] = 'EF - Java calculation engine'
       params["component_version"] = '1.0.0'
 
-      execute_script_from_module("bladelogic", "create_package", params)
+      BrpmAuto.execute_script_from_module("bladelogic", "create_package", params)
 
-      brpm_client = get_brpm_client
-
-      version_tag = brpm_client.get_version_tag("E-Finance","EF - Java calculation engine", "development", "1.0.0")
+      version_tag = BrpmRest.get_version_tag("E-Finance","EF - Java calculation engine", "development", "1.0.0")
       expect(version_tag).not_to be_nil
     end
   end

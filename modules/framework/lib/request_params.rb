@@ -1,18 +1,15 @@
-module Framework
-  class RequestParamsManager
-    def initialize(step_output_dir)
-      @request_dir = File.expand_path("..", step_output_dir)
-      @automation_results_dir = File.expand_path("../../../..", step_output_dir)
-    end
+class RequestParams
+  private_class_method :new
 
-    attr_reader :automation_results_dir
+  class << self
+    attr_reader :request_dir
 
-    def request_params_exist?
-      File.exist?(get_request_params_file_location)
+    def setup(request_dir)
+      @request_dir = request_dir
     end
 
     def set_request_params(request_params)
-      request_params_file = File.new(get_request_params_file_location, "w")
+      request_params_file = File.new(file_location, "w")
       request_params_file.puts(request_params.to_json)
       request_params_file.close
     end
@@ -34,28 +31,32 @@ module Framework
 
     def get_request_params
       if request_params_exist?
-        json = File.read(get_request_params_file_location)
+        json = File.read(file_location)
         request_params = JSON.parse(json)
       else
         request_params = {}
       end
       request_params
-    end
-
-    def get_request_params_file_location
-      request_params_dir = File.expand_path(@request_dir)
-
-      "#{request_params_dir}/request_data.json"
     end
 
     def get_request_params_of_request(app_name, request_id)
       if request_params_exist?
-        json = File.read("#{@automation_results_dir}/request/#{app_name}/#{request_id}")
+        json = File.read("#{BrpmAuto.automation_results_dir}/request/#{app_name}/#{request_id}")
         request_params = JSON.parse(json)
       else
         request_params = {}
       end
       request_params
     end
+
+    def file_location
+      "#{@request_dir || BrpmAuto.request_dir}/request_data.json"
     end
+
+    private
+
+      def request_params_exist?
+        File.exist?(file_location)
+      end
+  end
 end

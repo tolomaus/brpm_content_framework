@@ -5,7 +5,7 @@ require 'torquebox-messaging'
 require 'xmlsimple'
 require "#{File.dirname(__FILE__)}/../../modules/framework/bootstrap"
 
-Logger.initialize({ "log_file" => ENV["EVENT_HANDLER_LOG_FILE"] })
+Logger.setup(ENV["EVENT_HANDLER_LOG_FILE"])
 
 host = ENV["EVENT_HANDLER_BRPM_HOST"]
 port = ENV["EVENT_HANDLER_MESSAGING_PORT"]

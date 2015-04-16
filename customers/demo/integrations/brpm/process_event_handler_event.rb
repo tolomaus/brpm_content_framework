@@ -1,9 +1,9 @@
-require "brpm/lib/brpm_rest_api"
-require "jira/lib/jira_rest_api"
+BrpmAuto.require_module "brpm"
+BrpmAuto.require_module "jira"
 require "#{File.dirname(__FILE__)}/../../jira_mappings"
 
 def process_event(event)
-  @brpm_client = Brpm::Client.new("http://#{ENV["EVENT_HANDLER_BRPM_HOST"]}:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm", ENV["EVENT_HANDLER_BRPM_TOKEN"])
+  BrpmRest.setup("http://#{ENV["EVENT_HANDLER_BRPM_HOST"]}:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm", ENV["EVENT_HANDLER_BRPM_TOKEN"])
 
   if event.has_key?("request")
     Logger.log  "The event is for a request #{event["event"][0]}..."
@@ -89,10 +89,6 @@ end
 #################################
 # BRPM
 
-def get_brpm_client
-  Brpm::Client.new("http://#{ENV["EVENT_HANDLER_BRPM_HOST"]}:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm", ENV["EVENT_HANDLER_BRPM_TOKEN"])
-end
-
 def process_app_release_event(request)
   release_request_stage_name = "Release"
   release_request_environment_name = "development"
@@ -110,7 +106,7 @@ def process_app_release_event(request)
 
       if stage_name == deployment_request_stage_name
         Logger.log "Creating an app release request for plan '#{plan_name}' and app '#{app_name}' ..."
-        get_brpm_client.create_request_for_plan_from_template(plan_id, release_request_stage_name, "#{release_request_template_prefix} #{app_name}", release_request_name, release_request_environment_name, true)
+        BrpmRest.create_request_for_plan_from_template(plan_id, release_request_stage_name, "#{release_request_template_prefix} #{app_name}", release_request_name, release_request_environment_name, true)
       end
     end
   end
@@ -134,12 +130,12 @@ def update_tickets_in_jira_by_request(request)
   params["request_id"] = request["id"][0]["content"]
 
   Logger.log  "Getting the stage of this request..."
-  stage = get_brpm_client.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
+  stage = BrpmRest.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
 
   Logger.log "Getting the target status for the issues in JIRA..."
   params["target_issue_status"] = map_stage_to_issue_status(stage_name)
 
-  execute_script_from_module("jira", "transition_issues_for_request", params)
+  BrpmAuto.execute_script_from_module("jira", "transition_issues_for_request", params)
 end
 
 def update_tickets_in_jira_by_run(run)
@@ -147,12 +143,12 @@ def update_tickets_in_jira_by_run(run)
   params["run_id"] = run["id"][0]["content"]
 
   Logger.log  "Getting the stage of this run..."
-  stage = get_brpm_client.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
+  stage = BrpmRest.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
 
   Logger.log "Getting the target status for the issues in JIRA..."
   params["target_issue_status"] = map_stage_to_issue_status(stage["name"])
 
-  execute_script_from_module("jira", "transition_issues_for_run", params)
+  BrpmAuto.execute_script_from_module("jira", "transition_issues_for_run", params)
 end
 
 def create_release_in_jira(plan)
@@ -160,7 +156,7 @@ def create_release_in_jira(plan)
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["release_name"] = plan["name"][0]
 
-  execute_script_from_module("jira", "create_release", params)
+  BrpmAuto.execute_script_from_module("jira", "create_release", params)
 end
 
 def update_release_in_jira(old_plan, new_plan)
@@ -169,7 +165,7 @@ def update_release_in_jira(old_plan, new_plan)
   params["old_release_name"] = old_plan["name"][0]
   params["new_release_name"] = new_plan["name"][0]
 
-  execute_script_from_module("jira", "update_release", params)
+  BrpmAuto.execute_script_from_module("jira", "update_release", params)
 end
 
 def delete_release_in_jira(plan)
@@ -177,6 +173,6 @@ def delete_release_in_jira(plan)
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["release_name"] = plan["name"][0]
 
-  execute_script_from_module("jira", "delete_release", params)
+  BrpmAuto.execute_script_from_module("jira", "delete_release", params)
 end
 #################################

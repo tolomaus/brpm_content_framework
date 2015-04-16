@@ -41,19 +41,19 @@ module BsaRest
     end
 
     def self.bl_get(path, options = {})
-      rest_get("#{@url}/#{add_credentials(path)}", options)
+      Rest.get("#{@url}/#{add_credentials(path)}", options)
     end
 
     def self.bl_post(path, data, options = {})
-      rest_post("#{@url}/#{add_credentials(path)}", data, options)
+      Rest.post("#{@url}/#{add_credentials(path)}", data, options)
     end
 
     def self.bl_put(path, data, options = {})
-      rest_put("#{@url}/#{add_credentials(path)}", data, options)
+      Rest.put("#{@url}/#{add_credentials(path)}", data, options)
     end
 
     def self.bl_delete(path, options = {})
-      rest_delete("#{@url}/#{add_credentials(path)}", options)
+      Rest.delete("#{@url}/#{add_credentials(path)}", options)
     end
 
   end
