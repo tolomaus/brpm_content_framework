@@ -154,13 +154,16 @@ class BrpmAuto
       end
     end
 
-    def sub_tokens(script_params,var_string)
+    def substitute_tokens(var_string, params = nil)
+
       return var_string if var_string.nil?
+
+      searchable_params = params || @params
 
       prop_val = var_string.match('rpm{[^{}]*}')
       while ! prop_val.nil? do
-        raise "Property #{prop_val[0][4..-2]} doesn't exist" if script_params[prop_val[0][4..-2]].nil?
-        var_string = var_string.sub(prop_val[0],script_params[prop_val[0][4..-2]])
+        raise "Property #{prop_val[0][4..-2]} doesn't exist" if searchable_params[prop_val[0][4..-2]].nil?
+        var_string = var_string.sub(prop_val[0],searchable_params[prop_val[0][4..-2]])
         prop_val = var_string.match('rpm{[^{}]*}')
       end
       return var_string

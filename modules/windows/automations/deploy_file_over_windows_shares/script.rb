@@ -1,9 +1,9 @@
 require "windows/lib/samba"
 
 def execute_script(params)
-  repo_directory = sub_tokens(params, params["repo_directory"])
-  file_name = sub_tokens(params, params["file_name"])
-  target_server_directory = sub_tokens(params, params["target_server_directory"])
+  repo_directory = BrpmAuto.substitute_tokens(params["repo_directory"])
+  file_name = BrpmAuto.substitute_tokens(params["file_name"])
+  target_server_directory = BrpmAuto.substitute_tokens(params["target_server_directory"])
 
   Logger.log("Getting package #{repo_directory}/#{file_name} from the repo...")
   smbclient_get_file(

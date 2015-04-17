@@ -6,14 +6,14 @@ def execute_script(params)
   end
   server_group = params["server_group"]
 
-  target_type = first_defined(sub_tokens(params, params["target_type"]), "Server group")
-  target_path = first_defined(sub_tokens(params, params["target_path"]), "/Applications/#{params["application"]}/#{params["request_environment"]}/#{server_group}")
+  target_type = first_defined(BrpmAuto.substitute_tokens(params["target_type"]), "Server group")
+  target_path = first_defined(BrpmAuto.substitute_tokens(params["target_path"]), "/Applications/#{params["application"]}/#{params["request_environment"]}/#{server_group}")
 
-  deploy_job_name = first_defined(sub_tokens(params, params["deploy_job_name"]), "Deploy #{params["component"]} #{params["component_version"]} in #{environment} - #{Time.now.strftime("%Y-%m-%d %H:%M:%S")}")
-  deploy_job_group_path = first_defined(sub_tokens(params, params["deploy_job_group_path"]), "/Applications/#{params["application"]}")
+  deploy_job_name = first_defined(BrpmAuto.substitute_tokens(params["deploy_job_name"]), "Deploy #{params["component"]} #{params["component_version"]} in #{environment} - #{Time.now.strftime("%Y-%m-%d %H:%M:%S")}")
+  deploy_job_group_path = first_defined(BrpmAuto.substitute_tokens(params["deploy_job_group_path"]), "/Applications/#{params["application"]}")
 
-  depot_group_path = first_defined(sub_tokens(params, params["depot_group_path"]), "/Applications/#{params["application"]}/#{params["component"]}")
-  package_name = first_defined(sub_tokens(params, params["bl_package_name"]), params["component_version"])
+  depot_group_path = first_defined(BrpmAuto.substitute_tokens(params["depot_group_path"]), "/Applications/#{params["application"]}/#{params["component"]}")
+  package_name = first_defined(BrpmAuto.substitute_tokens(params["bl_package_name"]), params["component_version"])
 
   Logger.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
   session_id = BsaSoap.login

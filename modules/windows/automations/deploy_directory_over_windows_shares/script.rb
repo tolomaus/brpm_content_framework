@@ -3,10 +3,10 @@ require 'fileutils'
 
 def execute_script(params)
   raise "Repo directory is not provided" if params["repo_directory"].empty?
-  repo_directory = sub_tokens(params, params["repo_directory"])
+  repo_directory = BrpmAuto.substitute_tokens(params["repo_directory"])
 
   raise "Repo directory is not provided" if params["repo_directory"].empty?
-  target_server_directory = sub_tokens(params, params["target_server_directory"])
+  target_server_directory = BrpmAuto.substitute_tokens(params["target_server_directory"])
 
   temp_directory = "#{params["SS_output_dir"]}/package"
 
@@ -47,7 +47,7 @@ def execute_script(params)
 
       Logger.log("Substituting params in file #{file_path}...")
       file_content = File.read(file_absolute_path)
-      substituted_file_content = sub_tokens(params,file_content)
+      substituted_file_content = BrpmAuto.substitute_tokens(file_content)
       File.open(file_absolute_path, "w") {|file| file.puts substituted_file_content}
     end
   end

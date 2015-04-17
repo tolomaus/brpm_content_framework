@@ -1,10 +1,10 @@
 def execute_script(params)
-  bl_build_component_name = first_defined(sub_tokens(params, params["bl_build_component_name"]), "#{params["component"]} - build")
-  depot_group_path = first_defined(sub_tokens(params, params["depot_group_path"]), "/Applications/#{params["application"]}/#{params["component"]}")
-  package_name = first_defined(sub_tokens(params, params["bl_package_name"]), params["component_version"])
+  bl_build_component_name = first_defined(BrpmAuto.substitute_tokens(params["bl_build_component_name"]), "#{params["component"]} - build")
+  depot_group_path = first_defined(BrpmAuto.substitute_tokens(params["depot_group_path"]), "/Applications/#{params["application"]}/#{params["component"]}")
+  package_name = first_defined(BrpmAuto.substitute_tokens(params["bl_package_name"]), params["component_version"])
 
   Logger.log("Retrieving the key of the bl component of the build server #{bl_build_component_name}...")
-  bl_build_component = BsaRest::Component.get_component_by_name(bl_build_component_name)
+  bl_build_component = Component.get_component_by_name(bl_build_component_name)
 
   Logger.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
   session_id = BsaSoap.login

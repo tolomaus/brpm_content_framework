@@ -33,8 +33,8 @@ def execute_script(params)
   recipient_email_address = user["email"]
 
   params = params.merge(get_request_params)
-  subject = sub_tokens(params, params["subject"])
-  body = sub_tokens(params, params["body"].gsub('\n', "\n"))
+  subject = BrpmAuto.substitute_tokens(params["subject"], params)
+  body = BrpmAuto.substitute_tokens(params["body"].gsub('\n', "\n"), params)
 
   Logger.log "Sending notification to #{user["first_name"]} #{user["last_name"]} '#{subject}' ..."
   Mail.deliver do

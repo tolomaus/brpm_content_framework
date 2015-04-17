@@ -1,9 +1,9 @@
 require "bladelogic/lib/bl_rest/core"
 
-module BsaRest
-  class Component < Core
-    def self.get_component_by_name(component_name)
-      result = run_query("SELECT * FROM \"SystemObject/Component\" WHERE NAME equals \"#{component_name}\"")
+class Component
+  class << self
+    def get_component_by_name(component_name)
+      result = BsaRest.run_query("SELECT * FROM \"SystemObject/Component\" WHERE NAME equals \"#{component_name}\"")
 
       raise "BSA component '#{component_name}' not found" if result.empty?
 
