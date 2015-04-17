@@ -27,55 +27,48 @@ def extract_table_data(csv_content)
 end
 
 def execute_script(params)
-  BsaCompliance.disable_verbose_logging
-
-  bsa_base_url = params["SS_integration_dns"]
-  bsa_username = params["SS_integration_username"]
-  bsa_password = decrypt_string_with_prefix(params["SS_integration_password_enc"])
-  bsa_role = params["SS_integration_details"]["role"]
-
   Logger.log("Getting the server group from the step...")
   server_group = "/#{get_server_group_from_step_id(params["step_id"])}"
 
   patch_readiness_job_group = "/patch-process-management"
   patch_readiness_job_name = "readiness-job"
 
-  Logger.log("Logging on to Bladelogic instance #{bsa_base_url} with user #{bsa_username} and role #{bsa_role}...")
-  session_id = BsaCompliance.login_with_role(bsa_base_url, bsa_username, bsa_password, bsa_role)
+  Logger.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
+  session_id = BsaSoap.login
 
   Logger.log("Retrieving the job key of Patch Readiness job #{patch_readiness_job_group}/#{patch_readiness_job_name}...")
-  job_db_key = ComplianceJob.get_dbkey_by_group_and_name(bsa_base_url, session_id, {:group_name => patch_readiness_job_group, :job_name => patch_readiness_job_name})
+  job_db_key = ComplianceJob.get_dbkey_by_group_and_name(session_id, {:group_name => patch_readiness_job_group, :job_name => patch_readiness_job_name})
   Logger.log("Job key is #{job_db_key}.")
 
 #  Logger.log("Cleaning the servers from the Patch Readiness job...")
-#  job_db_key = Job.clear_target_servers(bsa_base_url, session_id, {:job_key => job_db_key})
+#  job_db_key = Job.clear_target_servers(session_id, {:job_key => job_db_key})
 
 #  Logger.log("Cleaning the server groups from the Patch Readiness job...")
-#  job_db_key = Job.clear_target_groups(bsa_base_url, session_id, {:job_key => job_db_key})
+#  job_db_key = Job.clear_target_groups(session_id, {:job_key => job_db_key})
 
   Logger.log("Executing the Patch Readiness job on server group #{server_group}...")
-  job_run_key = Job.execute_against_server_groups_for_run_id(bsa_base_url, session_id, {:job_key => job_db_key, :server_groups => server_group})
+  job_run_key = Job.execute_against_server_groups_for_run_id(session_id, {:job_key => job_db_key, :server_groups => server_group})
   Logger.log("Job run is #{job_run_key}.")
 
   Logger.log("Polling the Patch Readiness job until it is finished...")
   begin
     sleep(10)
-    is_still_running = JobRun.get_job_run_is_running_by_run_key(bsa_base_url, session_id, {:job_run_key => job_run_key})
+    is_still_running = JobRun.get_job_run_is_running_by_run_key(session_id, {:job_run_key => job_run_key})
   end while is_still_running
   Logger.log("The Patch Readiness job has finished.")
 
   Logger.log("Checking if the Patch Readiness job finished successfully...")
-  had_errors = JobRun.get_job_run_had_errors(bsa_base_url, session_id, {:job_run_key => job_run_key})
+  had_errors = JobRun.get_job_run_had_errors(session_id, {:job_run_key => job_run_key})
 
   had_errors ? Logger.log("WARNING: The Patch Readiness job had errors!") : Logger.log("The Patch Readiness job had no errors.")
   pack_response "job_status", had_errors ? "The job had errors" : "The job ran successfully"
 
   Logger.log("Retrieving the job run id from the job run key...")
-  job_run_id = JobRun.job_run_key_to_job_run_id(bsa_base_url, session_id, {:job_run_key => job_run_key})
+  job_run_id = JobRun.job_run_key_to_job_run_id(session_id, {:job_run_key => job_run_key})
 
   Logger.log("Retrieving the results from the job run id...")
   results_full_path = "#{params["SS_output_dir"]}/#{patch_readiness_job_name}_result.csv"
-  return_data = Utility.export_compliance_run(bsa_base_url, session_id, {
+  return_data = Utility.export_compliance_run(session_id, {
       :job_group_name => patch_readiness_job_group,
       :job_name => patch_readiness_job_name,
       :run_id => job_run_id,

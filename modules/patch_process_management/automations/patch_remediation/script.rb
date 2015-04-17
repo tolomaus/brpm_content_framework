@@ -9,15 +9,15 @@ require 'base64'
 require 'csv'
 require 'date'
 
-def retrieve_results(job, results_full_path, bsa_base_url, session_id, params)
+def retrieve_results(job, results_full_path, session_id, params)
   Logger.log("Removing trailing csv files in case this is a re-run...")
   `rm -f #{params["SS_output_dir"]}/*_result.csv`
 
   Logger.log("Retrieving the job run id from the job run key...")
-  job_run_id = JobRun.get_deploy_job_max_run_id(bsa_base_url, session_id, {:db_key_of_deploy_job => job["db_key"]})
+  job_run_id = JobRun.get_deploy_job_max_run_id(session_id, {:db_key_of_deploy_job => job["db_key"]})
 
   Logger.log("Retrieving the results from the job run id...")
-  return_data = Utility.export_deploy_script_run(bsa_base_url, session_id, {
+  return_data = Utility.export_deploy_script_run(session_id, {
       :job_group_name => job["group_name"],
       :job_name => job["name"],
       :run_id => job_run_id,
@@ -61,8 +61,6 @@ def execute_script(params)
   request_params = get_request_params()
   raise "No job key found for a Patch Analysis job. A Patch Analysis job must be executed before a Patch Remediation job." if !request_params.has_key?("patch_analysis_job_run_key") or request_params["patch_analysis_job_run_key"].nil?
 
-  BsaPatch.disable_verbose_logging
-
   bsa_base_url = params["SS_integration_dns"]
   bsa_username = params["SS_integration_username"]
   bsa_password = decrypt_string_with_prefix(params["SS_integration_password_enc"])
@@ -81,20 +79,20 @@ def execute_script(params)
   patch_remediation_job_template_group = patch_remediation_job_root_path
   patch_remediation_job_template_name = "#{phase}-job-template"
 
-  Logger.log("Logging on to Bladelogic instance #{bsa_base_url} with user #{bsa_username} and role #{bsa_role}...")
-  session_id = BsaPatch.login_with_role(bsa_base_url, bsa_username, bsa_password, bsa_role)
+  Logger.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
+  session_id = BsaSoap.login
 
   Logger.log("Retrieving the job key of the Patch Remediation #{phase} job template...")
-  job_template_db_key = DeployJob.get_dbkey_by_group_and_name(bsa_base_url, session_id, {:group_name => patch_remediation_job_template_group, :job_name => patch_remediation_job_template_name})
+  job_template_db_key = DeployJob.get_dbkey_by_group_and_name(session_id, {:group_name => patch_remediation_job_template_group, :job_name => patch_remediation_job_template_name})
 
   Logger.log("Creating a new folder for the Patch Remediation #{phase} job...")
-  JobGroup.create_group_with_parent_name(bsa_base_url, session_id, {:group_name => patch_remediation_job_group, :parent_group_name => patch_remediation_job_runs_path})
+  JobGroup.create_group_with_parent_name(session_id, {:group_name => patch_remediation_job_group, :parent_group_name => patch_remediation_job_runs_path})
 
   unless phase == "commit"
     wait_time = 30
     start_time = Time.now + wait_time
     Logger.log("Scheduling the #{phase} phase of the Patch Remediation #{phase} job template to start in #{wait_time} seconds (at #{start_time.strftime("%Y-%m-%d %H:%M:%S")})...")
-    DeployJob.set_phase_schedule_by_dbkey(bsa_base_url, session_id, {
+    DeployJob.set_phase_schedule_by_dbkey(session_id, {
         :job_run_key => job_template_db_key,
         :simulate_type => "AtTime",
         :simulate_date => start_time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -105,7 +103,7 @@ def execute_script(params)
   end
 
   Logger.log("Creating the Patch Remediation job #{patch_remediation_job_runs_path}/#{patch_remediation_job_group}/#{patch_remediation_job_name} for Patch Analysis job run key #{request_params["patch_analysis_job_run_key"]}...")
-  job_db_key = PatchRemediationJob.create_remediation_job_with_deploy_opts(bsa_base_url, session_id, {
+  job_db_key = PatchRemediationJob.create_remediation_job_with_deploy_opts(session_id, {
       :remediation_name => patch_remediation_job_name,
       :job_group_name => patch_remediation_job_run_path,
       :pa_job_run_key => request_params["patch_analysis_job_run_key"],
@@ -115,19 +113,19 @@ def execute_script(params)
       :deploy_job_key => job_template_db_key})
 
   Logger.log("Executing the Patch Remediation job...")
-  job_run_key = PatchRemediationJob.execute_job_and_wait(bsa_base_url, session_id, {:job_key => job_db_key})
+  job_run_key = PatchRemediationJob.execute_job_and_wait(session_id, {:job_key => job_db_key})
 
   unless phase =="commit"
     Logger.log("Polling the Patch Remediation job until it is finished...")
     begin
        sleep(wait_time)
-       is_still_running = JobRun.get_job_run_is_running_by_run_key(bsa_base_url, session_id, {:job_run_key => job_run_key})
+       is_still_running = JobRun.get_job_run_is_running_by_run_key(session_id, {:job_run_key => job_run_key})
     end while is_still_running
     Logger.log("The Patch Remediation job has finished.")
   end
 
   Logger.log("Checking if the Patch Remediation job finished successfully...")
-  had_errors = JobRun.get_job_run_had_errors(bsa_base_url, session_id, {:job_run_key => job_run_key})
+  had_errors = JobRun.get_job_run_had_errors(session_id, {:job_run_key => job_run_key})
 
   had_errors ? Logger.log("WARNING: The Patch Remediation job had errors!") : Logger.log("The Patch Remediation job had no errors.")
   pack_response "job_status", had_errors ? "The job had errors" : "The job ran successfully"
@@ -135,7 +133,7 @@ def execute_script(params)
   raise "The Patch Remediation job had errors!" if had_errors
 
   Logger.log("Retrieving all the generated jobs from group #{patch_remediation_job_run_path}...")
-  jobs = Job.list_all_by_group(bsa_base_url, session_id, {:group_name => patch_remediation_job_run_path})
+  jobs = Job.list_all_by_group(session_id, {:group_name => patch_remediation_job_run_path})
 
   job_names = jobs.split("\n")
   job_names = job_names.reject{|job| job == patch_remediation_job_name or job.include?(" batch deploy ")}.sort
@@ -148,8 +146,8 @@ def execute_script(params)
     jobs[job_name]["group_name"] = patch_remediation_job_run_path
 
     Logger.log("Retrieving the job run key of job #{job_name}...")
-    jobs[job_name]["db_key"] = DeployJob.get_dbkey_by_group_and_name(bsa_base_url, session_id, {:group_name => patch_remediation_job_run_path, :job_name => job_name})
-    jobs[job_name]["run_key"] = JobRun.find_last_run_key_by_job_key(bsa_base_url, session_id, {:job_key => jobs[job_name]["db_key"]})
+    jobs[job_name]["db_key"] = DeployJob.get_dbkey_by_group_and_name(session_id, {:group_name => patch_remediation_job_run_path, :job_name => job_name})
+    jobs[job_name]["run_key"] = JobRun.find_last_run_key_by_job_key(session_id, {:job_key => jobs[job_name]["db_key"]})
   end
 
   Logger.log("Polling the generated jobs until they are finished...")
@@ -157,11 +155,11 @@ def execute_script(params)
   begin
     finished_jobs = {}
     running_jobs.each do |key, job|
-      is_still_running = JobRun.get_job_run_is_running_by_run_key(bsa_base_url, session_id, {:job_run_key => job["run_key"]})
+      is_still_running = JobRun.get_job_run_is_running_by_run_key(session_id, {:job_run_key => job["run_key"]})
 
       unless is_still_running
         Logger.log("The job with run key #{job["run_key"]} has finished, retrieving its results...")
-        job["results"] = retrieve_results(job, "#{params["SS_output_dir"]}/#{job["name"]}_result.csv", bsa_base_url, session_id, params)
+        job["results"] = retrieve_results(job, "#{params["SS_output_dir"]}/#{job["name"]}_result.csv", session_id, params)
 
         finished_jobs[key] = job
       end

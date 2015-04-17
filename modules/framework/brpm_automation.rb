@@ -26,12 +26,6 @@ class BrpmAuto
       @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
       $LOAD_PATH << @modules_root_path
 
-      puts "@modules_root_path:"
-      puts @modules_root_path
-
-      puts "$LOAD_PATH:"
-      puts $LOAD_PATH
-
       require "framework/lib/logger"
 
       require_libs "framework", false

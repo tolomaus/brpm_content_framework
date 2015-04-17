@@ -1,11 +1,4 @@
 def execute_script(params)
-  BsaSoap.disable_verbose_logging
-
-  bsa_base_url = BrpmAuto.integration_server_settings.dns
-  bsa_username = BrpmAuto.integration_server_settings.username
-  bsa_password = BrpmAuto.integration_server_settings.password
-  bsa_role = BrpmAuto.integration_server_settings.details["role"]
-
   environment = params["request_environment"]
   unless params["server_group"] # can already be populated by the automated tests
     Logger.log("Getting the server group from the step...")
@@ -22,46 +15,46 @@ def execute_script(params)
   depot_group_path = first_defined(sub_tokens(params, params["depot_group_path"]), "/Applications/#{params["application"]}/#{params["component"]}")
   package_name = first_defined(sub_tokens(params, params["bl_package_name"]), params["component_version"])
 
-  Logger.log("Logging on to Bladelogic instance #{bsa_base_url} with user #{bsa_username} and role #{bsa_role}...")
-  session_id = BsaSoap.login_with_role(bsa_base_url, bsa_username, bsa_password, bsa_role)
-
+  Logger.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
+  session_id = BsaSoap.login
+  
   Logger.log("Retrieving the db key of blpackage #{depot_group_path}/#{package_name}...")
-  package_db_key = BlPackage.get_dbkey_by_group_and_name(bsa_base_url, session_id, {:parent_group => depot_group_path, :depot_group_path => package_name })
+  package_db_key = BlPackage.get_dbkey_by_group_and_name(session_id, {:parent_group => depot_group_path, :depot_group_path => package_name })
 
   Logger.log("Retrieving the id of job group #{deploy_job_group_path}...")
-  deploy_job_group_id = JobGroup.group_name_to_id(bsa_base_url, session_id, {:group_name => deploy_job_group_path })
+  deploy_job_group_id = JobGroup.group_name_to_id(session_id, {:group_name => deploy_job_group_path })
 
   Logger.log("Creating Deploy job #{deploy_job_group_path}/#{deploy_job_name}...")
-  job_db_key = DeployJob.create_deploy_job(bsa_base_url, session_id, {:job_name => deploy_job_name, :group_id => deploy_job_group_id, :package_db_key => package_db_key, :server_name => "localhost" })
+  job_db_key = DeployJob.create_deploy_job(session_id, {:job_name => deploy_job_name, :group_id => deploy_job_group_id, :package_db_key => package_db_key, :server_name => "localhost" })
 
   Logger.log("Cleaning the servers from the Deploy job...")
-  job_db_key = Job.clear_target_servers(bsa_base_url, session_id, {:job_key => job_db_key})
+  job_db_key = Job.clear_target_servers(session_id, {:job_key => job_db_key})
 
   if target_type == "Server group"
     Logger.log("Adding server group #{target_path} to the Deploy job...")
-    job_db_key = Job.add_target_group(bsa_base_url, session_id, {:job_key => job_db_key, :group_name => target_path})
+    job_db_key = Job.add_target_group(session_id, {:job_key => job_db_key, :group_name => target_path})
   elsif target_type == "Component group"
     Logger.log("Adding component group #{target_path} to the Deploy job...")
-    job_db_key = Job.add_target_component_group(bsa_base_url, session_id, {:job_key => job_db_key, :group_name => target_path})
+    job_db_key = Job.add_target_component_group(session_id, {:job_key => job_db_key, :group_name => target_path})
   end
 
   Logger.log("Executing the Deploy job...")
-  job_run_key = Job.execute_job_and_wait(bsa_base_url, session_id, {:job_key => job_db_key})
+  job_run_key = Job.execute_job_and_wait(session_id, {:job_key => job_db_key})
   Logger.log("Job run key is #{job_run_key}.")
 
   Logger.log("Checking if the job finished successfully...")
-  had_errors = JobRun.get_job_run_had_errors(bsa_base_url, session_id, {:job_run_key => job_run_key})
+  had_errors = JobRun.get_job_run_had_errors(session_id, {:job_run_key => job_run_key})
 
   had_errors ? Logger.log("WARNING: The job had errors!") : Logger.log("The job had no errors.")
   pack_response "job_status", had_errors ? "The job had errors" : "The job ran successfully"
 
   Logger.log("Retrieving the job run id from the job run key...")
-  job_run_id = JobRun.job_run_key_to_job_run_id(bsa_base_url, session_id, {:job_run_key => job_run_key})
+  job_run_id = JobRun.job_run_key_to_job_run_id(session_id, {:job_run_key => job_run_key})
 
   results_full_path = "#{params["SS_output_dir"]}/#{deploy_job_name}_result.csv"
 
   Logger.log("Retrieving the results from the job run id...")
-  return_data = Utility.export_deploy_script_run(bsa_base_url, session_id, {
+  return_data = Utility.export_deploy_script_run(session_id, {
                                                                  :job_group_name => deploy_job_group_path,
                                                                  :job_name => deploy_job_name,
                                                                  :run_id => job_run_id,

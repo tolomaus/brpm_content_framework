@@ -9,6 +9,7 @@ BrpmAuto.require_module "brpm"
 BrpmRest.setup('http://brpm-content.pulsar-it.be:8088/brpm', ENV["BRPM_API_TOKEN"])
 
 BrpmAuto.require_module "bladelogic"
+BsaSoap.setup("https://bladelogic.pulsar-it.be:9843", "BLAdmin", ENV["BLADELOGIC_PASSWORD"], "BLAdmins")
 
 def get_default_params
   params = {}
@@ -67,18 +68,18 @@ def cleanup_version_tags_for_app(app_name)
 end
 
 def cleanup_package path, name
-  BsaSoap.disable_verbose_logging
-
-  params = get_integration_settings_for_bladelogic
-
-  Logger.log("Logging on to Bladelogic instance #{params["SS_integration_dns"]} with user #{params["SS_integration_username"]} and role #{params["SS_integration_details"]["role"]}...")
-  session_id = BsaSoap.login_with_role(params["SS_integration_dns"], params["SS_integration_username"], params["SS_integration_password"], params["SS_integration_details"]["role"])
+  Logger.log("Logging on to Bladelogic...")
+  session_id = BsaSoap.login
 
   Logger.log("Deleting blpackage #{path}/#{name}...")
   begin
-    BlPackage.delete_blpackage_by_group_and_name(params["SS_integration_dns"], session_id, { :parent_group => path, :package_name => name })
-  rescue
-    Logger.log "assuming that the package didn't exist so all is fine."
+    BlPackage.delete_blpackage_by_group_and_name(session_id, { :parent_group => path, :package_name => name })
+  rescue Exception => ex
+    if ex.message =~ /Cannot find depot object by name/
+      Logger.log "assuming that the package didn't exist so all is fine."
+    else
+      raise ex
+    end
   end
 end
 
