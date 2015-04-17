@@ -26,6 +26,12 @@ class BrpmAuto
       @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
       $LOAD_PATH << @modules_root_path
 
+      puts "@modules_root_path:"
+      puts @modules_root_path
+
+      puts "$LOAD_PATH:"
+      puts $LOAD_PATH
+
       require "framework/lib/logger"
 
       require_libs "framework", false
@@ -222,7 +228,7 @@ class BrpmAuto
 
         automation_script_path = "#{modul}/resource_automations/#{name}.rb"
 
-        Logger.log "Loading the module's libraries..."
+        Logger.log "Loading the dependencies..."
         require_module(modul)
 
         Logger.log "Loading #{automation_script_path}..."
