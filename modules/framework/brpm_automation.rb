@@ -188,10 +188,10 @@ class BrpmAuto
         Logger.log ">>>>>>>>>>>>>> START automation #{name}"
         start_time = Time.now
 
-        automation_script_path = "#{modul}/automations/#{name}.rb"
-
         Logger.log "Loading the dependencies..."
         require_module(modul)
+
+        automation_script_path = "#{modul}/automations/#{name}.rb"
 
         Logger.log "Loading #{automation_script_path}..."
         load automation_script_path
@@ -226,10 +226,10 @@ class BrpmAuto
         Logger.log ">>>>>>>>>>>>>> START resource automation #{name}"
         start_time = Time.now
 
-        automation_script_path = "#{modul}/resource_automations/#{name}.rb"
-
         Logger.log "Loading the dependencies..."
         require_module(modul)
+
+        automation_script_path = "#{modul}/resource_automations/#{name}.rb"
 
         Logger.log "Loading #{automation_script_path}..."
         load automation_script_path
