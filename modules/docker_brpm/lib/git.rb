@@ -1,5 +1,5 @@
 def clone_git_repo(git_repo_name, output_dir)
-  Logger.log "Downloading the git repository for the application ..."
+  BrpmAuto.log "Downloading the git repository for the application ..."
 
   root_git_repo_dir = "#{output_dir}/git_repos"
 

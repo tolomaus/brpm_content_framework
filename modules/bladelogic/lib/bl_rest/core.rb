@@ -10,7 +10,7 @@ class BsaRest
     def run_query(query)
       path = "query?bquery=#{query}"
 
-      Logger.log "Running query #{path}..."
+      BrpmAuto.log "Running query #{path}..."
       result = bl_get(path)
       response = result["response"]
 

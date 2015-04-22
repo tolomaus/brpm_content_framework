@@ -68,15 +68,15 @@ def cleanup_version_tags_for_app(app_name)
 end
 
 def cleanup_package path, name
-  Logger.log("Logging on to Bladelogic...")
+  BrpmAuto.log("Logging on to Bladelogic...")
   session_id = BsaSoap.login
 
-  Logger.log("Deleting blpackage #{path}/#{name}...")
+  BrpmAuto.log("Deleting blpackage #{path}/#{name}...")
   begin
     BlPackage.delete_blpackage_by_group_and_name(session_id, { :parent_group => path, :package_name => name })
   rescue Exception => ex
     if ex.message =~ /Cannot find depot object by name/
-      Logger.log "assuming that the package didn't exist so all is fine."
+      BrpmAuto.log "assuming that the package didn't exist so all is fine."
     else
       raise ex
     end
@@ -84,5 +84,5 @@ def cleanup_package path, name
 end
 
 def pack_response key, value
-  Logger.log "pack_response: #{key}: #{value}"
+  BrpmAuto.log "pack_response: #{key}: #{value}"
 end

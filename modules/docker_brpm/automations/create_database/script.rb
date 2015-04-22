@@ -18,10 +18,10 @@ def execute_script(params)
     overwrite_existing_data = "0"
   end
 
-  Logger.log "Stopping dependent docker containers if necessary ..."
+  BrpmAuto.log "Stopping dependent docker containers if necessary ..."
   stop_running_containers_if_necessary(["/brpm_#{environment}", "/brpm_db_#{environment}"])
 
-  Logger.log "Creating the database ..."
+  BrpmAuto.log "Creating the database ..."
   run_docker_command("run --rm -e OVERWRITE_EXISTING_DATA=#{overwrite_existing_data} -v /home/ubuntu/docker_data/brpm_db_#{environment}:/data --name brpm_db_init_#{environment} bmc_devops/brpm_db_init:v4.3.01.06")
 end
 

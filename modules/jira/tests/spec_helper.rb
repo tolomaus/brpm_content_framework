@@ -38,30 +38,6 @@ def cleanup_request_data_file
   File.delete(file) if File.exist?(file) # TODO clean up
 end
 
-def cleanup_requests_and_plans_for_app(app_name)
-  app = BrpmRest.get_app_by_name(app_name)
-
-  requests = BrpmRest.get_requests_by({ "app_id" => app["id"]})
-
-  requests.each do |request|
-    BrpmRest.delete_request(request["id"]) unless request.has_key?("request_template")
-  end
-
-  plan_template = BrpmRest.get_plan_template_by_name("#{app_name} Release Plan")
-
-  plans = BrpmRest.get_plans_by({ "plan_template_id" => plan_template["id"]})
-  plans.each do |plan|
-    BrpmRest.cancel_plan(plan["id"])
-    BrpmRest.delete_plan(plan["id"])
-  end
-end
-
-def cleanup_version_tags_for_app(app_name)
-  app = BrpmRest.get_app_by_name(app_name)
-
-  version_tags = BrpmRest.get_version_tags_by({ "app_id" => app["id"]})
-
-  version_tags.each do |version_tag|
-    BrpmRest.delete_version_tag(version_tag["id"])
-  end
+def cleanup_release(release_name)
+  JiraRest.delete_option_for_dropdown_custom_field('10000', release_name)
 end

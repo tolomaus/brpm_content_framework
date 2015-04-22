@@ -12,14 +12,14 @@ def execute_ansible_role(role, server_group, ignore_error=false)
   - #{role}
 EOF
 
-  Logger.log "Creating playbook.yml..."
+  BrpmAuto.log "Creating playbook.yml..."
   file = File.open(playbook_file_path, 'w') {|f| f.write(playbook_content) }
 
   complete_command = "su ansib -c \"ansible-playbook #{playbook_file_path}\" 2>&1"
 
-  Logger.log complete_command
+  BrpmAuto.log complete_command
   output = `#{complete_command}`
-  Logger.log "\toutput: #{output}"
+  BrpmAuto.log "\toutput: #{output}"
 
   File.delete(playbook_file_path)
 
@@ -27,7 +27,7 @@ EOF
   unless exit_status == 0
     message = "The command exited with #{exit_status}."
     if ignore_error
-      Logger.log "\t#{message}"
+      BrpmAuto.log "\t#{message}"
     else
       raise(message)
     end

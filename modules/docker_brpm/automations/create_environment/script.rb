@@ -5,13 +5,13 @@ require "docker_brpm/lib/docker"
 def execute_script(params)
   request_params = get_request_params()
 
-  Logger.log "Creating the environment ..."
+  BrpmAuto.log "Creating the environment ..."
   environment = create_environment(request_params["instance_name"])
 
-  Logger.log "Linking the environment to the docker host ..."
+  BrpmAuto.log "Linking the environment to the docker host ..."
   link_environment_to_server(environment["id"], get_docker_server_name())
 
-  Logger.log "Linking the environment to the app ..."
+  BrpmAuto.log "Linking the environment to the app ..."
   link_environment_to_app(environment["id"], params["application"])
 end
 

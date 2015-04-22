@@ -12,7 +12,7 @@ def execute_script(params)
 
   FileUtils.copy("/software-repo/DockerizedBRPM/Application/#{application_version}/brpm.war", "#{docker_workspace}/source-files/")
 
-  Logger.log "Setting the version number to #{application_version} in the Dockerfile ..."
+  BrpmAuto.log "Setting the version number to #{application_version} in the Dockerfile ..."
 
   dockerfile_location = "#{docker_workspace}/Dockerfile"
   dockerfile_content = File.read(dockerfile_location)
@@ -22,6 +22,6 @@ def execute_script(params)
     file << dockerfile_content
   end
 
-  Logger.log "Creating the image ..."
+  BrpmAuto.log "Creating the image ..."
   run_docker_command("build --rm -t bmc_devops/brpm:v#{application_version} #{docker_workspace}")
 end

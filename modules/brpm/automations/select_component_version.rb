@@ -5,7 +5,7 @@ def execute_script(params)
 
   component_versions[params["component"]] = params["component_version"]
 
-  Logger.log "Adding component version '#{params["component"]}' '#{params["component_version"]}' to the request_params..."
+  BrpmAuto.log "Adding component version '#{params["component"]}' '#{params["component_version"]}' to the request_params..."
   RequestParams.add_request_param("component_versions", component_versions)
 end
 

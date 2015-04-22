@@ -10,9 +10,9 @@ def execute_script(params)
     environment = params["SS_environment"]
   end
 
-  Logger.log "Stopping dependent docker containers if necessary ..."
+  BrpmAuto.log "Stopping dependent docker containers if necessary ..."
   stop_running_containers_if_necessary(["brpm_#{environment}", "brpm_db_#{environment}"])
 
-  Logger.log "Running the database container ..."
+  BrpmAuto.log "Running the database container ..."
   run_docker_command("run -d --restart=always -v /home/ubuntu/docker_data/brpm_db_#{environment}:/var/lib/pgsql/data --name brpm_db_#{environment} bmc_devops/brpm_db:v1.0.0")
 end

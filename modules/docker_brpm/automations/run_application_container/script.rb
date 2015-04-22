@@ -23,9 +23,9 @@ def execute_script(params)
   end
   raise("No port specified.") if port.nil?
 
-  Logger.log "Stopping dependent docker containers if necessary ..."
+  BrpmAuto.log "Stopping dependent docker containers if necessary ..."
   stop_running_containers_if_necessary(["brpm_#{environment}"])
 
-  Logger.log "Running the application container ..."
+  BrpmAuto.log "Running the application container ..."
   run_docker_command("run -d --restart=always -p #{port}:8080 --link brpm_db_#{environment}:db --name brpm_#{environment} bmc_devops/brpm:v#{application_version}")
 end

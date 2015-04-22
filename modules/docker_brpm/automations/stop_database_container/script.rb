@@ -10,6 +10,6 @@ def execute_script(params)
     environment = params["SS_environment"]
   end
 
-  Logger.log "Stopping the database container ..."
+  BrpmAuto.log "Stopping the database container ..."
   stop_running_containers_if_necessary(["brpm_db_#{environment}"])
 end

@@ -3,18 +3,49 @@ class BrpmAuto
 
   class << self
     attr_reader :params
-    attr_reader :base_brpm_url
-    attr_reader :base_brpm_api_token
+
+    attr_reader :application
+    attr_reader :component
+    attr_reader :component_version
+
+    attr_reader :request_id
+    attr_reader :request_name
+    attr_reader :request_number
+    attr_reader :request_environment
+    attr_reader :request_scheduled_at
+    attr_reader :request_started_at
+    attr_reader :request_status
+
+    attr_reader :request_plan
+    attr_reader :request_plan_id
+    attr_reader :request_plan_member_id
+    attr_reader :request_plan_stage
+
+    attr_reader :request_run_id
+    attr_reader :request_run_name
+
+    attr_reader :step_id
+    attr_reader :step_number
+    attr_reader :step_name
+    attr_reader :step_description
+    attr_reader :step_estimate
+
+    attr_reader :step_version
+    attr_reader :step_version_artifact_url
+
+    attr_reader :servers
+
+    attr_reader :ticket_ids
+    attr_reader :tickets_foreign_ids
 
     attr_reader :step_dir
     attr_reader :request_dir
     attr_reader :automation_results_dir
 
-    attr_reader :request_id
-    attr_reader :step_id
-    attr_reader :step_number
-    attr_reader :step_name
     attr_reader :run_key
+
+    attr_reader :base_brpm_url
+    attr_reader :base_brpm_api_token
 
     attr_reader :integration_server_settings
 
@@ -22,7 +53,7 @@ class BrpmAuto
 
     attr_reader :modules_root_path
 
-    def setup
+    def init
       @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
       $LOAD_PATH << @modules_root_path
 
@@ -31,62 +62,51 @@ class BrpmAuto
       require_libs "framework", false
     end
 
-    def set_params(params)
+    def setup(params)
       @params = params
-      @base_brpm_url = params["SS_base_url"]
-      @base_brpm_api_token = params["SS_api_token"]
+
+      @application = params["application"]
+      @component = params["component"]
+      @component_version = params["component_version"]
+
+      @request_id = params["request_id"]
+      @request_name = params["request_name"]
+      @request_number = params["request_number"]
+      @request_environment = params["request_environment"]
+      @request_scheduled_at = params["request_scheduled_at"]
+      @request_started_at = params["request_started_at"]
+      @request_status = params["request_status"]
+
+      @request_plan = params["request_plan"]
+      @request_plan_id = params["request_plan_id"]
+      @request_plan_member_id = params["request_plan_member_id"]
+      @request_plan_stage = params["request_plan_stage"]
+
+      @request_run_id = params["request_run_id"]
+      @request_run_name = params["request_run_name"]
+
+      @step_id = params["step_id"]
+      @step_number = params["step_number"]
+      @step_name = params["step_name"]
+      @step_description = params["step_description"]
+      @step_estimate = params["step_estimate"]
+
+      @step_version = params["step_version"]
+      @step_version_artifact_url = params["step_version_artifact_url"]
+
+      @integration_server_settings = get_server_list
+
+      @ticket_ids = params["ticket_ids"]
+      @tickets_foreign_ids = params["tickets_foreign_ids"]
 
       @step_dir = params["SS_output_dir"]
       @request_dir = File.expand_path("..", @step_dir)
       @automation_results_dir = params["SS_automation_results_dir"] || File.expand_path("../../../..", @step_dir)
 
-      @request_id = params["request_id"]
-      @step_id = params["step_id"]
-      @step_number = params["step_number"]
-      @step_name = params["step_name"]
       @run_key = params["SS_run_key"]
 
-
-=begin
-
-      application: 'E-Finance'
-      component: 'EF - .NET web front end'
-      component_version: '3.2.20'
-
-      request_environment: 'development'
-      request_id: '1953'
-      request_name: 'Deploy E-Finance'
-      request_number: '1953'
-      request_plan: 'E-Finance Release 2015 04'
-      request_plan_id: '114'
-      request_plan_member_id: '427'
-      request_plan_stage: 'Development'
-      request_run_id: ''
-      request_run_name: ''
-      request_scheduled_at: ''
-      request_started_at: '2015-04-14 07:39:54 -0500'
-      request_status: 'started'
-
-      server1000_name: 'EF - .NET web server - development'
-      server1001_dns: ''
-      server1002_ip_address: ''
-      server1003_os_platform: ''
-      servers: 'EF - .NET web server - development'
-
-      step_description: ''
-      step_estimate: '5'
-      step_id: '7738'
-      step_name: 'Deploy .NET web front end'
-      step_number: '9'
-
-      step_version: '3.2.20'
-      step_version_artifact_url: ''
-
-      ticket_ids: ''
-      tickets_foreign_ids: ''
-=end
-
-
+      @base_brpm_url = params["SS_base_url"]
+      @base_brpm_api_token = params["SS_api_token"]
 
       if params["SS_integration_dns"]
         @integration_server_settings = IntegrationServerSettings.new(
@@ -100,27 +120,100 @@ class BrpmAuto
       @debug = params["debug"] == "true"
     end
 
+    def execute_script_from_module(modul, name, params)
+      begin
+        setup(params)
+
+        BrpmAuto.log ""
+        BrpmAuto.log ">>>>>>>>>>>>>> START automation #{name}"
+        start_time = Time.now
+
+        BrpmAuto.log "Loading the dependencies..."
+        require_module(modul)
+
+        automation_script_path = "#{modul}/automations/#{name}.rb"
+
+        BrpmAuto.log "Loading #{automation_script_path}..."
+        load automation_script_path
+
+        if defined?(execute_script)
+          BrpmAuto.log "Calling execute_script(params)..."
+          execute_script(params)
+        end
+
+      rescue Exception => e
+        BrpmAuto.log_error "#{e}"
+        BrpmAuto.log e.backtrace.join("\n\t")
+
+        raise e
+      ensure
+        stop_time = Time.now
+        duration = 0
+        duration = stop_time - start_time unless start_time.nil?
+
+        BrpmAuto.log ">>>>>>>>>>>>>> STOP automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
+        BrpmAuto.log ""
+
+        write_to(File.read(Logger.get_step_run_log_file_path)) if defined? write_to
+      end
+    end
+
+    def execute_resource_automation_script_from_module(modul, name, params, parent_id, offset, max_records)
+      begin
+        setup(params)
+
+        BrpmAuto.log ""
+        BrpmAuto.log ">>>>>>>>>>>>>> START resource automation #{name}"
+        start_time = Time.now
+
+        BrpmAuto.log "Loading the dependencies..."
+        require_module(modul)
+
+        automation_script_path = "#{modul}/resource_automations/#{name}.rb"
+
+        BrpmAuto.log "Loading #{automation_script_path}..."
+        load automation_script_path
+
+        BrpmAuto.log "Calling execute_resource_automation_script(params, parent_id, offset, max_records)..."
+        execute_resource_automation_script(params, parent_id, offset, max_records)
+
+      rescue Exception => e
+        BrpmAuto.log_error "#{e}"
+        BrpmAuto.log e.backtrace.join("\n\t")
+
+        raise e
+      ensure
+        stop_time = Time.now
+        duration = stop_time - start_time
+
+        BrpmAuto.log ">>>>>>>>>>>>>> STOP resource automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
+        BrpmAuto.log ""
+
+        write_to(File.read(Logger.get_step_run_log_file_path)) if defined? write_to
+      end
+    end
+
     def require_libs(modul, log = true)
       lib_path = "#{@modules_root_path}/#{modul}/lib/**/*.rb"
       Dir[lib_path].each do |file|
         if File.file?(file)
-          Logger.log "Loading #{file}..." if log
+          BrpmAuto.log "Loading #{file}..." if log
           require file
         end
       end
     end
 
     def require_module(modul)
-      Logger.log "Loading the module's own libraries..."
+      BrpmAuto.log "Loading the module's own libraries..."
       require_libs(modul)
 
       module_config_file_path = "#{modul}/config.yml"
       if File.exist?(module_config_file_path)
         module_config = YAML.load(module_config_file_path)
         if module_config.has_key?["dependencies"] and module_config["dependencies"].count > 0
-          Logger.log "Loading the dependent modules' libraries..."
+          BrpmAuto.log "Loading the dependent modules' libraries..."
           module_config["dependencies"].each do |k, v|
-            Logger.log "Loading module #{k}'s libraries..."
+            BrpmAuto.log "Loading module #{k}'s libraries..."
             require_libs(k)
           end
         end
@@ -145,8 +238,8 @@ class BrpmAuto
 
       loggable_command = privatize(escaped_command, sensitive_data)
 
-      Logger.log loggable_command
-      Logger.log `#{escaped_command}`
+      BrpmAuto.log loggable_command
+      BrpmAuto.log `#{escaped_command}`
 
       exit_status = $?.exitstatus
       unless exit_status == 0
@@ -177,79 +270,36 @@ class BrpmAuto
       end
     end
 
-    def execute_script_from_module(modul, name, params)
-      begin
-        set_params(params)
+    def get_server_list(params = nil)
+      params ||= @params
 
-        Logger.log ""
-        Logger.log ">>>>>>>>>>>>>> START automation #{name}"
-        start_time = Time.now
-
-        Logger.log "Loading the dependencies..."
-        require_module(modul)
-
-        automation_script_path = "#{modul}/automations/#{name}.rb"
-
-        Logger.log "Loading #{automation_script_path}..."
-        load automation_script_path
-
-        if defined?(execute_script)
-          Logger.log "Calling execute_script(params)..."
-          execute_script(params)
+      rxp = /server\d+_/
+      slist = {}
+      lastcur = -1
+      curname = ""
+      params.sort.reject{ |k| k[0].scan(rxp).empty? }.each_with_index do |server, idx|
+        cur = (server[0].scan(rxp)[0].gsub("server","").to_i * 0.001).round * 1000
+        if cur == lastcur
+          prop = server[0].gsub(rxp, "")
+          slist[curname][prop] = server[1]
+        else # new server
+          lastcur = cur
+          curname = server[1].chomp("0")
+          slist[curname] = {}
         end
-
-      rescue Exception => e
-        Logger.log_error "#{e}"
-        Logger.log e.backtrace.join("\n\t")
-
-        raise e
-      ensure
-        stop_time = Time.now
-        duration = 0
-        duration = stop_time - start_time unless start_time.nil?
-
-        Logger.log ">>>>>>>>>>>>>> STOP automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
-        Logger.log ""
-
-        write_to(File.read(Logger.get_step_run_log_file_path)) if defined? write_to
       end
-    end
-
-    def execute_resource_automation_script_from_module(modul, name, params, parent_id, offset, max_records)
-      begin
-        set_params(params)
-
-        Logger.log ""
-        Logger.log ">>>>>>>>>>>>>> START resource automation #{name}"
-        start_time = Time.now
-
-        Logger.log "Loading the dependencies..."
-        require_module(modul)
-
-        automation_script_path = "#{modul}/resource_automations/#{name}.rb"
-
-        Logger.log "Loading #{automation_script_path}..."
-        load automation_script_path
-
-        Logger.log "Calling execute_resource_automation_script(params, parent_id, offset, max_records)..."
-        execute_resource_automation_script(params, parent_id, offset, max_records)
-
-      rescue Exception => e
-        Logger.log_error "#{e}"
-        Logger.log e.backtrace.join("\n\t")
-
-        raise e
-      ensure
-        stop_time = Time.now
-        duration = stop_time - start_time
-
-        Logger.log ">>>>>>>>>>>>>> STOP resource automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
-        Logger.log ""
-
-        write_to(File.read(Logger.get_step_run_log_file_path)) if defined? write_to
-      end
+      return slist
     end
   end
 
-  self.setup
+  def setup_logger(log_file)
+    Logger.setup(log_file)
+  end
+
+  def log(message)
+    BrpmAuto.log(message)
+  end
+
+  self.init
 end
+

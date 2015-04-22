@@ -5,7 +5,7 @@ def execute_script(params)
   file_name = BrpmAuto.substitute_tokens(params["file_name"])
   target_server_directory = BrpmAuto.substitute_tokens(params["target_server_directory"])
 
-  Logger.log("Getting package #{repo_directory}/#{file_name} from the repo...")
+  BrpmAuto.log("Getting package #{repo_directory}/#{file_name} from the repo...")
   smbclient_get_file(
       params["repo_server_name"],
       params["repo_server_share"],
@@ -19,7 +19,7 @@ def execute_script(params)
   servers = get_server_list(params)
 
   servers.each do |server|
-    Logger.log("Putting package #{repo_directory}/#{file_name} to server #{server[0]}...")
+    BrpmAuto.log("Putting package #{repo_directory}/#{file_name} to server #{server[0]}...")
     smbclient_put_file(
         server[1]["ip_address"],
         server[1]["deploy_share_name"],

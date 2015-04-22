@@ -127,7 +127,7 @@ class BsaSoap
     end
 
     def execute_cli_with_attachments(session_id, namespace, command, args, payload)
-      Logger.log("blcli #{namespace} #{command} #{args.join(" ")}")
+      BrpmAuto.log("blcli #{namespace} #{command} #{args.join(" ")}")
 
       client = Savon.client("#{get_url}#{CLI_WSDL}") do |wsdl, http|
         http.auth.ssl.verify_mode = :none
@@ -149,7 +149,7 @@ class BsaSoap
     end
 
     def execute_cli_with_param_list(session_id, namespace, command, args = [])
-      Logger.log("blcli #{namespace} #{command} #{args.join(" ")}")
+      BrpmAuto.log("blcli #{namespace} #{command} #{args.join(" ")}")
 
       client = Savon.client("#{get_url}#{CLI_WSDL}") do |wsdl, http|
         http.auth.ssl.verify_mode = :none

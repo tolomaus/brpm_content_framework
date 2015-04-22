@@ -1,7 +1,7 @@
 def execute_script(params)
   environment = params["request_environment"]
   unless params["server_group"] # can already be populated by the automated tests
-    Logger.log("Getting the server group from the step...")
+    BrpmAuto.log("Getting the server group from the step...")
     params["server_group"] = BrpmRest.get_server_group_from_step_id(params["step_id"])
   end
   server_group = params["server_group"]
@@ -15,45 +15,45 @@ def execute_script(params)
   depot_group_path = first_defined(BrpmAuto.substitute_tokens(params["depot_group_path"]), "/Applications/#{params["application"]}/#{params["component"]}")
   package_name = first_defined(BrpmAuto.substitute_tokens(params["bl_package_name"]), params["component_version"])
 
-  Logger.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
+  BrpmAuto.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
   session_id = BsaSoap.login
   
-  Logger.log("Retrieving the db key of blpackage #{depot_group_path}/#{package_name}...")
+  BrpmAuto.log("Retrieving the db key of blpackage #{depot_group_path}/#{package_name}...")
   package_db_key = BlPackage.get_dbkey_by_group_and_name(session_id, {:parent_group => depot_group_path, :depot_group_path => package_name })
 
-  Logger.log("Retrieving the id of job group #{deploy_job_group_path}...")
+  BrpmAuto.log("Retrieving the id of job group #{deploy_job_group_path}...")
   deploy_job_group_id = JobGroup.group_name_to_id(session_id, {:group_name => deploy_job_group_path })
 
-  Logger.log("Creating Deploy job #{deploy_job_group_path}/#{deploy_job_name}...")
+  BrpmAuto.log("Creating Deploy job #{deploy_job_group_path}/#{deploy_job_name}...")
   job_db_key = DeployJob.create_deploy_job(session_id, {:job_name => deploy_job_name, :group_id => deploy_job_group_id, :package_db_key => package_db_key, :server_name => "localhost" })
 
-  Logger.log("Cleaning the servers from the Deploy job...")
+  BrpmAuto.log("Cleaning the servers from the Deploy job...")
   job_db_key = Job.clear_target_servers(session_id, {:job_key => job_db_key})
 
   if target_type == "Server group"
-    Logger.log("Adding server group #{target_path} to the Deploy job...")
+    BrpmAuto.log("Adding server group #{target_path} to the Deploy job...")
     job_db_key = Job.add_target_group(session_id, {:job_key => job_db_key, :group_name => target_path})
   elsif target_type == "Component group"
-    Logger.log("Adding component group #{target_path} to the Deploy job...")
+    BrpmAuto.log("Adding component group #{target_path} to the Deploy job...")
     job_db_key = Job.add_target_component_group(session_id, {:job_key => job_db_key, :group_name => target_path})
   end
 
-  Logger.log("Executing the Deploy job...")
+  BrpmAuto.log("Executing the Deploy job...")
   job_run_key = Job.execute_job_and_wait(session_id, {:job_key => job_db_key})
-  Logger.log("Job run key is #{job_run_key}.")
+  BrpmAuto.log("Job run key is #{job_run_key}.")
 
-  Logger.log("Checking if the job finished successfully...")
+  BrpmAuto.log("Checking if the job finished successfully...")
   had_errors = JobRun.get_job_run_had_errors(session_id, {:job_run_key => job_run_key})
 
-  had_errors ? Logger.log("WARNING: The job had errors!") : Logger.log("The job had no errors.")
+  had_errors ? BrpmAuto.log("WARNING: The job had errors!") : BrpmAuto.log("The job had no errors.")
   pack_response "job_status", had_errors ? "The job had errors" : "The job ran successfully"
 
-  Logger.log("Retrieving the job run id from the job run key...")
+  BrpmAuto.log("Retrieving the job run id from the job run key...")
   job_run_id = JobRun.job_run_key_to_job_run_id(session_id, {:job_run_key => job_run_key})
 
   results_full_path = "#{params["SS_output_dir"]}/#{deploy_job_name}_result.csv"
 
-  Logger.log("Retrieving the results from the job run id...")
+  BrpmAuto.log("Retrieving the results from the job run id...")
   return_data = Utility.export_deploy_script_run(session_id, {
                                                                  :job_group_name => deploy_job_group_path,
                                                                  :job_name => deploy_job_name,
@@ -65,7 +65,7 @@ def execute_script(params)
     f.puts(results_content)
   end
 
-  Logger.log("Parsing the results...")
+  BrpmAuto.log("Parsing the results...")
   # As this export contains "embedded" double quotes it is not possible to parse it with the CSV library
   log_lines = results_content.split("\n")[6..-1]
   log_lines.select! { |log| !log.start_with?("run level log,") }

@@ -10,7 +10,7 @@ def execute_script(params)
 
   docker_workspace = clone_git_repo("docker_brpm_db_init", params["SS_output_dir"])
 
-  Logger.log "Setting the the base image to bmc_devops/brpm:v#{application_version} in the Dockerfile ..."
+  BrpmAuto.log "Setting the the base image to bmc_devops/brpm:v#{application_version} in the Dockerfile ..."
 
   dockerfile_location = "#{docker_workspace}/Dockerfile"
   dockerfile_content = File.read(dockerfile_location)
@@ -20,6 +20,6 @@ def execute_script(params)
     file << dockerfile_content
   end
 
-  Logger.log "Creating the image ..."
+  BrpmAuto.log "Creating the image ..."
   run_docker_command("build --rm -t bmc_devops/brpm_db_init:v#{application_version} #{docker_workspace}")
 end

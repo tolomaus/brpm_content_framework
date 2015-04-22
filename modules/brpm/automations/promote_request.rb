@@ -12,13 +12,13 @@ end
 def step_has_incremental_deployment(correction_source_step, source_steps_with_same_name)
   incremental_deployment = false
   if source_steps_with_same_name.count > 1
-    Logger.log "Already multiple steps with the same name, this means that it is a step that has a component with incremental deploy."
+    BrpmAuto.log "Already multiple steps with the same name, this means that it is a step that has a component with incremental deploy."
     incremental_deployment = true
   else
     if !source_steps_with_same_name.first["component"].nil? and !correction_source_step["component"].nil?
       if source_steps_with_same_name.first["component"]["id"] == correction_source_step["component"]["id"]
         if !source_steps_with_same_name.first["version_tag"].nil? and !correction_source_step["version_tag"].nil?
-          Logger.log "Verifying if the associated component '#{correction_source_step["component"]["name"]}' uses incremental deployment ..."
+          BrpmAuto.log "Verifying if the associated component '#{correction_source_step["component"]["name"]}' uses incremental deployment ..."
           component = BrpmRest.get_component_by_id(correction_source_step["component"]["id"])
           incremental_deployment = (component.has_key?("properties") and component["properties"].any? { |property| property["name"] == "incremental_deployment" })
 
@@ -34,38 +34,38 @@ def step_has_incremental_deployment(correction_source_step, source_steps_with_sa
 end
 
 def merge_source_request_steps(source_requests)
-  Logger.log "Getting the step details of the initial request ..."
+  BrpmAuto.log "Getting the step details of the initial request ..."
   source_steps = source_requests.first["steps"].map { |source_step_summary| BrpmRest.get_step_by_id(source_step_summary["id"]) }
                                               .sort_by { |step| step["number"].to_f }
 
   #TODO: use work tasks to find the first post-deploy step
   post_deploy_step = source_steps.find { |step| step["name"] == "Post-deploy" }
 
-  Logger.log "Merging the correction requests with the original request ..."
+  BrpmAuto.log "Merging the correction requests with the original request ..."
   source_requests[1..source_requests.count].each do |source_request|
-    Logger.log "Merging the steps from correction request #{source_request["id"]} - #{source_request["name"] || "<no name>"} (#{source_request["steps"].count} steps)"
+    BrpmAuto.log "Merging the steps from correction request #{source_request["id"]} - #{source_request["name"] || "<no name>"} (#{source_request["steps"].count} steps)"
     source_request["steps"].sort_by { |step| step["number"].to_f }.each do |correction_source_step_summary|
       correction_source_step = BrpmRest.get_step_by_id(correction_source_step_summary["id"])
-      Logger.log "Merging step '#{correction_source_step["name"]}' ..."
+      BrpmAuto.log "Merging step '#{correction_source_step["name"]}' ..."
 
       source_steps_with_same_name = source_steps.find_all { |source_step| source_step["name"] == correction_source_step["name"] }
 
       if source_steps_with_same_name.count == 0
-        Logger.log "No steps yet with the same name, so adding this step to the list ..."
+        BrpmAuto.log "No steps yet with the same name, so adding this step to the list ..."
         index = source_steps.index(post_deploy_step)
         source_steps.insert(index, correction_source_step)
         next
       end
 
-      Logger.log "Verifying if the step has a component with incremental deployment ..."
+      BrpmAuto.log "Verifying if the step has a component with incremental deployment ..."
       incremental_deployment = step_has_incremental_deployment(correction_source_step, source_steps_with_same_name)
 
       if incremental_deployment
-        Logger.log "This step has a component with incremental deployment so adding it to the list ..."
+        BrpmAuto.log "This step has a component with incremental deployment so adding it to the list ..."
         index = source_steps.index(source_steps_with_same_name.last)
         source_steps.insert(index + 1, correction_source_step)
       else
-        Logger.log "Replacing the original step with this one in the list ..."
+        BrpmAuto.log "Replacing the original step with this one in the list ..."
         index = source_steps.index(source_steps_with_same_name.first)
         source_steps[index] = correction_source_step
       end
@@ -90,13 +90,13 @@ def create_target_request(initial_source_request, source_steps, params)
   target_request["environment"] = params["target_env"]
   target_request["execute_now"] = (params["execute_target_request"] == 'Yes') #TODO: doesn't work - maybe try starting it explicitly after creation
 
-  Logger.log "Creating the target request ..."
+  BrpmAuto.log "Creating the target request ..."
   target_request = BrpmRest.create_request_from_hash(target_request)
 
-  Logger.log "Creating the target steps ..."
+  BrpmAuto.log "Creating the target steps ..."
   procedure_mapping = {}
   source_steps.each do |source_step|
-    Logger.log "Creating target step for step #{source_step["name"]} ..."
+    BrpmAuto.log "Creating target step for step #{source_step["name"]} ..."
 
     target_step = {}
     if source_step["procedure"]
@@ -152,7 +152,7 @@ def create_target_request(initial_source_request, source_steps, params)
 
     target_step = BrpmRest.create_step_from_hash(target_step)
 
-    Logger.log "Created target step for step #{source_step["name"]} (#{target_step["position"]})."
+    BrpmAuto.log "Created target step for step #{source_step["name"]} (#{target_step["position"]})."
 
     procedure_mapping[source_step["id"]] = target_step["id"] if source_step["procedure"]
   end
@@ -161,28 +161,28 @@ def create_target_request(initial_source_request, source_steps, params)
 end
 
 def execute_script(params)
-  Logger.log "Getting the source requests ..."
+  BrpmAuto.log "Getting the source requests ..."
   source_requests = BrpmRest.get_source_requests(params)
 
   if params["request_template"].nil? || params["request_template"].empty?
     initial_source_request = source_requests.first
-    Logger.log "Found initial source request #{initial_source_request["id"]} - #{initial_source_request["name"] || "<no name>"}"
+    BrpmAuto.log "Found initial source request #{initial_source_request["id"]} - #{initial_source_request["name"] || "<no name>"}"
 
-    Logger.log "Merging the source request steps ..."
+    BrpmAuto.log "Merging the source request steps ..."
     source_steps = merge_source_request_steps(source_requests)
 
-    Logger.log "Creating the target request ..."
+    BrpmAuto.log "Creating the target request ..."
     target_request = create_target_request(initial_source_request, source_steps, params)
   else
     target_request = BrpmRest.create_request_for_plan_from_template(params["request_plan_id"], params["target_stage"], params["request_template"], params["request_name"].sub("Release", "Deploy"), params["target_env"], (params["execute_target_request"] == 'Yes'))
   end
 
-  Logger.log "Moving the source requests to the stage '#{params["source_stage"]} - Archived' ..."
+  BrpmAuto.log "Moving the source requests to the stage '#{params["source_stage"]} - Archived' ..."
   source_requests.each do |source_request|
     BrpmRest.move_request_to_plan_and_stage(source_request["id"], params["request_plan_id"], "#{params["source_stage"]} - Archived")
   end
 
-  Logger.log "Adding the promoted request' id to the request_params ..."
+  BrpmAuto.log "Adding the promoted request' id to the request_params ..."
   RequestParams.add_request_param("promoted_request_id", target_request["id"])
 end
 

@@ -10,7 +10,7 @@ def execute_script(params)
 
   output = run_docker_command("ps -q")
 
-  Logger.log output
+  BrpmAuto.log output
 
   containers = output.split("\n")
 

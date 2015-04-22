@@ -26,5 +26,11 @@ describe 'create/update/delete release' do
       expect(option).to be_nil
     end
   end
+
+  before(:each) do
+    cleanup_release('JIRA tests - release 1')
+    cleanup_release('JIRA tests - release 1 - updated')
+  end
+
 end
 

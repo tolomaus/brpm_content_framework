@@ -18,15 +18,15 @@ class EventProcessor < WEBrick::HTTPServlet::AbstractServlet
     begin
       event = JSON.parse(request.body)
 
-      Logger.log "Processing new event..."
+      BrpmAuto.log "Processing new event..."
       process_event(event)
 
       response.status = 200
       response['Content-Type'] = "text/plain"
       response.body = "OK"
     rescue Exception => e
-      Logger.log_error(e)
-      Logger.log e.backtrace.join("\n\t")
+      BrpmAuto.log_error(e)
+      BrpmAuto.log e.backtrace.join("\n\t")
     end
   end
 end
@@ -39,11 +39,11 @@ begin
     server.shutdown
   }
 
-  Logger.log "Starting the server..."
+  BrpmAuto.log "Starting the server..."
   server.start
 rescue Exception => e
-  Logger.log_error(e)
-  Logger.log e.backtrace.join("\n\t")
+  BrpmAuto.log_error(e)
+  BrpmAuto.log e.backtrace.join("\n\t")
 
   raise e
 end

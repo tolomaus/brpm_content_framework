@@ -16,7 +16,7 @@ def execute_script(params)
     environment = params["SS_environment"]
   end
 
-  Logger.log "Upgrading the database ..."
+  BrpmAuto.log "Upgrading the database ..."
   run_docker_command("run --rm --link brpm_db_#{environment}:db bmc_devops/brpm:v#{application_version} /source-files/upgradedatabase.sh")
 end
 

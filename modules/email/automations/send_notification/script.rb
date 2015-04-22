@@ -36,7 +36,7 @@ def execute_script(params)
   subject = BrpmAuto.substitute_tokens(params["subject"], params)
   body = BrpmAuto.substitute_tokens(params["body"].gsub('\n', "\n"), params)
 
-  Logger.log "Sending notification to #{user["first_name"]} #{user["last_name"]} '#{subject}' ..."
+  BrpmAuto.log "Sending notification to #{user["first_name"]} #{user["last_name"]} '#{subject}' ..."
   Mail.deliver do
     to recipient_email_address
     from from_address

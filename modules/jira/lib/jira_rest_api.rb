@@ -61,17 +61,17 @@ class JiraRest
     end
 
     def set_issue_to_status(issue_id, status)
-      Logger.log "Getting the possible transitions for issue #{issue_id}..."
+      BrpmAuto.log "Getting the possible transitions for issue #{issue_id}..."
       result = get_issue_transitions(issue_id)
       transitions = result["transitions"]
 
       transition = transitions.find { |transition| transition["name"] == status }
 
       if transition
-        Logger.log "Issuing transition #{transition["name"]} to update the status of the issue to #{status}..."
+        BrpmAuto.log "Issuing transition #{transition["name"]} to update the status of the issue to #{status}..."
         issues = post_issue_transition(issue_id, transition["id"])
       else
-        Logger.log "This ticket does not have a transition to status #{status} currently. Leaving it in its current state."
+        BrpmAuto.log "This ticket does not have a transition to status #{status} currently. Leaving it in its current state."
       end
     end
 
@@ -128,7 +128,7 @@ class JiraRest
       custom_field_option = get_option_for_dropdown_custom_field(custom_field_id, option_value)
 
       if custom_field_option
-        Logger.log "The option already exists, nothing to do."
+        BrpmAuto.log "The option already exists, nothing to do."
         return custom_field_option
       end
 
@@ -161,7 +161,7 @@ class JiraRest
           raise "Could not update option: #{result["error_message"]}"
         end
       else
-        Logger.log "The option doesn't exist yet, creating it instead of updating..."
+        BrpmAuto.log "The option doesn't exist yet, creating it instead of updating..."
         create_option_for_dropdown_custom_field(custom_field_id, new_option_value)
       end
     end
@@ -182,7 +182,7 @@ class JiraRest
           raise "Could not delete option: #{result["error_message"]}"
         end
       else
-        Logger.log "The option doesn't exist, nothing to do."
+        BrpmAuto.log "The option doesn't exist, nothing to do."
       end
     end
 

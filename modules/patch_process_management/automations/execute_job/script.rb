@@ -39,7 +39,7 @@ def pack_response_for_result_summaries(csv_content)
 end
 
 def execute_script(params)
-  Logger.log("Getting the server group from the step...")
+  BrpmAuto.log("Getting the server group from the step...")
   server_group = "/#{get_server_group_from_step_id(params["step_id"])}"
 
   job_type_and_name = params["job_type_and_name"].split("|")
@@ -48,42 +48,42 @@ def execute_script(params)
   raise "Could not find out the job key or job name." unless job_type_and_name.count == 2
 
   job_group = "/#{params["application"].downcase}/public/#{job_type}"
-  Logger.log("The job to be executed is  #{job_group}/#{job_name}")
+  BrpmAuto.log("The job to be executed is  #{job_group}/#{job_name}")
 
-  Logger.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
+  BrpmAuto.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
   session_id = BsaSoap.login
 
-  Logger.log("Retrieving the job key of the job...")
+  BrpmAuto.log("Retrieving the job key of the job...")
   job_db_key = Object.const_get(job_type).get_dbkey_by_group_and_name(session_id, {:group_name => job_group, :job_name => job_name})
-  Logger.log("Job key is #{job_db_key}.")
+  BrpmAuto.log("Job key is #{job_db_key}.")
 
-#  Logger.log("Cleaning the servers from the job...")
+#  BrpmAuto.log("Cleaning the servers from the job...")
 #  job_db_key = Job.clear_target_servers(session_id, {:job_key => job_db_key})
 
-#  Logger.log("Cleaning the server groups from the job...")
+#  BrpmAuto.log("Cleaning the server groups from the job...")
 #  job_db_key = Job.clear_target_groups(session_id, {:job_key => job_db_key})
 
-  Logger.log("Executing the job on server group #{server_group}...")
+  BrpmAuto.log("Executing the job on server group #{server_group}...")
   job_run_key = Job.execute_against_server_groups_for_run_id(session_id, {:job_key => job_db_key, :server_groups => server_group})
-  Logger.log("Job run is #{job_run_key}.")
+  BrpmAuto.log("Job run is #{job_run_key}.")
 
-  Logger.log("Polling the job until it is finished...")
+  BrpmAuto.log("Polling the job until it is finished...")
   begin
     sleep(10)
     is_still_running = JobRun.get_job_run_is_running_by_run_key(session_id, {:job_run_key => job_run_key})
   end while is_still_running
-  Logger.log("The job has finished.")
+  BrpmAuto.log("The job has finished.")
 
-  Logger.log("Checking if the job finished successfully...")
+  BrpmAuto.log("Checking if the job finished successfully...")
   had_errors = JobRun.get_job_run_had_errors(session_id, {:job_run_key => job_run_key})
 
-  had_errors ? Logger.log("WARNING: The job had errors!") : Logger.log("The job had no errors.")
+  had_errors ? BrpmAuto.log("WARNING: The job had errors!") : BrpmAuto.log("The job had no errors.")
   pack_response "job_status", had_errors ? "The job had errors" : "The job ran successfully"
 
-  Logger.log("Retrieving the job run id from the job run key...")
+  BrpmAuto.log("Retrieving the job run id from the job run key...")
   job_run_id = JobRun.job_run_key_to_job_run_id(session_id, {:job_run_key => job_run_key})
 
-  Logger.log("Retrieving the results from the job run id...")
+  BrpmAuto.log("Retrieving the results from the job run id...")
   results_full_path = "#{params["SS_output_dir"]}/#{job_name}_result.csv"
   return_data = Utility.export_nsh_script_run(session_id, {
       :run_id => job_run_id,

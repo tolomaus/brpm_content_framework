@@ -25,7 +25,7 @@ def execute_script(params)
     repo_server_password = decrypt_string_with_prefix(params["SS_integration_password_enc"]) unless params["SS_integration_password_enc"].empty?
   end
 
-  Logger.log("Getting directory #{repo_directory} from the repo...")
+  BrpmAuto.log("Getting directory #{repo_directory} from the repo...")
   smbclient_get_directory(
       repo_server_name,
       repo_server_share,
@@ -36,16 +36,16 @@ def execute_script(params)
   )
 
   unless params["param_substitution_file_list"].empty?
-    Logger.log("Substituting params in the indicated files...")
+    BrpmAuto.log("Substituting params in the indicated files...")
     file_paths = params["param_substitution_file_list"].split(";")
     file_paths.each do|file_path|
       file_absolute_path = "#{temp_directory}/#{file_path}"
       unless File.exists?(file_absolute_path)
-        Logger.log("File #{file_absolute_path} doesn't exist, continuing...")
+        BrpmAuto.log("File #{file_absolute_path} doesn't exist, continuing...")
         next
       end
 
-      Logger.log("Substituting params in file #{file_path}...")
+      BrpmAuto.log("Substituting params in file #{file_path}...")
       file_content = File.read(file_absolute_path)
       substituted_file_content = BrpmAuto.substitute_tokens(file_content)
       File.open(file_absolute_path, "w") {|file| file.puts substituted_file_content}
@@ -53,26 +53,26 @@ def execute_script(params)
   end
 
   unless params["exclude_file_list"].empty?
-    Logger.log("Excluding the indicated files...")
+    BrpmAuto.log("Excluding the indicated files...")
     file_paths = params["exclude_file_list"].split(";")
     file_paths.each do|file_path|
       file_absolute_path = "#{temp_directory}/#{file_path}"
       if File.exists?(file_absolute_path)
-        Logger.log("Deleting file #{file_path}...")
+        BrpmAuto.log("Deleting file #{file_path}...")
         file_content = File.delete(file_absolute_path)
       else
-        Logger.log("File #{file_absolute_path} doesn't exist, continuing...")
+        BrpmAuto.log("File #{file_absolute_path} doesn't exist, continuing...")
         next
       end
     end
   end
 
-  Logger.log("Getting the list of target servers...")
+  BrpmAuto.log("Getting the list of target servers...")
   servers = get_server_list(params)
-  Logger.log("Found #{servers.count} servers.")
+  BrpmAuto.log("Found #{servers.count} servers.")
 
   servers.each do |server|
-    Logger.log("Putting directory #{repo_directory} onto server #{server[0]} (//#{server[1]["ip_address"]}/#{server[1]["deploy_share_name"]})...")
+    BrpmAuto.log("Putting directory #{repo_directory} onto server #{server[0]} (//#{server[1]["ip_address"]}/#{server[1]["deploy_share_name"]})...")
     smbclient_put_directory(
         server[1]["ip_address"],
         server[1]["deploy_share_name"],
@@ -83,6 +83,6 @@ def execute_script(params)
     )
   end
 
-  Logger.log("Cleaning up the directory locally...")
+  BrpmAuto.log("Cleaning up the directory locally...")
   FileUtils.rm_rf(temp_directory)
 end

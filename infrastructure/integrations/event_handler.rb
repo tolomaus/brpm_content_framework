@@ -5,7 +5,7 @@ require 'torquebox-messaging'
 require 'xmlsimple'
 require "#{File.dirname(__FILE__)}/../../modules/framework/brpm_automation"
 
-Logger.setup(ENV["EVENT_HANDLER_LOG_FILE"])
+BrpmAuto.setup_logger(ENV["EVENT_HANDLER_LOG_FILE"])
 
 host = ENV["EVENT_HANDLER_BRPM_HOST"]
 port = ENV["EVENT_HANDLER_MESSAGING_PORT"]
@@ -20,7 +20,7 @@ class MessagingProcessor < TorqueBox::Messaging::MessageProcessor
   MESSAGING_PATH = '/topics/messaging/brpm_event_queue'
 
   def initialize(host, port, username, password)
-    Logger.log "Initializing the message processor..."
+    BrpmAuto.log "Initializing the message processor..."
     @destination = TorqueBox::Messaging::Topic.new(
         MESSAGING_PATH,
         :host => host,
@@ -33,30 +33,30 @@ class MessagingProcessor < TorqueBox::Messaging::MessageProcessor
   def run
     begin
       xml = "<root>#{@destination.receive}</root>"
-      Logger.log xml if ENV["EVENT_HANDLER_LOG_EVENT"]=="1"
+      BrpmAuto.log xml if ENV["EVENT_HANDLER_LOG_EVENT"]=="1"
 
       event = XmlSimple.xml_in(xml)
 
-      Logger.log "Processing new event..."
+      BrpmAuto.log "Processing new event..."
       process_event(event)
 
     rescue Exception => e
-      Logger.log_error(e)
-      Logger.log e.backtrace.join("\n\t")
+      BrpmAuto.log_error(e)
+      BrpmAuto.log e.backtrace.join("\n\t")
     end
   end
 end
 
 begin
   consumer = MessagingProcessor.new(host, port, username, password)
-  Logger.log "Starting to listen for events ..."
+  BrpmAuto.log "Starting to listen for events ..."
   loop do
     consumer.run
   end
 
 rescue Exception => e
-  Logger.log_error(e)
-  Logger.log e.backtrace.join("\n\t")
+  BrpmAuto.log_error(e)
+  BrpmAuto.log e.backtrace.join("\n\t")
 
   raise e
 end

@@ -79,7 +79,7 @@ class BrpmRest
         result_hash = result["response"]
       else
         if Rest.already_exists_error(result)
-          Logger.log "This server already exists."
+          BrpmAuto.log "This server already exists."
           result_hash = get_server_by_name(server_name)
           existing_environment_ids = result_hash["environments"].map { |env| env["id"] }
 
@@ -229,7 +229,7 @@ class BrpmRest
         result_hash = result["response"]
       else
         if Rest.already_exists_error(result)
-          Logger.log "This environment already exists. Continuing ..."
+          BrpmAuto.log "This environment already exists. Continuing ..."
           result_hash = get_environment_by_name(environment_name)
         else
           raise "Could not create environment: #{result["error_message"]}"
@@ -254,7 +254,7 @@ class BrpmRest
       environment = get_environment_by_name(environment_name)
 
       if environment.nil?
-        Logger.log "This environment doesn't exist. Continuing ..."
+        BrpmAuto.log "This environment doesn't exist. Continuing ..."
         return
       end
 
@@ -274,7 +274,7 @@ class BrpmRest
       server_to_update["environment_ids"] = server["environments"].map{|f| f["id"]}
 
       if server_to_update["environment_ids"].include?(environment_id)
-        Logger.log "This server is already linked to the application. Continuing..."
+        BrpmAuto.log "This server is already linked to the application. Continuing..."
         return
       end
 
@@ -291,14 +291,14 @@ class BrpmRest
       server = get_server_by_name(server_name)
 
       if server.nil?
-        Logger.log "This server doesn't exist. Continuing ..."
+        BrpmAuto.log "This server doesn't exist. Continuing ..."
         return
       end
 
       environment = get_environment_by_name(environment_name)
 
       if environment.nil?
-        Logger.log "This environment doesn't exist. Continuing ..."
+        BrpmAuto.log "This environment doesn't exist. Continuing ..."
         return
       end
 
@@ -306,7 +306,7 @@ class BrpmRest
       server_to_update["environment_ids"] = server["environments"].map{|f| f["id"]}
 
       unless server_to_update["environment_ids"].include?(environment["id"])
-        Logger.log "This environment is not linked to the server. Continuing ..."
+        BrpmAuto.log "This environment is not linked to the server. Continuing ..."
         return
       end
 
@@ -326,7 +326,7 @@ class BrpmRest
       app_to_update["environment_ids"] = app["environments"].map{|f| f["id"]}
 
       if app_to_update["environment_ids"].include?(environment_id)
-        Logger.log "This environment is already linked to the application. Continuing..."
+        BrpmAuto.log "This environment is already linked to the application. Continuing..."
         return
       end
 
@@ -343,14 +343,14 @@ class BrpmRest
       app = get_app_by_name(app_name)
 
       if app.nil?
-        Logger.log "This application doesn't exist. Continuing ..."
+        BrpmAuto.log "This application doesn't exist. Continuing ..."
         return
       end
 
       environment = get_environment_by_name(environment_name)
 
       if environment.nil?
-        Logger.log "This environment doesn't exist. Continuing ..."
+        BrpmAuto.log "This environment doesn't exist. Continuing ..."
         return
       end
 
@@ -358,7 +358,7 @@ class BrpmRest
       app_to_update["environment_ids"] = app["environments"].map{|f| f["id"]}
 
       unless app_to_update["environment_ids"].include?(environment["id"])
-        Logger.log "This environment is not linked to the app. Continuing ..."
+        BrpmAuto.log "This environment is not linked to the app. Continuing ..."
         return
       end
 
@@ -435,17 +435,17 @@ class BrpmRest
         result_hash = result["response"]
       else
         if Rest.already_exists_error(result)
-          Logger.log "This installed component already exists."
+          BrpmAuto.log "This installed component already exists."
           result_hash = get_installed_component(component_name, environment_name)
           result_hash = get_installed_component_by_id(result_hash["id"])
 
           servers = result_hash["servers"].map { |server| server["name"] }
 
-          Logger.log "Verifying if the existing installed component is already linked to the server ..."
+          BrpmAuto.log "Verifying if the existing installed component is already linked to the server ..."
           if servers.include?(server_name)
-            Logger.log "The existing installed component is already linked to the server. Continuing ..."
+            BrpmAuto.log "The existing installed component is already linked to the server. Continuing ..."
           else
-            Logger.log "The existing installed component is not yet linked to the server, doing it now ..."
+            BrpmAuto.log "The existing installed component is not yet linked to the server, doing it now ..."
             servers.push server_name
             set_servers_of_installed_component(result_hash["id"], servers)
           end
@@ -454,7 +454,7 @@ class BrpmRest
         end
       end
 
-      Logger.log "Copying the version tags from environment [default] to environment #{environment_name} ..."
+      BrpmAuto.log "Copying the version tags from environment [default] to environment #{environment_name} ..."
       copy_version_tags_of_app_and_comp_from_env_to_env(app_name, component_name, "[default]", environment_name)
 
       result_hash
@@ -521,7 +521,7 @@ class BrpmRest
         result_hash = result["response"]
       else
         if Rest.already_exists_error(result)
-          Logger.log "This version tag already exists. Continuing ..."
+          BrpmAuto.log "This version tag already exists. Continuing ..."
           result_hash = get_version_tag(app_name, component_name, environment, version_tag_name)
         else
           raise "Could not create version tag: #{result["error_message"]}"
@@ -629,7 +629,7 @@ class BrpmRest
         result_hash = result["response"]
       else
         if Rest.already_exists_error(result)
-          Logger.log "This plan already exists. Continuing ..."
+          BrpmAuto.log "This plan already exists. Continuing ..."
           result_hash = get_plan_by_name(plan_name)
         else
           raise "Could not create plan: #{result["error_message"]}"
@@ -809,15 +809,15 @@ class BrpmRest
     end
 
     def get_first_environment_of_route_for_plan_and_app(plan_id, app_id)
-      Logger.log "Getting the plan route..."
+      BrpmAuto.log "Getting the plan route..."
       plan_route = get_plan_route_by_plan_and_app(plan_id, app_id)
 
       unless plan_route
-        Logger.log "No plan route found for plan id #{plan_id} and app id #{app_id}."
+        BrpmAuto.log "No plan route found for plan id #{plan_id} and app id #{app_id}."
         return nil
       end
 
-      Logger.log "Getting the route..."
+      BrpmAuto.log "Getting the route..."
       route = get_route_by_id(plan_route["route"]["id"])
 
       route_gate = route["route_gates"].find { |route_gate| route_gate["position"] == 1 }
@@ -1058,7 +1058,7 @@ class BrpmRest
       req_status = "none"
       start_time = Time.now
       elapsed = 0
-      Logger.log "Starting the monitoring loop for request #{request_id} with an interval of #{checking_interval} seconds and a maximum time of #{max_time} seconds ..."
+      BrpmAuto.log "Starting the monitoring loop for request #{request_id} with an interval of #{checking_interval} seconds and a maximum time of #{max_time} seconds ..."
       until (elapsed > max_time || req_status == target_status)
         request = get_request_by_id(request_id)
 
@@ -1080,7 +1080,7 @@ class BrpmRest
         end
 
         if req_status == target_status
-          Logger.log "Found request in #{target_status} status! Returning."
+          BrpmAuto.log "Found request in #{target_status} status! Returning."
           break
         end
 
@@ -1088,7 +1088,7 @@ class BrpmRest
           raise "Found request #{request_id} in problem state."
         end
 
-        Logger.log "\tWaiting(#{elapsed.floor.to_s}) - Current status: #{req_status}"
+        BrpmAuto.log "\tWaiting(#{elapsed.floor.to_s}) - Current status: #{req_status}"
         sleep(checking_interval)
         elapsed = Time.now - start_time
       end
@@ -1251,18 +1251,18 @@ class BrpmRest
     end
 
     def get_tickets_by_run_id_and_request_state(run_id, state)
-      Logger.log "Getting the requests that are part of run #{run_id} and have state #{state}..."
+      BrpmAuto.log "Getting the requests that are part of run #{run_id} and have state #{state}..."
       run = get_run_by_id(run_id)
       request_ids = run["plan_members"].select { |member| member.has_key?("request") and member["request"]["aasm_state"] == state }.map { |member| member["request"]["id"] }
-      Logger.log "Found #{request_ids.count} requests."
+      BrpmAuto.log "Found #{request_ids.count} requests."
 
-      Logger.log "Getting the tickets that are linked to each of the found requests..."
+      BrpmAuto.log "Getting the tickets that are linked to each of the found requests..."
       tickets = []
       request_ids.each do |request_id|
         tickets_for_request = get_tickets_by_request_id(request_id)
         tickets = tickets.merge(tickets_for_request)
       end
-      Logger.log "Found #{tickets.count} tickets in total."
+      BrpmAuto.log "Found #{tickets.count} tickets in total."
 
       tickets
     end
@@ -1310,14 +1310,14 @@ class BrpmRest
     end
 
     def create_or_update_ticket(ticket)
-      Logger.log "Checking if the corresponding ticket already exists ..."
+      BrpmAuto.log "Checking if the corresponding ticket already exists ..."
       existing_ticket = get_ticket_by_foreign_id ticket["foreign_id"]
 
       if existing_ticket.nil?
-        Logger.log "Ticket doesn't exist yet."
+        BrpmAuto.log "Ticket doesn't exist yet."
         ticket_already_exists=false
       else
-        Logger.log "Ticket already exists."
+        BrpmAuto.log "Ticket already exists."
         ticket_already_exists=true
 
         ticket["id"] = existing_ticket["id"].to_s
@@ -1333,13 +1333,13 @@ class BrpmRest
       data["ticket"] = ticket
 
       if ticket_already_exists
-        Logger.log "Updating the ticket ..."
+        BrpmAuto.log "Updating the ticket ..."
         update_ticket_from_hash(ticket)
-        Logger.log "Ticket is updated."
+        BrpmAuto.log "Ticket is updated."
       else
-        Logger.log "Creating the ticket ..."
+        BrpmAuto.log "Creating the ticket ..."
         create_ticket_from_hash(ticket)
-        Logger.log "Ticket is created."
+        BrpmAuto.log "Ticket is created."
       end
     end
 

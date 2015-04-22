@@ -9,15 +9,15 @@ end
 def run_docker_command(command, ignore_error=false)
   complete_command = "docker -H tcp://#{get_docker_host_name()}:4243 #{command} 2>&1"
 
-  Logger.log complete_command
+  BrpmAuto.log complete_command
   output = `#{complete_command}`
-  Logger.log "\toutput: #{output}"
+  BrpmAuto.log "\toutput: #{output}"
 
   exit_status = $?.exitstatus
   unless exit_status == 0
     message = "The docker command exited with #{exit_status}."
     if ignore_error
-      Logger.log "\t#{message}"
+      BrpmAuto.log "\t#{message}"
     else
       raise(message)
     end
@@ -32,7 +32,7 @@ end
 
 def stop_running_containers_if_necessary(container_names_to_be_stopped)
   container_names_to_be_stopped.each do |container_name|
-    Logger.log "Stopping and removing container #{container_name} ..."
+    BrpmAuto.log "Stopping and removing container #{container_name} ..."
     run_docker_command("stop #{container_name}", true)
     run_docker_command("rm #{container_name}", true)
   end
