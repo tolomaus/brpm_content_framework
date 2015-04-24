@@ -94,7 +94,12 @@ class BrpmAuto
       lib_path = "#{@modules_root_path}/#{modul}/lib/**/*.rb"
       Dir[lib_path].each do |file|
         if File.file?(file)
-          BrpmAuto.log "Loading #{file}..." if log
+          if log
+            BrpmAuto.log "Loading #{file}..."
+          else
+            print "Loading #{file}..."
+          end
+
           require file
         end
       end
