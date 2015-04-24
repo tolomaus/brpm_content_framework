@@ -60,3 +60,5 @@ class RequestParams
       end
   end
 end
+
+RP = RequestParams

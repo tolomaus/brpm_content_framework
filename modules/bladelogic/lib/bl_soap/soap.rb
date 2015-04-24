@@ -169,19 +169,19 @@ class BsaSoap
     end
 
     def get_url
-      @url || BrpmAuto.integration_server_settings.dns
+      @url || IntegrationSettings.dns
     end
 
     def get_username
-      @username || BrpmAuto.integration_server_settings.username
+      @username || IntegrationSettings.username
     end
 
     def get_password
-      @password || BrpmAuto.integration_server_settings.password
+      @password || IntegrationSettings.password
     end
 
     def get_role
-      @role || BrpmAuto.integration_server_settings.details["role"]
+      @role || IntegrationSettings.details["role"]
     end
   end
 end

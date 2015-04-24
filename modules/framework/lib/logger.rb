@@ -1,15 +1,30 @@
 class Logger
+  private_class_method :new
+
   class << self
-    def setup(log_file)
+    def setup(log_file, debug = false)
       @log_file = log_file
+      @debug = debug
     end
   
+    def setup_for_automation_script(request_id, automation_results_dir, step_id, run_key, step_number, step_name, debug = false)
+      @request_id = request_id
+      @automation_results_dir = automation_results_dir
+      @step_id = step_id
+      @run_key = run_key
+      @step_number = step_number
+      @step_name = step_name
+      @debug = debug
+
+      @brpm_auto = true
+    end
+
     def get_request_log_file_path
-      "#{BrpmAuto.automation_results_dir}/#{BrpmAuto.request_id}.log"
+      "#{@automation_results_dir}/#{@request_id}.log"
     end
   
     def get_step_run_log_file_path
-      "#{BrpmAuto.automation_results_dir}/#{BrpmAuto.request_id}_#{BrpmAuto.step_id}_#{BrpmAuto.run_key}.log"
+      "#{@automation_results_dir}/#{@request_id}_#{@step_id}_#{@run_key}.log"
     end
   
     def log(message)
@@ -17,17 +32,8 @@ class Logger
       timestamp = "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}"
       log_message = ""
   
-      if @log_file
-        prefix = "#{timestamp}|"
-        message.gsub!("\n", "\n" + (" " * prefix.length))
-  
-        log_message = "#{prefix}#{message}\n"
-  
-        File.open(@log_file, "a") do |log_file|
-          log_file.print(log_message)
-        end
-      elsif BrpmAuto.is_set_up
-        prefix = "#{timestamp}|#{'%2.2s' % BrpmAuto.step_number}|#{'%-20.20s' % BrpmAuto.step_name}|"
+      if @brpm_auto
+        prefix = "#{timestamp}|#{'%2.2s' % @step_number}|#{'%-20.20s' % @step_name}|"
         message.gsub!("\n", "\n" + (" " * prefix.length))
   
         log_message = "#{prefix}#{message}\n"
@@ -39,11 +45,20 @@ class Logger
         File.open(get_step_run_log_file_path, "a") do |log_file|
           log_file.print(log_message)
         end
+      elsif @log_file
+          prefix = "#{timestamp}|"
+          message.gsub!("\n", "\n" + (" " * prefix.length))
+
+          log_message = "#{prefix}#{message}\n"
+
+          File.open(@log_file, "a") do |log_file|
+            log_file.print(log_message)
+          end
       else
         raise "Logger is not set up correctly."
       end
   
-      print(log_message) if BrpmAuto.debug
+      print(log_message) if @debug
     end
   
     def log_error(message)

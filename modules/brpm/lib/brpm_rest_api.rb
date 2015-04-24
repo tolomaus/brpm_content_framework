@@ -1,5 +1,6 @@
 class BrpmRest
   class << self
+    # only call the setup method when using the class stand-alone (ie outside of BrpmAuto)
     def setup(base_brpm_url, base_brpm_api_token)
       @base_brpm_url = base_brpm_url
       @base_brpm_api_token = base_brpm_api_token
