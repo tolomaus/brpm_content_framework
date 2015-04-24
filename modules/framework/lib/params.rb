@@ -79,7 +79,7 @@ class Params
       @step_version = params["step_version"]
       @step_version_artifact_url = params["step_version_artifact_url"]
 
-      @servers = get_server_list(params)
+      @servers = get_server_list
 
       @ticket_ids = params["ticket_ids"]
       @tickets_foreign_ids = params["tickets_foreign_ids"]
@@ -106,13 +106,13 @@ class Params
 
     private
 
-      def get_server_list(params)
+      def get_server_list()
         rxp = /server\d+_/
         slist = {}
         lastcur = -1
         curname = ""
 
-        params.sort.reject{ |k| k[0].scan(rxp).empty? }.each_with_index do |server, idx|
+        @params.sort.reject{ |k| k[0].scan(rxp).empty? }.each_with_index do |server, idx|
           cur = (server[0].scan(rxp)[0].gsub("server","").to_i * 0.001).round * 1000
           if cur == lastcur
             prop = server[0].gsub(rxp, "")
