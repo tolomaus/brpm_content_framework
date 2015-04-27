@@ -2,8 +2,8 @@ require 'fileutils'
 FileUtils.mkdir_p "/tmp/brpm_content/step_1"
 
 require "#{File.dirname(__FILE__)}/../../framework/brpm_automation"
-BrpmAuto.setup_logger("/tmp/brpm_content/tests.log") # TODO clean up
-RequestParams.setup("/tmp/brpm_content/") # TODO clean up
+BrpmAuto.initialize_logger("/tmp/brpm_content/tests.log")
+BrpmAuto.initialize_request_params("/tmp/brpm_content")
 
 BrpmAuto.require_module "brpm"
 BrpmRest.setup('http://brpm-content.pulsar-it.be:8088/brpm', ENV["BRPM_API_TOKEN"])
@@ -14,15 +14,14 @@ def get_default_params
   params['SS_base_url'] = 'http://brpm-content.pulsar-it.be:8088/brpm'
   params['SS_api_token'] = ENV["BRPM_API_TOKEN"]
 
-  dir = "/tmp/brpm_content/step_1"
-  params['SS_output_dir'] = dir # TODO clean up
+  params['SS_output_dir'] = "/tmp/brpm_content/step_1"
 
   params
 end
 
 def cleanup_request_data_file
-  file = RequestParams.file_location
-  File.delete(file) if File.exist?(file) # TODO clean up
+  request_params_file = "/tmp/brpm_content/step_1/request_data.json"
+  File.delete(file) if File.exist?(file)
 end
 
 def cleanup_requests_and_plans_for_app(app_name)

@@ -1,5 +1,5 @@
 def execute_script(params)
-  request_params = RequestParams.get_request_params
+  request_params = BrpmAuto.request_params
 
   BrpmAuto.log "Retrieving the application..."
   application = BrpmRest.get_app_by_name(params["application"])
@@ -61,6 +61,6 @@ def execute_script(params)
   end
 
   BrpmAuto.log "Adding the created request' id to the request_params ..."
-  RequestParams.add_request_param("target_request_id", target_request["id"])
+  request_params["target_request_id"] = target_request["id"]
 end
 

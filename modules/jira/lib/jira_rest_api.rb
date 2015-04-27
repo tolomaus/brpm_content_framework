@@ -189,7 +189,7 @@ class JiraRest
     private
       
       def get_url
-        @url || BrpmAuto.integration_server_settings.dns   
+        @url || BrpmAuto.integration_settings.dns
       end
     
       def get_api_url
@@ -197,11 +197,11 @@ class JiraRest
       end
 
       def get_username
-        @username || BrpmAuto.integration_server_settings.username
+        @username || BrpmAuto.integration_settings.username
       end
 
       def get_password
-        @password || BrpmAuto.integration_server_settings.password
+        @password || BrpmAuto.integration_settings.password
       end
 
       # JSON Styled RESTful GET

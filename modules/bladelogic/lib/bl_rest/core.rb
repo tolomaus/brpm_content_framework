@@ -35,19 +35,19 @@ class BsaRest
     private
 
       def get_url
-        @url || IntegrationSettings.dns
+        @url || BrpmAuto.integration_settings.dns
       end
 
       def get_username
-        @username || IntegrationSettings.username
+        @username || BrpmAuto.integration_settings.username
       end
 
       def get_password
-        @password || IntegrationSettings.password
+        @password || BrpmAuto.integration_settings.password
       end
 
       def get_role
-        @role || IntegrationSettings.details["role"]
+        @role || BrpmAuto.integration_settings.details["role"]
       end
 
       def add_credentials(path)

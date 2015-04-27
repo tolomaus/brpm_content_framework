@@ -2,7 +2,9 @@ class BrpmAuto
   private_class_method :new
 
   class << self
+    attr_reader :logger
     attr_reader :params
+    attr_reader :output_params
     attr_reader :request_params
     attr_reader :integration_settings
 
@@ -51,8 +53,10 @@ class BrpmAuto
         BrpmAuto.log ">>>>>>>>>>>>>> STOP automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
 
-        write_to(File.read(Logger.get_step_run_log_file_path)) if defined? write_to
+        write_to(File.read(@logger.get_step_run_log_file_path)) if defined? write_to
       end
+
+      @output_params
     end
 
     def execute_resource_automation_script_from_module(modul, name, params, parent_id, offset, max_records)
@@ -86,8 +90,10 @@ class BrpmAuto
         BrpmAuto.log ">>>>>>>>>>>>>> STOP resource automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
 
-        write_to(File.read(Logger.get_step_run_log_file_path)) if defined? write_to
+        write_to(File.read(@logger.get_step_run_log_file_path)) if defined? write_to
       end
+
+      @output_params
     end
 
     def require_libs(modul, log = true)
@@ -97,7 +103,7 @@ class BrpmAuto
           if log
             BrpmAuto.log "Loading #{file}..."
           else
-            print "Loading #{file}..."
+            print "Loading #{file}...\n"
           end
 
           require file
@@ -172,31 +178,54 @@ class BrpmAuto
       end
     end
 
-    def setup_logger(log_file, debug = false)
-      Logger.setup(log_file, debug)
+    def initialize_logger(log_file, debug = false)
+      @logger = SimpleLogger.new(log_file, debug)
     end
 
     def log(message)
-      Logger.log(message)
+      @logger.log(message)
     end
 
     def log_error(message)
-      Logger.log_error(message)
+      @logger.log_error(message)
+    end
+
+    def initialize_request_params(path)
+      @request_params = RequestParams.new(path)
+    end
+
+    def get_request_params_for_request(automation_results_dir, application, request_id)
+      RequestParams.new_for_request(automation_results_dir, application, request_id)
+    end
+
+    def initialize_integration_settings(dns, username, password, details)
+      @integration_settings = IntegrationSettings.new(dns, username, password, details)
     end
 
     private
 
       def setup(params)
-        @params = params
+        @params = Params.new(params)
+        @output_params = {}
 
         if params["run_key"]
-          Logger.setup_for_automation_script(params["request_id"], params["automation_results_dir"], params["step_id"], params["run_key"], params["step_number"], params["step_name"], params["debug"] == 'true')
+          @logger = Logger.new(@params.request_id, @params.automation_results_dir, @params.step_id, @params.run_key, @params.step_number, @params.step_name, @params.debug)
         end
 
-        Params.setup(params)
-        request_dir = File.expand_path("..", params["SS_output_dir"])
-        RequestParams.setup(request_dir)
-        IntegrationSettings.setup(params)
+        if @params.automation_results_dir
+          @request_params = RequestParams.new_for_request(@params.automation_results_dir, @params.application, @params.request_id)
+        end
+
+        if @params["SS_integration_dns"]
+          @integration_settings = IntegrationSettings.new(
+              @params["SS_integration_dns"],
+              @params["SS_integration_username"],
+              @params["SS_integration_password"] || decrypt_string_with_prefix(@params["SS_integration_password_enc"]),
+              @params["SS_integration_details"]
+          )
+
+        end
+
       end
   end
 

@@ -5,7 +5,7 @@ require 'torquebox-messaging'
 require 'xmlsimple'
 require "#{File.dirname(__FILE__)}/../../modules/framework/brpm_automation"
 
-BrpmAuto.setup_logger(ENV["EVENT_HANDLER_LOG_FILE"])
+BrpmAuto.initialize_logger(ENV["EVENT_HANDLER_LOG_FILE"])
 
 host = ENV["EVENT_HANDLER_BRPM_HOST"]
 port = ENV["EVENT_HANDLER_MESSAGING_PORT"]

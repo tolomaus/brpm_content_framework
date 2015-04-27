@@ -2,8 +2,8 @@ require 'fileutils'
 FileUtils.mkdir_p "/tmp/brpm_content/step_1"
 
 require "#{File.dirname(__FILE__)}/../../framework/brpm_automation"
-BrpmAuto.setup_logger("/tmp/brpm_content/tests.log", true) # TODO clean up
-RequestParams.setup("/tmp/brpm_content/") # TODO clean up
+BrpmAuto.initialize_logger("/tmp/brpm_content/tests.log")
+BrpmAuto.initialize_request_params("/tmp/brpm_content")
 
 BrpmAuto.require_module "brpm"
 BrpmRest.setup('http://brpm-content.pulsar-it.be:8088/brpm', ENV["BRPM_API_TOKEN"])
@@ -35,8 +35,8 @@ def get_integration_settings_for_bladelogic
 end
 
 def cleanup_request_data_file
-  file = RequestParams.file_location
-  File.delete(file) if File.exist?(file) # TODO clean up
+  request_params_file = "/tmp/brpm_content/step_1/request_data.json"
+  File.delete(file) if File.exist?(file)
 end
 
 def cleanup_requests_and_plans_for_app(app_name)
