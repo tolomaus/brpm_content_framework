@@ -19,6 +19,31 @@ class BrpmAuto
       require_libs "framework", false
     end
 
+    def setup(params)
+      @params = Params.new(params)
+      @output_params = {}
+
+      if @params.run_from_brpm
+        # noinspection RubyArgCount
+        @logger = Logger.new(@params.request_id, @params.automation_results_dir, @params.step_id, @params.run_key, @params.step_number, @params.step_name, @params.debug)
+        @request_params = RequestParams.new_for_request(@params.automation_results_dir, @params.application, @params.request_id)
+      else
+        initialize_logger(@params.log_file, @params.debug)
+        initialize_request_params(@params.output_dir)
+      end
+
+      if @params["SS_integration_dns"]
+        @integration_settings = IntegrationSettings.new(
+            @params["SS_integration_dns"],
+            @params["SS_integration_username"],
+            @params["SS_integration_password"] || decrypt_string_with_prefix(@params["SS_integration_password_enc"]),
+            @params["SS_integration_details"],
+            @params["SS_project_server"],
+            @params["SS_project_server_id"]
+        )
+      end
+    end
+
     def execute_script_from_module(modul, name, params)
       begin
         setup(params)
@@ -98,31 +123,45 @@ class BrpmAuto
 
     def require_libs(modul, log = true)
       lib_path = "#{@modules_root_path}/#{modul}/lib/**/*.rb"
-      Dir[lib_path].each do |file|
-        if File.file?(file)
-          if log
-            BrpmAuto.log "Loading #{file}..."
-          else
-            print "Loading #{file}...\n"
-          end
+      require_files(Dir[lib_path], log)
+    end
 
-          require file
+    def require_files(files, log = true)
+      failed_files = []
+      files.each do |file|
+        if File.file?(file)
+          log ? (BrpmAuto.log "Loading #{file}...") : (print "Loading #{file}...\n")
+
+          begin
+            require file
+          rescue NameError => ne # when we require a set of files with inter-dependencies, the order is important, therefore we will retry the failed files later
+            log ? (BrpmAuto.log ne) : (print "#{ne}\n")
+
+            failed_files << file
+          end
+        end
+      end
+      if failed_files.count > 0
+        if failed_files.count == files.count
+          raise LoadError, "Following files failed loading: #{failed_files.join(", ")}"
+        else
+          require_files(failed_files)
         end
       end
     end
 
     def require_module(modul)
-      BrpmAuto.log "Loading the module's own libraries..."
+      BrpmAuto.log "Loading the libraries of module #{modul}..."
       require_libs(modul)
 
       module_config_file_path = "#{modul}/config.yml"
       if File.exist?(module_config_file_path)
         module_config = YAML.load(module_config_file_path)
         if module_config.has_key?["dependencies"] and module_config["dependencies"].count > 0
-          BrpmAuto.log "Loading the dependent modules' libraries..."
+          BrpmAuto.log "Loading the dependent modules..."
           module_config["dependencies"].each do |k, v|
-            BrpmAuto.log "Loading module #{k}'s libraries..."
-            require_libs(k)
+            BrpmAuto.log "Loading module #{k}..."
+            require_module(k)
           end
         end
       end
@@ -156,7 +195,6 @@ class BrpmAuto
     end
 
     def substitute_tokens(var_string, params = nil)
-
       return var_string if var_string.nil?
 
       searchable_params = params || @params
@@ -201,32 +239,6 @@ class BrpmAuto
     def initialize_integration_settings(dns, username, password, details)
       @integration_settings = IntegrationSettings.new(dns, username, password, details)
     end
-
-    private
-
-      def setup(params)
-        @params = Params.new(params)
-        @output_params = {}
-
-        if params["run_key"]
-          @logger = Logger.new(@params.request_id, @params.automation_results_dir, @params.step_id, @params.run_key, @params.step_number, @params.step_name, @params.debug)
-        end
-
-        if @params.automation_results_dir
-          @request_params = RequestParams.new_for_request(@params.automation_results_dir, @params.application, @params.request_id)
-        end
-
-        if @params["SS_integration_dns"]
-          @integration_settings = IntegrationSettings.new(
-              @params["SS_integration_dns"],
-              @params["SS_integration_username"],
-              @params["SS_integration_password"] || decrypt_string_with_prefix(@params["SS_integration_password_enc"]),
-              @params["SS_integration_details"]
-          )
-
-        end
-
-      end
   end
 
   self.init

@@ -1,28 +1,28 @@
 require 'fileutils'
-FileUtils.mkdir_p "/tmp/brpm_content/step_1"
-
 require "#{File.dirname(__FILE__)}/../../framework/brpm_automation"
-BrpmAuto.initialize_logger("/tmp/brpm_content/tests.log")
-BrpmAuto.initialize_request_params("/tmp/brpm_content")
 
-BrpmAuto.require_module "brpm"
-BrpmRest.setup('http://brpm-content.pulsar-it.be:8088/brpm', ENV["BRPM_API_TOKEN"])
+def setup_brpm_auto
+  FileUtils.mkdir_p "/tmp/brpm_content"
 
-BrpmAuto.require_module "jira"
-JiraRest.setup('http://brpm.pulsar-it.be:9090', 'brpm', ENV["JIRA_PASSWORD"])
+  BrpmAuto.setup( { "output_dir" => "/tmp/brpm_content" }.merge!(get_integration_params_for_jira) )
+
+  BrpmAuto.require_module "brpm"
+  BrpmAuto.require_module "jira"
+end
 
 def get_default_params
   params = {}
   params['debug'] = 'true'
-  params['SS_base_url'] = 'http://brpm-content.pulsar-it.be:8088/brpm'
-  params['SS_api_token'] = ENV["BRPM_API_TOKEN"]
 
-  params['SS_output_dir'] = "/tmp/brpm_content/step_1"
+  params['brpm_url'] = 'http://brpm-content.pulsar-it.be:8088/brpm'
+  params['brpm_api_token'] = ENV["BRPM_API_TOKEN"]
+
+  params['output_dir'] = "/tmp/brpm_content"
 
   params
 end
 
-def get_integration_details_for_jira
+def get_integration_params_for_jira
   params = {}
   params["SS_integration_dns"] = 'http://brpm.pulsar-it.be:9090'
   params["SS_integration_username"] = 'brpm'
@@ -34,10 +34,12 @@ def get_integration_details_for_jira
 end
 
 def cleanup_request_data_file
-  request_params_file = "/tmp/brpm_content/step_1/request_data.json"
-  File.delete(file) if File.exist?(file)
+  request_params_file = "/tmp/brpm_content/request_data.json"
+  File.delete(request_params_file) if File.exist?(request_params_file)
 end
 
 def cleanup_release(release_name)
-  JiraRest.delete_option_for_dropdown_custom_field('10000', release_name)
+  @jira_rest_client.delete_option_for_dropdown_custom_field('10000', release_name)
 end
+
+setup_brpm_auto

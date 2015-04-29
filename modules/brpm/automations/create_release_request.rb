@@ -1,8 +1,10 @@
 # TODO workaround bug fix where the request params are not transferred to the updated application's directory
 require 'fileutils'
 
+brpm_rest_client = BrpmRestClient.new
+
 BrpmAuto.log "Retrieving the application..."
-application = BrpmRest.get_app_by_name(BrpmAuto.params["application_name"])
+application = brpm_rest_client.get_app_by_name(BrpmAuto.params["application_name"])
 application_version = BrpmAuto.params["application_version"]
 
 release_request_template_name = BrpmAuto.params["release_request_template_name"] || "Release application"
@@ -12,16 +14,16 @@ request_name = "Release #{application["name"]} #{application_version}"
 
 if release_plan_template_name
   BrpmAuto.log "Creating a new plan from template '#{release_plan_template_name}' for #{application["name"]} v#{application_version} ..."
-  plan = BrpmRest.create_plan(release_plan_template_name, "Release #{BrpmAuto.params["application_name"]} v#{application_version}", Time.now)
+  plan = brpm_rest_client.create_plan(release_plan_template_name, "Release #{BrpmAuto.params["application_name"]} v#{application_version}", Time.now)
 
   BrpmAuto.log "Planning the plan ..."
-  BrpmRest.plan_plan(plan["id"])
+  brpm_rest_client.plan_plan(plan["id"])
 
   BrpmAuto.log "Starting the plan ..."
-  BrpmRest.start_plan(plan["id"])
+  brpm_rest_client.start_plan(plan["id"])
 
   BrpmAuto.log "Creating a new request '#{request_name}' from template '#{release_request_template_name}' for application '#{application["name"]}' and plan #{plan["name"]}..."
-  target_request = BrpmRest.create_request_for_plan_from_template(
+  target_request = brpm_rest_client.create_request_for_plan_from_template(
       plan["id"],
       "Release",
       release_request_template_name,
@@ -32,7 +34,7 @@ if release_plan_template_name
   )
 else
   BrpmAuto.log "Creating a new request '#{request_name}' from template '#{release_request_template_name}' for application '#{application["name"]}'..."
-  target_request = BrpmRest.create_request(
+  target_request = brpm_rest_client.create_request(
       release_request_template_name,
       request_name,
       "release",
@@ -46,7 +48,7 @@ unless target_request["apps"].first["id"] == application["id"]
   request = {}
   request["id"] = target_request["id"]
   request["app_ids"] = [application["id"]]
-  target_request = BrpmRest.update_request_from_hash(request)
+  target_request = brpm_rest_client.update_request_from_hash(request)
 
   # TODO workaround bug fix where the request params are not transferred to the updated application's directory
   Dir.mkdir "#{BrpmAuto.params.automation_results_dir}/request/#{application["name"]}/#{1000 + target_request["id"].to_i}"
@@ -55,29 +57,29 @@ unless target_request["apps"].first["id"] == application["id"]
   BrpmAuto.log "Setting the owner of the manual steps to the groups that belong to application '#{application["name"]}'..."
   target_request["steps"].select{ |step| step["manual"] }.each do |step|
     BrpmAuto.log "Retrieving the details of step #{step["id"]} '#{step["name"]}'..."
-    step_details = BrpmRest.get_step_by_id(step["id"])
+    step_details = brpm_rest_client.get_step_by_id(step["id"])
 
     next if step_details["procedure"]
 
     group_name = "#{step_details["owner"]["name"]} - #{application["name"]}"
 
     BrpmAuto.log "Retrieving group #{group_name}..."
-    group = BrpmRest.get_group_by_name(group_name)
+    group = brpm_rest_client.get_group_by_name(group_name)
     raise "Group '#{group_name}' doesn't exist" if group.nil?
 
     step_to_update = {}
     step_to_update["id"] = step["id"]
     step_to_update["owner_id"] = group["id"]
     step_to_update["owner_type"] = "Group"
-    BrpmRest.update_step_from_hash step_to_update
+    brpm_rest_client.update_step_from_hash step_to_update
   end
 end
 
 BrpmAuto.log "Planning the request ... "
-BrpmRest.plan_request(target_request["id"])
+brpm_rest_client.plan_request(target_request["id"])
 
 BrpmAuto.log "Starting the request ... "
-BrpmRest.start_request(target_request["id"])
+brpm_rest_client.start_request(target_request["id"])
 
 BrpmAuto.output_params["request_id"] = target_request["id"]
 

@@ -1,8 +1,8 @@
 def execute_resource_automation_script(params, parent_id, offset, max_records)
   root_group_name = "/#{params["application"].downcase}/public"
 
-  BrpmAuto.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
-  session_id = BsaSoap.login
+  BrpmAuto.log("Logging on to Bladelogic instance #{BsaSoapClient.get_url} with user #{BsaSoapClient.get_username} and role #{BsaSoapClient.get_role}...")
+  session_id = BsaSoapClient.login
 
   if parent_id.blank?
     BrpmAuto.log("Retrieving all the groups from group #{root_group_name}...")

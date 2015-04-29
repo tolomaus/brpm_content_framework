@@ -4,7 +4,7 @@ require "#{File.dirname(__FILE__)}/../../jira_mappings"
 def process_event(event)
   BrpmAuto.log "Processing event #{event["id"]} ..."
 
-  BrpmRest.setup("http://#{ENV["WEBHOOK_RECEIVER_BRPM_HOST"]}:#{ENV["WEBHOOK_RECEIVER_BRPM_PORT"]}/brpm", ENV["WEBHOOK_RECEIVER_BRPM_TOKEN"])
+  @brpm_rest_client = BrpmRestClient.new("http://#{ENV["WEBHOOK_RECEIVER_BRPM_HOST"]}:#{ENV["WEBHOOK_RECEIVER_BRPM_PORT"]}/brpm", ENV["WEBHOOK_RECEIVER_BRPM_TOKEN"])
 
   issue = event["issue"]
 
@@ -19,7 +19,7 @@ def process_event(event)
 
   BrpmAuto.log "Associating the ticket with a plan..."
   if issue["fields"]["customfield_#{ENV["WEBHOOK_RECEIVER_JIRA_RELEASE_FIELD_ID"]}"]
-    plan = BrpmRest.get_plan_by_name(issue["fields"]["customfield_#{ENV["WEBHOOK_RECEIVER_JIRA_RELEASE_FIELD_ID"]}"]["value"])
+    plan = @brpm_rest_client.get_plan_by_name(issue["fields"]["customfield_#{ENV["WEBHOOK_RECEIVER_JIRA_RELEASE_FIELD_ID"]}"]["value"])
     ticket["plan_ids"] = [ plan["id"] ] unless plan.nil?
   end
 
@@ -27,7 +27,7 @@ def process_event(event)
   map_issue_to_ticket(issue, ticket)
 
   BrpmAuto.log "Creating or updating the ticket..."
-  BrpmRest.create_or_update_ticket(ticket)
+  @brpm_rest_client.create_or_update_ticket(ticket)
 
   BrpmAuto.log "Finished processing the event."
 end

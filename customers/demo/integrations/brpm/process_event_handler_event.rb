@@ -3,7 +3,7 @@ BrpmAuto.require_module "jira"
 require "#{File.dirname(__FILE__)}/../../jira_mappings"
 
 def process_event(event)
-  BrpmRest.setup("http://#{ENV["EVENT_HANDLER_BRPM_HOST"]}:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm", ENV["EVENT_HANDLER_BRPM_TOKEN"])
+  @brpm_rest_client = BrpmRestClient.new("http://#{ENV["EVENT_HANDLER_BRPM_HOST"]}:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm", ENV["EVENT_HANDLER_BRPM_TOKEN"])
 
   if event.has_key?("request")
     BrpmAuto.log "The event is for a request #{event["event"][0]}..."
@@ -106,7 +106,7 @@ def process_app_release_event(request)
 
       if stage_name == deployment_request_stage_name
         BrpmAuto.log "Creating an app release request for plan '#{plan_name}' and app '#{app_name}' ..."
-        BrpmRest.create_request_for_plan_from_template(plan_id, release_request_stage_name, "#{release_request_template_prefix} #{app_name}", release_request_name, release_request_environment_name, true)
+        @brpm_rest_client.create_request_for_plan_from_template(plan_id, release_request_stage_name, "#{release_request_template_prefix} #{app_name}", release_request_name, release_request_environment_name, true)
       end
     end
   end
@@ -130,7 +130,7 @@ def update_tickets_in_jira_by_request(request)
   params["request_id"] = request["id"][0]["content"]
 
   BrpmAuto.log "Getting the stage of this request..."
-  stage = BrpmRest.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
+  stage = @brpm_rest_client.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
 
   BrpmAuto.log "Getting the target status for the issues in JIRA..."
   params["target_issue_status"] = map_stage_to_issue_status(stage_name)
@@ -143,7 +143,7 @@ def update_tickets_in_jira_by_run(run)
   params["run_id"] = run["id"][0]["content"]
 
   BrpmAuto.log "Getting the stage of this run..."
-  stage = BrpmRest.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
+  stage = @brpm_rest_client.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
 
   BrpmAuto.log "Getting the target status for the issues in JIRA..."
   params["target_issue_status"] = map_stage_to_issue_status(stage["name"])

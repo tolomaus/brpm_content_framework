@@ -1,6 +1,6 @@
 def execute_script(params)
   BrpmAuto.log  "Getting the tickets that are linked to the request..."
-  tickets = BrpmRest.get_tickets_by_request_id(params["request_id"])
+  tickets = brpm_rest_client.get_tickets_by_request_id(params["request_id"])
 
   if tickets.count == 0
     BrpmAuto.log "This request has no tickets, nothing further to do."
@@ -9,7 +9,7 @@ def execute_script(params)
 
   unless params["target_issue_status"]
     BrpmAuto.log  "Getting the stage of this request..."
-    request_with_details = BrpmRest.get_request_by_id(params["request_id"])
+    request_with_details = brpm_rest_client.get_request_by_id(params["request_id"])
 
     if request_with_details.has_key?("plan_member")
       stage_name = request_with_details["plan_member"]["stage"]["name"]
@@ -23,6 +23,6 @@ def execute_script(params)
 
   tickets.each do |ticket|
     BrpmAuto.log "Setting the status of issue #{ticket["foreign_id"]} to #{params["target_issue_status"]}"
-    JiraRest.set_issue_to_status(ticket["foreign_id"], params["target_issue_status"])
+    JiraRestClient.set_issue_to_status(ticket["foreign_id"], params["target_issue_status"])
   end
 end

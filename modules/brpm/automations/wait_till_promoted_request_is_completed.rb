@@ -2,9 +2,9 @@ def execute_script(params)
   request_params = RequestParams.get_request_params()
 
   BrpmAuto.log "Getting the request ..."
-  request = BrpmRest.get_request_by_id(request_params["promoted_request_id"])
+  request = brpm_rest_client.get_request_by_id(request_params["promoted_request_id"])
 
   BrpmAuto.log "Waiting until the request has finished ..."
-  BrpmRest.monitor_request(request["id"], { :max_time => 60 * 24})
+  brpm_rest_client.monitor_request(request["id"], { :max_time => 60 * 24})
 end
 

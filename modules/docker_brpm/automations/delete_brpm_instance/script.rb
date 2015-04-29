@@ -1,4 +1,4 @@
-require "brpm/lib/brpm_rest_api"
+require "brpm/lib/brpm_rest_client"
 require "docker_brpm/lib/docker"
 
 def execute_script(params)

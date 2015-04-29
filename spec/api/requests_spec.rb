@@ -3,10 +3,6 @@ require "#{File.dirname(__FILE__)}/../spec_helper"
 request_id = nil
 
 describe '/api/requests' do
-  before {
-    configure_brpm_rest_api
-  }
-
   it 'should create a request' do
     request = {}
     request["name"] = "rest_api_test_request"

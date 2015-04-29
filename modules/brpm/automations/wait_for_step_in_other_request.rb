@@ -4,7 +4,7 @@ def execute_script(params)
   step_id = req_step[1].to_i
 
   BrpmAuto.log "Monitoring step #{step_id} of request #{request_id} ..."
-  BrpmRest.monitor_request(request_id, { :monitor_step_id => step_id })
+  brpm_rest_client.monitor_request(request_id, { :monitor_step_id => step_id })
 end
 
 

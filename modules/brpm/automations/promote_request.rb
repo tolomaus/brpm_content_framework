@@ -1,9 +1,9 @@
 def get_source_requests(params)
-  source_request_ids = BrpmRest.get_requests_by_plan_id_and_stage_name_and_app_name(params["request_plan_id"], params["source_stage"], params["application"])
+  source_request_ids = brpm_rest_client.get_requests_by_plan_id_and_stage_name_and_app_name(params["request_plan_id"], params["source_stage"], params["application"])
 
   raise "No requests found for application '#{params["application"]}' in stage '#{params["source_stage"]}' of this plan" if source_request_ids.count == 0
 
-  source_requests = source_request_ids.map { |source_request_id| BrpmRest.get_request_by_id(source_request_id) }
+  source_requests = source_request_ids.map { |source_request_id| brpm_rest_client.get_request_by_id(source_request_id) }
                                       .sort_by { |request| request["created_at"] }
 
   source_requests
@@ -19,7 +19,7 @@ def step_has_incremental_deployment(correction_source_step, source_steps_with_sa
       if source_steps_with_same_name.first["component"]["id"] == correction_source_step["component"]["id"]
         if !source_steps_with_same_name.first["version_tag"].nil? and !correction_source_step["version_tag"].nil?
           BrpmAuto.log "Verifying if the associated component '#{correction_source_step["component"]["name"]}' uses incremental deployment ..."
-          component = BrpmRest.get_component_by_id(correction_source_step["component"]["id"])
+          component = brpm_rest_client.get_component_by_id(correction_source_step["component"]["id"])
           incremental_deployment = (component.has_key?("properties") and component["properties"].any? { |property| property["name"] == "incremental_deployment" })
 
           if incremental_deployment and source_steps_with_same_name.first["version_tag"]["name"] == correction_source_step["version_tag"]["name"]
@@ -35,7 +35,7 @@ end
 
 def merge_source_request_steps(source_requests)
   BrpmAuto.log "Getting the step details of the initial request ..."
-  source_steps = source_requests.first["steps"].map { |source_step_summary| BrpmRest.get_step_by_id(source_step_summary["id"]) }
+  source_steps = source_requests.first["steps"].map { |source_step_summary| brpm_rest_client.get_step_by_id(source_step_summary["id"]) }
                                               .sort_by { |step| step["number"].to_f }
 
   #TODO: use work tasks to find the first post-deploy step
@@ -45,7 +45,7 @@ def merge_source_request_steps(source_requests)
   source_requests[1..source_requests.count].each do |source_request|
     BrpmAuto.log "Merging the steps from correction request #{source_request["id"]} - #{source_request["name"] || "<no name>"} (#{source_request["steps"].count} steps)"
     source_request["steps"].sort_by { |step| step["number"].to_f }.each do |correction_source_step_summary|
-      correction_source_step = BrpmRest.get_step_by_id(correction_source_step_summary["id"])
+      correction_source_step = brpm_rest_client.get_step_by_id(correction_source_step_summary["id"])
       BrpmAuto.log "Merging step '#{correction_source_step["name"]}' ..."
 
       source_steps_with_same_name = source_steps.find_all { |source_step| source_step["name"] == correction_source_step["name"] }
@@ -85,13 +85,13 @@ def create_target_request(initial_source_request, source_steps, params)
   target_request["deployment_coordinator_id"] = initial_source_request["deployment_coordinator"]["id"]
   target_request["app_ids"] = initial_source_request["apps"][0]["id"]
 
-  plan_stage_id = BrpmRest.get_plan_stage_id(params["request_plan_id"], params["target_stage"])
+  plan_stage_id = brpm_rest_client.get_plan_stage_id(params["request_plan_id"], params["target_stage"])
   target_request["plan_member_attributes"] = { "plan_id" => params["request_plan_id"], "plan_stage_id" => plan_stage_id }
   target_request["environment"] = params["target_env"]
   target_request["execute_now"] = (params["execute_target_request"] == 'Yes') #TODO: doesn't work - maybe try starting it explicitly after creation
 
   BrpmAuto.log "Creating the target request ..."
-  target_request = BrpmRest.create_request_from_hash(target_request)
+  target_request = brpm_rest_client.create_request_from_hash(target_request)
 
   BrpmAuto.log "Creating the target steps ..."
   procedure_mapping = {}
@@ -114,7 +114,7 @@ def create_target_request(initial_source_request, source_steps, params)
     target_step["procedure"] = source_step["procedure"]
 
     unless source_step["installed_component"].nil?
-      installed_components = BrpmRest.get_installed_components_by({ "app_name" => source_step["installed_component"]["app"]["name"],
+      installed_components = brpm_rest_client.get_installed_components_by({ "app_name" => source_step["installed_component"]["app"]["name"],
                                                            "component_name" => source_step["installed_component"]["component"]["name"],
                                                            "environment_name" => params["target_env"] })
 
@@ -123,7 +123,7 @@ def create_target_request(initial_source_request, source_steps, params)
       target_step["installed_component_id"] = installed_components[0]["id"]
 
       unless source_step["version_tag"].nil?
-        version_tags = BrpmRest.get_version_tags_by({ "name" => source_step["version_tag"]["name"],
+        version_tags = brpm_rest_client.get_version_tags_by({ "name" => source_step["version_tag"]["name"],
                                              "app_name" => source_step["installed_component"]["app"]["name"],
                                              "component_name" => source_step["installed_component"]["component"]["name"],
                                              "environment_name" => params["target_env"] })
@@ -150,7 +150,7 @@ def create_target_request(initial_source_request, source_steps, params)
     target_step["phase_id"] = source_step["phase"]["id"] unless source_step["phase"].nil?
     target_step["runtime_phase_id"] = source_step["runtime_phase"]["id"] unless source_step["runtime_phase"].nil?
 
-    target_step = BrpmRest.create_step_from_hash(target_step)
+    target_step = brpm_rest_client.create_step_from_hash(target_step)
 
     BrpmAuto.log "Created target step for step #{source_step["name"]} (#{target_step["position"]})."
 
@@ -162,7 +162,7 @@ end
 
 def execute_script(params)
   BrpmAuto.log "Getting the source requests ..."
-  source_requests = BrpmRest.get_source_requests(params)
+  source_requests = brpm_rest_client.get_source_requests(params)
 
   if params["request_template"].nil? || params["request_template"].empty?
     initial_source_request = source_requests.first
@@ -174,12 +174,12 @@ def execute_script(params)
     BrpmAuto.log "Creating the target request ..."
     target_request = create_target_request(initial_source_request, source_steps, params)
   else
-    target_request = BrpmRest.create_request_for_plan_from_template(params["request_plan_id"], params["target_stage"], params["request_template"], params["request_name"].sub("Release", "Deploy"), params["target_env"], (params["execute_target_request"] == 'Yes'))
+    target_request = brpm_rest_client.create_request_for_plan_from_template(params["request_plan_id"], params["target_stage"], params["request_template"], params["request_name"].sub("Release", "Deploy"), params["target_env"], (params["execute_target_request"] == 'Yes'))
   end
 
   BrpmAuto.log "Moving the source requests to the stage '#{params["source_stage"]} - Archived' ..."
   source_requests.each do |source_request|
-    BrpmRest.move_request_to_plan_and_stage(source_request["id"], params["request_plan_id"], "#{params["source_stage"]} - Archived")
+    brpm_rest_client.move_request_to_plan_and_stage(source_request["id"], params["request_plan_id"], "#{params["source_stage"]} - Archived")
   end
 
   BrpmAuto.log "Adding the promoted request' id to the request_params ..."

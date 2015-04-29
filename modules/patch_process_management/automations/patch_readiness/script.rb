@@ -1,8 +1,8 @@
 require "framework/lib/request_params"
-require "brpm/lib/brpm_rest_api"
-require "bladelogic/lib/bl_soap/compliance"
+require "brpm/lib/brpm_rest_client"
+require "bladelogic/lib/bl_soap/compliance_job"
 require "bladelogic/lib/bl_soap/job"
-require "bladelogic/lib/bl_soap/core"
+require "bladelogic/lib/bl_soap/utility"
 require 'yaml'
 require 'uri'
 require 'base64'
@@ -33,8 +33,8 @@ def execute_script(params)
   patch_readiness_job_group = "/patch-process-management"
   patch_readiness_job_name = "readiness-job"
 
-  BrpmAuto.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
-  session_id = BsaSoap.login
+  BrpmAuto.log("Logging on to Bladelogic instance #{BsaSoapClient.get_url} with user #{BsaSoapClient.get_username} and role #{BsaSoapClient.get_role}...")
+  session_id = BsaSoapClient.login
 
   BrpmAuto.log("Retrieving the job key of Patch Readiness job #{patch_readiness_job_group}/#{patch_readiness_job_name}...")
   job_db_key = ComplianceJob.get_dbkey_by_group_and_name(session_id, {:group_name => patch_readiness_job_group, :job_name => patch_readiness_job_name})

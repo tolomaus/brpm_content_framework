@@ -3,10 +3,6 @@ require "#{File.dirname(__FILE__)}/../spec_helper"
 plan_id = nil
 
 describe '/api/plans' do
-  before {
-    configure_brpm_rest_api
-  }
-
   it 'should _create_ a plan from a plan template with associated stages and request templates' do
     plan = {}
     plan["name"] = "#{Time.now.strftime("%Y%m%d%H%M%S")} - rest_api_test_plan_from_template"

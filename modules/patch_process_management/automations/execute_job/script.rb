@@ -50,8 +50,8 @@ def execute_script(params)
   job_group = "/#{params["application"].downcase}/public/#{job_type}"
   BrpmAuto.log("The job to be executed is  #{job_group}/#{job_name}")
 
-  BrpmAuto.log("Logging on to Bladelogic instance #{BsaSoap.get_url} with user #{BsaSoap.get_username} and role #{BsaSoap.get_role}...")
-  session_id = BsaSoap.login
+  BrpmAuto.log("Logging on to Bladelogic instance #{BsaSoapClient.get_url} with user #{BsaSoapClient.get_username} and role #{BsaSoapClient.get_role}...")
+  session_id = BsaSoapClient.login
 
   BrpmAuto.log("Retrieving the job key of the job...")
   job_db_key = Object.const_get(job_type).get_dbkey_by_group_and_name(session_id, {:group_name => job_group, :job_name => job_name})

@@ -1,14 +1,14 @@
-require "bladelogic/lib/bl_soap/soap"
+require "bladelogic/lib/bl_soap/bsa_soap_client"
 
-class Server
-	def self.get_server_id_by_name(ession_id, options = {})
-    BsaSoap.validate_cli_options_hash([:server_name], options)
-		integer_result = BsaSoap.execute_cli_with_param_list(session_id, self.name, "getServerIdByName",
+class Server < BsaSoapBase
+	def get_server_id_by_name(ession_id, options = {})
+    validate_cli_options_hash([:server_name], options)
+		integer_result = execute_cli_with_param_list(self.class, "getServerIdByName",
 			[
 				options[:server_name],
 			])
-		integer_value = BsaSoap.get_cli_return_value(integer_result)
+		integer_value = get_cli_return_value(integer_result)
 	rescue => exception
-		raise "Exception executing #{self.name} function: #{exception.to_s}"
+		raise "Exception executing #{self.class} function: #{exception.to_s}"
 	end
 end

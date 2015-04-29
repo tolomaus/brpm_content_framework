@@ -1,3 +1,5 @@
+brpm_rest_client = BrpmRestClient.new
+
 if BrpmAuto.request_params["auto_created"]
   BrpmAuto.log "The request was created in an automated way, not overriding the request params from the manual input step."
   application_version = BrpmAuto.request_params["application_version"]
@@ -9,11 +11,11 @@ else
 end
 
 BrpmAuto.log "Creating version tags for all components..."
-application = BrpmRest.get_app_by_name(BrpmAuto.params["application"])
+application = brpm_rest_client.get_app_by_name(BrpmAuto.params["application"])
 
 application["components"].each do |component|
   application["environments"].each do |environment|
-    BrpmRest.create_version_tag(application["name"], component["name"], environment["name"], application_version)
+    brpm_rest_client.create_version_tag(application["name"], component["name"], environment["name"], application_version)
   end
 end
 

@@ -1,6 +1,13 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
 
 describe 'select application version' do
+  before(:each) do
+    @brpm_rest_client = BrpmRestClient.new('http://brpm-content.pulsar-it.be:8088/brpm', ENV["BRPM_API_TOKEN"])
+
+    cleanup_request_data_file
+    cleanup_version_tags_for_app("E-Finance")
+  end
+
   describe '' do
     it 'should store the selected application version in the request_params and create version tags' do
       params = get_default_params
@@ -12,7 +19,7 @@ describe 'select application version' do
       expect(BrpmAuto.request_params.has_key?("application_version"))
       expect(BrpmAuto.request_params["application_version"]).to eq("1.0.0")
 
-      version_tag = BrpmRest.get_version_tag("E-Finance","EF - Java calculation engine", "development", "1.0.0")
+      version_tag = @brpm_rest_client.get_version_tag("E-Finance","EF - Java calculation engine", "development", "1.0.0")
       expect(version_tag).not_to be_nil
     end
   end
@@ -31,13 +38,8 @@ describe 'select application version' do
       expect(BrpmAuto.request_params.has_key?("application_version"))
       expect(BrpmAuto.request_params["application_version"]).to eq("2.0.0")
 
-      version_tag = BrpmRest.get_version_tag("E-Finance","EF - Java calculation engine", "development", "2.0.0")
+      version_tag = @brpm_rest_client.get_version_tag("E-Finance","EF - Java calculation engine", "development", "2.0.0")
       expect(version_tag).not_to be_nil
     end
-  end
-
-  before(:each) do
-    cleanup_request_data_file
-    cleanup_version_tags_for_app("E-Finance")
   end
 end

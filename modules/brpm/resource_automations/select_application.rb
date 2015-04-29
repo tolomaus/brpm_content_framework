@@ -1,6 +1,6 @@
 def execute_resource_automation_script(params, parent_id, offset, max_records)
   BrpmAuto.log "Finding all applications..."
-  apps = BrpmRest.get_apps()
+  apps = brpm_rest_client.get_apps()
 
   apps = apps.sort_by { |app| app["name"] }
 

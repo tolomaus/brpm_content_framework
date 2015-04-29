@@ -1,6 +1,6 @@
 def execute_resource_automation_script(params, parent_id, offset, max_records)
   BrpmAuto.log "Finding all request templates for application #{params["application"]}..."
-  request_templates = BrpmRest.get_request_templates_by_app(params["application"])
+  request_templates = brpm_rest_client.get_request_templates_by_app(params["application"])
 
   request_templates = request_templates.sort_by { |request_template| request_template["name"] }
 

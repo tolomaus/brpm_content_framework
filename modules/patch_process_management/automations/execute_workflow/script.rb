@@ -1,4 +1,4 @@
-require "brpm/lib/brpm_rest_api"
+require "brpm/lib/brpm_rest_client"
 require "atrium_orchestrator/lib/ao_soap_api"
 
 def execute_script(params)

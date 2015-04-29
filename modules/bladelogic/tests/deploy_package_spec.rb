@@ -4,7 +4,7 @@ describe 'deploy package' do
   describe '' do
     it 'should deploy a package in BladeLogic' do
       params = get_default_params
-      params = params.merge(get_integration_settings_for_bladelogic)
+      params = params.merge(get_integration_params_for_bladelogic)
 
       params["application"] = 'E-Finance'
       params["component"] = 'EF - Java calculation engine'

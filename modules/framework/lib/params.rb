@@ -33,15 +33,17 @@ class Params < Hash
   attr_reader :ticket_ids
   attr_reader :tickets_foreign_ids
 
-  attr_reader :step_dir
-  attr_reader :request_dir
-  attr_reader :automation_results_dir
-
   attr_reader :run_key
 
-  attr_reader :base_brpm_url
-  attr_reader :base_brpm_api_token
+  attr_reader :automation_results_dir
+  attr_reader :output_dir
 
+  attr_reader :log_file
+
+  attr_reader :brpm_url
+  attr_reader :brpm_api_token
+
+  attr_reader :run_from_brpm
   attr_reader :debug
 
   def initialize(params)
@@ -81,16 +83,18 @@ class Params < Hash
     @ticket_ids = params["ticket_ids"]
     @tickets_foreign_ids = params["tickets_foreign_ids"]
 
-    @step_dir = params["SS_output_dir"]
-    @request_dir = File.expand_path("..", @step_dir)
-    @automation_results_dir = params["SS_automation_results_dir"]
-
     @run_key = params["SS_run_key"]
 
-    @base_brpm_url = params["SS_base_url"]
-    @base_brpm_api_token = params["SS_api_token"]
+    @automation_results_dir = params["SS_automation_results_dir"]
+    @output_dir = params["SS_output_dir"] || params["output_dir"] || Dir.pwd
 
-    @debug = params["debug"] == "true"
+    @log_file = params["log_file"] || "#{@output_dir}/brpm_auto.log"
+
+    @brpm_url = params["SS_base_url"] || params["brpm_url"]
+    @brpm_api_token = params["SS_api_token"] || params["brpm_api_token"]
+
+    @run_from_brpm = (@run_key != nil)
+    @debug = (params["debug"] == "true")
   end
 
   private

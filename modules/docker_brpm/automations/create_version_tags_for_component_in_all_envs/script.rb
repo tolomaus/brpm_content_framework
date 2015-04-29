@@ -1,5 +1,5 @@
 require "framework/lib/request_params"
-require "brpm/lib/brpm_rest_api"
+require "brpm/lib/brpm_rest_client"
 
 def execute_script(params)
   request_params = get_request_params()

@@ -1,4 +1,4 @@
-load "brpm/lib/brpm_rest_api.rb"
+load "brpm/lib/brpm_rest_client.rb"
 
 def is_issue_valid(issue)
   return true

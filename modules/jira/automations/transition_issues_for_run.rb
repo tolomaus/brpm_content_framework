@@ -2,7 +2,7 @@ def execute_script(params)
   run_id = params["request_run_id"] || params["run_id"]
 
   BrpmAuto.log  "Getting the tickets that are linked to the requests of this run..."
-  tickets = BrpmRest.get_tickets_by_run_id_and_request_state(run_id, "completed")
+  tickets = brpm_rest_client.get_tickets_by_run_id_and_request_state(run_id, "completed")
 
   if tickets.count == 0
     BrpmAuto.log "This run has no tickets, nothing further to do."
@@ -20,6 +20,6 @@ def execute_script(params)
 
   tickets.each do |ticket|
     BrpmAuto.log "Setting the status of issue #{ticket["foreign_id"]} to #{params["target_issue_status"]}"
-    JiraRest.set_issue_to_status(ticket["foreign_id"], params["target_issue_status"])
+    JiraRestClient.set_issue_to_status(ticket["foreign_id"], params["target_issue_status"])
   end
 end
