@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/../modules/framework/brpm_automation"
+require "#{File.dirname(__FILE__)}/../modules/framework/brpm_auto"
 
 BrpmAuto.initialize_logger("/home/jenkins/logs/test.log")
 

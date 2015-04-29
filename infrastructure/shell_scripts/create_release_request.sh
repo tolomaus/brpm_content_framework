@@ -2,7 +2,7 @@
 . /opt/bmc/RLM/bin/setenv.sh
 
 jruby <<-EORUBY
-require "modules/framework/brpm_automation"
+require "modules/framework/brpm_script_executor"
 
 params = {}
 params["application_name"] = "$APPLICATION_NAME"
@@ -15,6 +15,6 @@ params["brpm_api_token"] = "$BRPM_TOKEN"
 
 params["log_file"] = "$LOG_FILE"
 
-BrpmAuto.execute_script_from_module("brpm", "create_release_request", params)
+BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
 EORUBY
 

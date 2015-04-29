@@ -1,5 +1,5 @@
 require 'fileutils'
-require "#{File.dirname(__FILE__)}/../../framework/brpm_automation"
+require "#{File.dirname(__FILE__)}/../../framework/brpm_script_executor"
 
 def setup_brpm_auto
   FileUtils.mkdir_p "/tmp/brpm_content"
@@ -8,6 +8,9 @@ def setup_brpm_auto
 
   BrpmAuto.require_module "brpm"
   BrpmAuto.require_module "bladelogic"
+
+  @brpm_rest_client = BrpmRestClient.new('http://brpm-content.pulsar-it.be:8088/brpm', ENV["BRPM_API_TOKEN"])
+  @bsa_soap_client = BsaSoapClient.new
 end
 
 def get_default_params

@@ -2,9 +2,10 @@ require "#{File.dirname(__FILE__)}/spec_helper"
 
 describe 'create package' do
   before(:all) do
-    @brpm_rest_client = BrpmRestClient.new('http://brpm-content.pulsar-it.be:8088/brpm', ENV["BRPM_API_TOKEN"])
-    @bsa_soap_client = BsaSoapClient.new
+    setup_brpm_auto
+  end
 
+  before(:all) do
     cleanup_package "/Applications/E-Finance/EF - Java calculation engine", "1.0.0"
   end
 
@@ -17,7 +18,7 @@ describe 'create package' do
       params["component"] = 'EF - Java calculation engine'
       params["component_version"] = '1.0.0'
 
-      BrpmAuto.execute_script_from_module("bladelogic", "create_package", params)
+      BrpmScriptExecutor.execute_automation_script("bladelogic", "create_package", params)
 
       version_tag = @brpm_rest_client.get_version_tag("E-Finance","EF - Java calculation engine", "development", "1.0.0")
       expect(version_tag).not_to be_nil

@@ -1,5 +1,5 @@
 require 'fileutils'
-require "#{File.dirname(__FILE__)}/../../framework/brpm_automation"
+require "#{File.dirname(__FILE__)}/../../framework/brpm_script_executor"
 
 def setup_brpm_auto
   FileUtils.mkdir_p "/tmp/brpm_content"
@@ -8,6 +8,8 @@ def setup_brpm_auto
 
   BrpmAuto.require_module "brpm"
   BrpmAuto.require_module "jira"
+
+  @jira_rest_client = JiraRestClient.new
 end
 
 def get_default_params
@@ -41,5 +43,3 @@ end
 def cleanup_release(release_name)
   @jira_rest_client.delete_option_for_dropdown_custom_field('10000', release_name)
 end
-
-setup_brpm_auto

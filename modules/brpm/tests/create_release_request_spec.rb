@@ -1,9 +1,11 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
 
 describe 'create release request' do
-  before(:each) do
-    @brpm_rest_client = BrpmRestClient.new('http://brpm-content.pulsar-it.be:8088/brpm', ENV["BRPM_API_TOKEN"])
+  before(:all) do
+    setup_brpm_auto
+  end
 
+  before(:each) do
     cleanup_requests_and_plans_for_app("E-Finance")
   end
 
@@ -14,7 +16,7 @@ describe 'create release request' do
       params["application_version"] = '1.0.0'
       params["release_request_template_name"] = 'Release E-Finance'
 
-      output_params = BrpmAuto.execute_script_from_module("brpm", "create_release_request", params)
+      output_params = BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
 
       request = @brpm_rest_client.get_request_by_id(output_params["request_id"])
 
@@ -31,7 +33,7 @@ describe 'create release request' do
       params["release_request_template_name"] = 'Release E-Finance'
       params["release_plan_template_name"] = 'E-Finance Release Plan'
 
-      output_params = BrpmAuto.execute_script_from_module("brpm", "create_release_request", params)
+      output_params = BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
 
       request = @brpm_rest_client.get_request_by_id(output_params["request_id"])
 

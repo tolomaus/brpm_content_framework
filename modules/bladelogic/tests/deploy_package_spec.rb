@@ -1,6 +1,10 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
 
 describe 'deploy package' do
+  before(:all) do
+    setup_brpm_auto
+  end
+
   describe '' do
     it 'should deploy a package in BladeLogic' do
       params = get_default_params
@@ -12,7 +16,7 @@ describe 'deploy package' do
       params["request_environment"] = "development"
       params["server_group"] = "EF - java app servers - development"
 
-      BrpmAuto.execute_script_from_module("bladelogic", "deploy_package", params)
+      BrpmScriptExecutor.execute_automation_script("bladelogic", "deploy_package", params)
     end
   end
 end

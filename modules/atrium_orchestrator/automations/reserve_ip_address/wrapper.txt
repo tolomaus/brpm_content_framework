@@ -22,4 +22,4 @@ integration_details = YAML.load(SS_integration_details)
 params["grid_name"] = integration_details["grid_name"]
 params["module_name"] = integration_details["module_name"]
 
-BrpmAuto.execute_script_from_module("atrium_orchestrator", "reserve_ip_address", params)
+BrpmScriptExecutor.execute_automation_script("atrium_orchestrator", "reserve_ip_address", params)

@@ -1,9 +1,11 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
 
 describe 'select application version' do
-  before(:each) do
-    @brpm_rest_client = BrpmRestClient.new('http://brpm-content.pulsar-it.be:8088/brpm', ENV["BRPM_API_TOKEN"])
+  before(:all) do
+    setup_brpm_auto
+  end
 
+  before(:each) do
     cleanup_request_data_file
     cleanup_version_tags_for_app("E-Finance")
   end
@@ -14,7 +16,7 @@ describe 'select application version' do
       params["application"] = 'E-Finance'
       params["application_version"] = '1.0.0'
 
-      BrpmAuto.execute_script_from_module("brpm", "select_application_version", params)
+      BrpmScriptExecutor.execute_automation_script("brpm", "select_application_version", params)
 
       expect(BrpmAuto.request_params.has_key?("application_version"))
       expect(BrpmAuto.request_params["application_version"]).to eq("1.0.0")
@@ -33,7 +35,7 @@ describe 'select application version' do
       params["application"] = 'E-Finance'
       params["application_version"] = '1.0.0'
 
-      BrpmAuto.execute_script_from_module("brpm", "select_application_version", params)
+      BrpmScriptExecutor.execute_automation_script("brpm", "select_application_version", params)
 
       expect(BrpmAuto.request_params.has_key?("application_version"))
       expect(BrpmAuto.request_params["application_version"]).to eq("2.0.0")

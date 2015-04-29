@@ -18,4 +18,4 @@ require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/fram
 # [integration_id=9]
 #=== End ===#
 
-BrpmAuto.execute_script_from_module("windows", "deploy_file_over_windows_shares", params)
+BrpmScriptExecutor.execute_automation_script("windows", "deploy_file_over_windows_shares", params)

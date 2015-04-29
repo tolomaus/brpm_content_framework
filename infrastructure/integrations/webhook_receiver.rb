@@ -3,9 +3,9 @@ require 'rubygems'
 require 'json'
 require 'rest-client'
 require 'webrick'
-require "#{File.dirname(__FILE__)}/../../modules/framework/brpm_automation"
+require "#{File.dirname(__FILE__)}/../../modules/framework/brpm_auto"
 
-Logger.setup(ENV["WEBHOOK_RECEIVER_LOG_FILE"])
+BrpmAuto.initialize_logger(ENV["WEBHOOK_RECEIVER_LOG_FILE"])
 
 port = ENV["WEBHOOK_RECEIVER_PORT"]
 mount_point = "/#{ENV["WEBHOOK_RECEIVER_MOUNT_POINT"]}"

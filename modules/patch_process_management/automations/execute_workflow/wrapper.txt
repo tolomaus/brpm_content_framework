@@ -26,5 +26,5 @@ params["module_name"] = integration_details["module_name"]
 
 params["workflow_list"] = { "enable-monitoring" => "Enable monitoring", "disable-monitoring" => "Disable monitoring", "add-to-loadbalancer" => "Add app to loadbalancer", "remove-from-loadbalancer" => "Remove app from loadbalancer" }
 
-BrpmAuto.execute_script_from_module("patch_process_management", "service_aware_patching/execute_workflow", params)
+BrpmScriptExecutor.execute_automation_script("patch_process_management", "service_aware_patching/execute_workflow", params)
 

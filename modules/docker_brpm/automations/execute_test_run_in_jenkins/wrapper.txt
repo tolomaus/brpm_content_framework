@@ -10,4 +10,4 @@ params["SS_integration_username"] = SS_hudson_username
 params["SS_integration_password_enc"] = SS_hudson_password_enc
 params["SS_integration_details"] = YAML.load(SS_hudson_details)
 
-BrpmAuto.execute_script_from_module("docker_brpm", "execute_test_run_in_jenkins", params)
+BrpmScriptExecutor.execute_automation_script("docker_brpm", "execute_test_run_in_jenkins", params)

@@ -1,5 +1,4 @@
 BrpmAuto.require_module "brpm"
-BrpmAuto.require_module "jira"
 require "#{File.dirname(__FILE__)}/../../jira_mappings"
 
 def process_event(event)
@@ -116,7 +115,7 @@ end
 #################################
 # JIRA
 
-def get_jira_integration_details
+def get_jira_integration_settings
   params = {}
   params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
@@ -126,7 +125,7 @@ def get_jira_integration_details
 end
 
 def update_tickets_in_jira_by_request(request)
-  params = get_jira_integration_details
+  params = get_jira_integration_settings
   params["request_id"] = request["id"][0]["content"]
 
   BrpmAuto.log "Getting the stage of this request..."
@@ -135,11 +134,11 @@ def update_tickets_in_jira_by_request(request)
   BrpmAuto.log "Getting the target status for the issues in JIRA..."
   params["target_issue_status"] = map_stage_to_issue_status(stage_name)
 
-  BrpmAuto.execute_script_from_module("jira", "transition_issues_for_request", params)
+  BrpmScriptExecutor.execute_automation_script("jira", "transition_issues_for_request", params)
 end
 
 def update_tickets_in_jira_by_run(run)
-  params = get_jira_integration_details
+  params = get_jira_integration_settings
   params["run_id"] = run["id"][0]["content"]
 
   BrpmAuto.log "Getting the stage of this run..."
@@ -148,31 +147,31 @@ def update_tickets_in_jira_by_run(run)
   BrpmAuto.log "Getting the target status for the issues in JIRA..."
   params["target_issue_status"] = map_stage_to_issue_status(stage["name"])
 
-  BrpmAuto.execute_script_from_module("jira", "transition_issues_for_run", params)
+  BrpmScriptExecutor.execute_automation_script("jira", "transition_issues_for_run", params)
 end
 
 def create_release_in_jira(plan)
-  params = get_jira_integration_details
+  params = get_jira_integration_settings
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["release_name"] = plan["name"][0]
 
-  BrpmAuto.execute_script_from_module("jira", "create_release", params)
+  BrpmScriptExecutor.execute_automation_script("jira", "create_release", params)
 end
 
 def update_release_in_jira(old_plan, new_plan)
-  params = get_jira_integration_details
+  params = get_jira_integration_settings
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["old_release_name"] = old_plan["name"][0]
   params["new_release_name"] = new_plan["name"][0]
 
-  BrpmAuto.execute_script_from_module("jira", "update_release", params)
+  BrpmScriptExecutor.execute_automation_script("jira", "update_release", params)
 end
 
 def delete_release_in_jira(plan)
-  params = get_jira_integration_details
+  params = get_jira_integration_settings
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["release_name"] = plan["name"][0]
 
-  BrpmAuto.execute_script_from_module("jira", "delete_release", params)
+  BrpmScriptExecutor.execute_automation_script("jira", "delete_release", params)
 end
 #################################

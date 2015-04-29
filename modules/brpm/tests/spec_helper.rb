@@ -1,5 +1,5 @@
 require 'fileutils'
-require "#{File.dirname(__FILE__)}/../../framework/brpm_automation"
+require "#{File.dirname(__FILE__)}/../../framework/brpm_script_executor"
 
 def setup_brpm_auto
   FileUtils.mkdir_p "/tmp/brpm_content"
@@ -7,6 +7,8 @@ def setup_brpm_auto
   BrpmAuto.setup( { "output_dir" => "/tmp/brpm_content" } )
 
   BrpmAuto.require_module "brpm"
+
+  @brpm_rest_client = BrpmRestClient.new('http://brpm-content.pulsar-it.be:8088/brpm', ENV["BRPM_API_TOKEN"])
 end
 
 def get_default_params
@@ -53,5 +55,3 @@ def cleanup_version_tags_for_app(app_name)
     @brpm_rest_client.delete_version_tag(version_tag["id"])
   end
 end
-
-setup_brpm_auto

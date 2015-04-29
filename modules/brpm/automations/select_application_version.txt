@@ -12,4 +12,4 @@
 ###
 require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_automation.rb"
 
-BrpmAuto.execute_script_from_module("brpm", "select_application_version", params)
+BrpmScriptExecutor.execute_automation_script("brpm", "select_application_version", params)

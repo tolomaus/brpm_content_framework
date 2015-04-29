@@ -2,7 +2,7 @@
 . /opt/bmc/RLM/bin/setenv.sh
 
 jruby <<-EORUBY
-require "modules/framework/brpm_automation"
+require "modules/framework/brpm_script_executor"
 
 params = {}
 params["application"] = "$APPLICATION"
@@ -20,6 +20,6 @@ params["SS_integration_details"]["role"] = "$SS_INTEGRATION_DETAILS_ROLE"
 
 params["log_file"] = "$LOG_FILE"
 
-BrpmAuto.execute_script_from_module("bladelogic", "create_package", params)
+BrpmScriptExecutor.execute_automation_script("bladelogic", "create_package", params)
 EORUBY
 
