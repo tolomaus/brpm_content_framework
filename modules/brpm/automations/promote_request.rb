@@ -1,4 +1,6 @@
 def get_source_requests(params)
+  brpm_rest_client = BrpmRestClient.new
+
   source_request_ids = brpm_rest_client.get_requests_by_plan_id_and_stage_name_and_app_name(params["request_plan_id"], params["source_stage"], params["application"])
 
   raise "No requests found for application '#{params["application"]}' in stage '#{params["source_stage"]}' of this plan" if source_request_ids.count == 0
@@ -10,6 +12,8 @@ def get_source_requests(params)
 end
 
 def step_has_incremental_deployment(correction_source_step, source_steps_with_same_name)
+  brpm_rest_client = BrpmRestClient.new
+
   incremental_deployment = false
   if source_steps_with_same_name.count > 1
     BrpmAuto.log "Already multiple steps with the same name, this means that it is a step that has a component with incremental deploy."
@@ -34,6 +38,8 @@ def step_has_incremental_deployment(correction_source_step, source_steps_with_sa
 end
 
 def merge_source_request_steps(source_requests)
+  brpm_rest_client = BrpmRestClient.new
+
   BrpmAuto.log "Getting the step details of the initial request ..."
   source_steps = source_requests.first["steps"].map { |source_step_summary| brpm_rest_client.get_step_by_id(source_step_summary["id"]) }
                                               .sort_by { |step| step["number"].to_f }
@@ -76,6 +82,8 @@ def merge_source_request_steps(source_requests)
 end
 
 def create_target_request(initial_source_request, source_steps, params)
+  brpm_rest_client = BrpmRestClient.new
+
   target_request = {}
   target_request["name"] = params["request_name"].sub("Release", "Deploy")
   target_request["description"] = initial_source_request["description"]
@@ -160,29 +168,30 @@ def create_target_request(initial_source_request, source_steps, params)
   target_request
 end
 
-def execute_script(params)
-  BrpmAuto.log "Getting the source requests ..."
-  source_requests = brpm_rest_client.get_source_requests(params)
+brpm_rest_client = BrpmRestClient.new
+params = BrpmAuto.params
 
-  if params["request_template"].nil? || params["request_template"].empty?
-    initial_source_request = source_requests.first
-    BrpmAuto.log "Found initial source request #{initial_source_request["id"]} - #{initial_source_request["name"] || "<no name>"}"
+BrpmAuto.log "Getting the source requests ..."
+source_requests = brpm_rest_client.get_source_requests(params)
 
-    BrpmAuto.log "Merging the source request steps ..."
-    source_steps = merge_source_request_steps(source_requests)
+if params["request_template"].nil? || params["request_template"].empty?
+  initial_source_request = source_requests.first
+  BrpmAuto.log "Found initial source request #{initial_source_request["id"]} - #{initial_source_request["name"] || "<no name>"}"
 
-    BrpmAuto.log "Creating the target request ..."
-    target_request = create_target_request(initial_source_request, source_steps, params)
-  else
-    target_request = brpm_rest_client.create_request_for_plan_from_template(params["request_plan_id"], params["target_stage"], params["request_template"], params["request_name"].sub("Release", "Deploy"), params["target_env"], (params["execute_target_request"] == 'Yes'))
-  end
+  BrpmAuto.log "Merging the source request steps ..."
+  source_steps = merge_source_request_steps(source_requests)
 
-  BrpmAuto.log "Moving the source requests to the stage '#{params["source_stage"]} - Archived' ..."
-  source_requests.each do |source_request|
-    brpm_rest_client.move_request_to_plan_and_stage(source_request["id"], params["request_plan_id"], "#{params["source_stage"]} - Archived")
-  end
-
-  BrpmAuto.log "Adding the promoted request' id to the request_params ..."
-  RequestParams.add_request_param("promoted_request_id", target_request["id"])
+  BrpmAuto.log "Creating the target request ..."
+  target_request = create_target_request(initial_source_request, source_steps, params)
+else
+  target_request = brpm_rest_client.create_request_for_plan_from_template(params["request_plan_id"], params["target_stage"], params["request_template"], params["request_name"].sub("Release", "Deploy"), params["target_env"], (params["execute_target_request"] == 'Yes'))
 end
+
+BrpmAuto.log "Moving the source requests to the stage '#{params["source_stage"]} - Archived' ..."
+source_requests.each do |source_request|
+  brpm_rest_client.move_request_to_plan_and_stage(source_request["id"], params["request_plan_id"], "#{params["source_stage"]} - Archived")
+end
+
+BrpmAuto.log "Adding the promoted request' id to the request_params ..."
+BrpmAuto.request_params["promoted_request_id"] = target_request["id"]
 

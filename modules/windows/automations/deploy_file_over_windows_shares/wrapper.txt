@@ -12,7 +12,7 @@
 #   required: yes
 #   position: A3:D3
 ###
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_automation.rb"
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_script_executor.rb"
 
 #=== General Integration Server: Software repo over windows file share ===#
 # [integration_id=9]

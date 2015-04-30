@@ -1,8 +1,6 @@
 dependencies:
-  - brpm
-
-version: latest
 
 integration_servers:
+ - WindowsFileShare
 
 version: 1.0.0

@@ -3,6 +3,6 @@
 #   name: brpm_version
 #   required: no
 ###
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_automation.rb"
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_script_executor.rb"
 
 BrpmScriptExecutor.execute_automation_script("docker_brpm", "create_image_for_brpm_database_creator_input_params", params)

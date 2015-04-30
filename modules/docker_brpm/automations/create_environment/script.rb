@@ -1,18 +1,14 @@
-require "framework/lib/request_params"
-require "brpm/lib/brpm_rest_client"
-require "docker_brpm/lib/docker"
+brpm_rest_client = BrpmRestClient.new
+params = BrpmAuto.params
+request_params = BrpmAuto.request_params
 
-def execute_script(params)
-  request_params = get_request_params()
+BrpmAuto.log "Creating the environment ..."
+environment = brpm_rest_client.create_environment(request_params["instance_name"])
 
-  BrpmAuto.log "Creating the environment ..."
-  environment = create_environment(request_params["instance_name"])
+BrpmAuto.log "Linking the environment to the docker host ..."
+brpm_rest_client.link_environment_to_server(environment["id"], get_docker_server_name())
 
-  BrpmAuto.log "Linking the environment to the docker host ..."
-  link_environment_to_server(environment["id"], get_docker_server_name())
-
-  BrpmAuto.log "Linking the environment to the app ..."
-  link_environment_to_app(environment["id"], params["application"])
-end
+BrpmAuto.log "Linking the environment to the app ..."
+brpm_rest_client.link_environment_to_app(environment["id"], params["application"])
 
 

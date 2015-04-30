@@ -1,4 +1,6 @@
 def execute_resource_automation_script(params, parent_id, offset, max_records)
+  brpm_rest_client = BrpmRestClient.new
+
   BrpmAuto.log "Finding all applications..."
   apps = brpm_rest_client.get_apps()
 

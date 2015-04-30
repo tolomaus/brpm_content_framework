@@ -21,7 +21,7 @@
 # [integration_id=6]
 1_patch_readiness.rb#=== End ===#
 
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_automation.rb"
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_script_executor.rb"
 
 params["direct_execute"] = true
 

@@ -1,4 +1,6 @@
 def execute_resource_automation_script(params, parent_id, offset, max_records)
+  brpm_rest_client = BrpmRestClient.new
+
   BrpmAuto.log "Finding all request templates for application #{params["application"]}..."
   request_templates = brpm_rest_client.get_request_templates_by_app(params["application"])
 
