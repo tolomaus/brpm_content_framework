@@ -15,4 +15,4 @@ params["SS_integration_username"] = SS_integration_username
 params["SS_integration_password_enc"] = SS_integration_password_enc
 params["SS_integration_details"] = YAML.load(SS_integration_details)
 
-BrpmScriptExecutor.execute_automation_script("jira", "transition_issues_for_request", params)
+BrpmScriptExecutor.execute_automation_script("jira", "transition_issues_for_run", params)

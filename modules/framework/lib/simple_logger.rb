@@ -2,6 +2,8 @@ class SimpleLogger
   def initialize(log_file, debug = false)
     @log_file = log_file
     @debug = debug
+
+    print "Logging to #{@log_file}."
   end
 
   def log(message)

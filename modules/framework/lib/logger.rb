@@ -7,6 +7,8 @@ class Logger
     @step_number = step_number
     @step_name = step_name
     @debug = debug
+
+    print "Logging to #{get_step_run_log_file_path} and #{get_request_log_file_path}."
   end
 
   def get_request_log_file_path
