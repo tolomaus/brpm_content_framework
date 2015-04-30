@@ -16,9 +16,9 @@ describe 'create release request' do
       params["application_version"] = '1.0.0'
       params["release_request_template_name"] = 'Release E-Finance'
 
-      output_params = BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
+      request_id = BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
 
-      request = @brpm_rest_client.get_request_by_id(output_params["request_id"])
+      request = @brpm_rest_client.get_request_by_id(request_id)
 
       expect(request["aasm_state"]).to eq("started")
       expect(request).not_to have_key("plan_member")
@@ -33,9 +33,9 @@ describe 'create release request' do
       params["release_request_template_name"] = 'Release E-Finance'
       params["release_plan_template_name"] = 'E-Finance Release Plan'
 
-      output_params = BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
+      request_id = BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
 
-      request = @brpm_rest_client.get_request_by_id(output_params["request_id"])
+      request = @brpm_rest_client.get_request_by_id(request_id)
 
       expect(request["aasm_state"]).to eq("started")
       expect(request).to have_key("plan_member")

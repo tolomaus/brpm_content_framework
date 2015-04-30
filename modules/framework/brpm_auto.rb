@@ -4,7 +4,6 @@ class BrpmAuto
   class << self
     attr_reader :logger
     attr_reader :params
-    attr_reader :output_params
     attr_reader :request_params
     attr_reader :integration_settings
 
@@ -21,7 +20,6 @@ class BrpmAuto
 
     def setup(params)
       @params = Params.new(params)
-      @output_params = {}
 
       if @params.run_from_brpm
         # noinspection RubyArgCount

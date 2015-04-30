@@ -33,8 +33,6 @@ class BrpmScriptExecutor
 
         write_to(File.read(BrpmAuto.logger.get_step_run_log_file_path)) if defined? write_to
       end
-
-      BrpmAuto.output_params
     end
 
     def execute_resource_automation_script(modul, name, params, parent_id, offset, max_records)
@@ -70,8 +68,6 @@ class BrpmScriptExecutor
 
         write_to(File.read(BrpmAuto.get_step_run_log_file_path)) if defined? write_to
       end
-
-      BrpmAuto.output_params
     end
   end
 end
