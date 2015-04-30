@@ -37,7 +37,7 @@ class BrpmScriptExecutor
       BrpmAuto.output_params
     end
 
-    def execute_script(modul, name, params, parent_id, offset, max_records)
+    def execute_resource_automation_script(modul, name, params, parent_id, offset, max_records)
       begin
         BrpmAuto.setup(params)
 
