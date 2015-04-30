@@ -1,7 +1,7 @@
 class SimpleLogger
-  def initialize(log_file, debug = false)
+  def initialize(log_file, also_log_to_console = false)
     @log_file = log_file
-    @debug = debug
+    @also_log_to_console = also_log_to_console
 
     print "Logging to #{@log_file}."
   end
@@ -20,7 +20,7 @@ class SimpleLogger
       log_file.print(log_message)
     end
 
-    print(log_message) if @debug
+    print(log_message) if @also_log_to_console
   end
 
   def log_error(message)

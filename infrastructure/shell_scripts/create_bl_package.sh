@@ -19,6 +19,7 @@ params["SS_integration_details"] = {}
 params["SS_integration_details"]["role"] = "$SS_INTEGRATION_DETAILS_ROLE"
 
 params["log_file"] = "$LOG_FILE"
+params["also_log_to_console"] = "true"
 
 BrpmScriptExecutor.execute_automation_script("bladelogic", "create_package", params)
 EORUBY

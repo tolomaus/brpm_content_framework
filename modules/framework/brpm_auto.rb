@@ -25,10 +25,10 @@ class BrpmAuto
 
       if @params.run_from_brpm
         # noinspection RubyArgCount
-        @logger = Logger.new(@params.request_id, @params.automation_results_dir, @params.step_id, @params.run_key, @params.step_number, @params.step_name, @params.debug)
+        @logger = Logger.new(@params.request_id, @params.automation_results_dir, @params.step_id, @params.run_key, @params.step_number, @params.step_name, @params.also_log_to_console)
         @request_params = RequestParams.new_for_request(@params.automation_results_dir, @params.application, @params.request_id)
       else
-        initialize_logger(@params.log_file, @params.debug)
+        initialize_logger(@params.log_file, @params.also_log_to_console)
         initialize_request_params(@params.output_dir)
       end
 
@@ -139,8 +139,8 @@ class BrpmAuto
       end
     end
 
-    def initialize_logger(log_file, debug = false)
-      @logger = SimpleLogger.new(log_file, debug)
+    def initialize_logger(log_file, also_log_to_console = false)
+      @logger = SimpleLogger.new(log_file, also_log_to_console)
     end
 
     def log(message)

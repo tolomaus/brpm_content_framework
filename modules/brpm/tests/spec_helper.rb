@@ -13,7 +13,7 @@ end
 
 def get_default_params
   params = {}
-  params['debug'] = 'true'
+  params['also_log_to_console'] = 'true'
 
   params['brpm_url'] = 'http://brpm-content.pulsar-it.be:8088/brpm'
   params['brpm_api_token'] = ENV["BRPM_API_TOKEN"]

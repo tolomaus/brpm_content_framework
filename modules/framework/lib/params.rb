@@ -44,7 +44,7 @@ class Params < Hash
   attr_reader :brpm_api_token
 
   attr_reader :run_from_brpm
-  attr_reader :debug
+  attr_reader :also_log_to_console
 
   def initialize(params)
     self.merge!(params)
@@ -94,7 +94,7 @@ class Params < Hash
     @brpm_api_token = params["SS_api_token"] || params["brpm_api_token"]
 
     @run_from_brpm = (@run_key != nil)
-    @debug = (params["debug"] == "true")
+    @also_log_to_console = (params["also_log_to_console"] == "true")
   end
 
   private

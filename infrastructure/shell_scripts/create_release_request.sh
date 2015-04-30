@@ -14,6 +14,7 @@ params["brpm_url"] = "http://$BRPM_HOST:$BRPM_PORT/brpm"
 params["brpm_api_token"] = "$BRPM_TOKEN"
 
 params["log_file"] = "$LOG_FILE"
+params["also_log_to_console"] = "true"
 
 BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
 EORUBY

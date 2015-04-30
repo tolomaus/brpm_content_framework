@@ -1,12 +1,12 @@
 class Logger
-  def initialize(request_id, automation_results_dir, step_id, run_key, step_number, step_name, debug = false)
+  def initialize(request_id, automation_results_dir, step_id, run_key, step_number, step_name, also_log_to_console = false)
     @request_id = request_id
     @automation_results_dir = automation_results_dir
     @step_id = step_id
     @run_key = run_key
     @step_number = step_number
     @step_name = step_name
-    @debug = debug
+    @also_log_to_console = also_log_to_console
 
     print "Logging to #{get_step_run_log_file_path} and #{get_request_log_file_path}."
   end
@@ -37,7 +37,7 @@ class Logger
       log_file.print(log_message)
     end
 
-    print(log_message) if @debug
+    print(log_message) if @also_log_to_console
   end
 
   def log_error(message)
