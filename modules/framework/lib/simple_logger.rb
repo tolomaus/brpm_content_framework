@@ -3,7 +3,7 @@ class SimpleLogger
     @log_file = log_file
     @also_log_to_console = also_log_to_console
 
-    print "Logging to #{@log_file}."
+    print "Logging to #{@log_file}.\n"
   end
 
   def log(message)
