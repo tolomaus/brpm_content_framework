@@ -1,4 +1,4 @@
-def execute_resource_automation_script(params, parent_id, offset, max_records)
+def execute_script(params, parent_id, offset, max_records)
   root_group_name = "/#{params["application"].downcase}/public"
 
   BrpmAuto.log("Logging on to Bladelogic instance #{BsaSoapClient.get_url} with user #{BsaSoapClient.get_username} and role #{BsaSoapClient.get_role}...")

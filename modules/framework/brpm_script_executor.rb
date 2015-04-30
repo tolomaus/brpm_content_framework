@@ -18,11 +18,6 @@ class BrpmScriptExecutor
         BrpmAuto.log "Loading #{automation_script_path}..."
         load automation_script_path
 
-        if defined?(execute_script)
-          BrpmAuto.log "Calling execute_script(params)..."
-          execute_script(params)
-        end
-
       rescue Exception => e
         BrpmAuto.log_error "#{e}"
         BrpmAuto.log e.backtrace.join("\n\t")
@@ -42,7 +37,7 @@ class BrpmScriptExecutor
       BrpmAuto.output_params
     end
 
-    def execute_resource_automation_script(modul, name, params, parent_id, offset, max_records)
+    def execute_script(modul, name, params, parent_id, offset, max_records)
       begin
         BrpmAuto.setup(params)
 
@@ -59,7 +54,7 @@ class BrpmScriptExecutor
         load automation_script_path
 
         BrpmAuto.log "Calling execute_resource_automation_script(params, parent_id, offset, max_records)..."
-        execute_resource_automation_script(params, parent_id, offset, max_records)
+        execute_script(params, parent_id, offset, max_records)
 
       rescue Exception => e
         BrpmAuto.log_error "#{e}"
