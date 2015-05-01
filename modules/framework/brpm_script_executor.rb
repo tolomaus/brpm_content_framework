@@ -32,7 +32,9 @@ class BrpmScriptExecutor
         BrpmAuto.log ""
 
         if BrpmAuto.params.run_from_brpm
-          FileInUTF.open(params["SS_output_file"], "a") { |file| file.write(File.read(BrpmAuto.logger.get_step_run_log_file_path)) }
+          log_file = File.read(BrpmAuto.logger.get_step_run_log_file_path)
+          print(log_file)
+          FileInUTF.open(params["SS_output_file"], "a") { |file| file.write(log_file) }
         end
       end
     end
@@ -69,7 +71,9 @@ class BrpmScriptExecutor
         BrpmAuto.log ""
 
         if BrpmAuto.params.run_from_brpm
-          FileInUTF.open(params["SS_output_file"], "a") { |file| file.write(File.read(BrpmAuto.logger.get_step_run_log_file_path)) }
+          log_file = File.read(BrpmAuto.logger.get_step_run_log_file_path)
+          print(log_file)
+          FileInUTF.open(params["SS_output_file"], "a") { |file| file.write(log_file) }
         end
       end
     end

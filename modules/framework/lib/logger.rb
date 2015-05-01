@@ -8,7 +8,7 @@ class Logger
     @step_name = step_name
     @also_log_to_console = also_log_to_console
 
-    print "Logging to #{get_step_run_log_file_path} and #{get_request_log_file_path}."
+    print "Logging to #{get_step_run_log_file_path} and #{get_request_log_file_path}\n"
   end
 
   def get_request_log_file_path
