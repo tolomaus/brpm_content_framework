@@ -30,6 +30,8 @@ class BrpmScriptExecutor
 
         BrpmAuto.log ">>>>>>>>>>>>>> STOP automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
+
+        load "#{File.dirname(__FILE__)}/write_to.rb"
       end
     end
 

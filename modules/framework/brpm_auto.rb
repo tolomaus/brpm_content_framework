@@ -66,15 +66,12 @@ class BrpmAuto
         if failed_files.count == files.count
           raise LoadError, "Following files failed loading: #{failed_files.join(", ")}"
         else
-          require_files(failed_files)
+          require_files(failed_files, log)
         end
       end
     end
 
     def require_module(modul)
-      BrpmAuto.log "Loading the libraries of module #{modul}..."
-      require_libs(modul)
-
       module_config_file_path = "#{@modules_root_path}/#{modul}/config.yml"
       if File.exist?(module_config_file_path)
         module_config = YAML.load_file(module_config_file_path)
@@ -86,6 +83,9 @@ class BrpmAuto
           end
         end
       end
+
+      BrpmAuto.log "Loading the libraries of module #{modul}..."
+      require_libs(modul)
     end
 
     def privatize(expression, sensitive_data)
