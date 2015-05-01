@@ -15,7 +15,7 @@ class BrpmScriptExecutor
 
         automation_script_path = "#{modul}/automations/#{name}.rb"
 
-        BrpmAuto.log "Loading #{automation_script_path}..."
+        BrpmAuto.log "Loading the automation script #{automation_script_path}..."
         load automation_script_path
 
       rescue Exception => e
@@ -53,7 +53,7 @@ class BrpmScriptExecutor
 
         automation_script_path = "#{modul}/resource_automations/#{name}.rb"
 
-        BrpmAuto.log "Loading #{automation_script_path}..."
+        BrpmAuto.log "Loading the resource automation script #{automation_script_path}..."
         load automation_script_path
 
         BrpmAuto.log "Calling execute_resource_automation_script(params, parent_id, offset, max_records)..."
