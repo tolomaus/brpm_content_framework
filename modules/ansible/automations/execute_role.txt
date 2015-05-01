@@ -5,6 +5,8 @@
 #   type: in-list-single
 #   list_pairs: 1,common|2,db|3,haproxy|4,nagios|5,web|6,base-apache
 ###
+params["direct_execute"] = "true"
+
 require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_script_executor.rb"
 
 BrpmScriptExecutor.execute_automation_script("ansible", "execute_role", params)
