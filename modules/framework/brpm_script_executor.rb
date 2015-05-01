@@ -31,7 +31,7 @@ class BrpmScriptExecutor
         BrpmAuto.log ">>>>>>>>>>>>>> STOP automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
 
-        load "#{File.dirname(__FILE__)}/write_to.rb"
+        load "#{File.dirname(__FILE__)}/write_to.rb" if BrpmAuto.params.run_from_brpm
       end
     end
 
@@ -49,7 +49,7 @@ class BrpmScriptExecutor
         automation_script_path = "#{modul}/resource_automations/#{name}.rb"
 
         BrpmAuto.log "Loading the resource automation script #{automation_script_path}..."
-        load automation_script_path
+        result = load automation_script_path
 
         BrpmAuto.log "Calling execute_resource_automation_script(params, parent_id, offset, max_records)..."
         execute_script(params, parent_id, offset, max_records)
@@ -65,6 +65,8 @@ class BrpmScriptExecutor
 
         BrpmAuto.log ">>>>>>>>>>>>>> STOP resource automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
+
+        load "#{File.dirname(__FILE__)}/write_to.rb" if BrpmAuto.params.run_from_brpm
       end
     end
   end
