@@ -11,5 +11,5 @@ def execute(script_params, parent_id, offset, max_records)
   script_params["SS_integration_password_enc"] = SS_integration_password_enc
   script_params["SS_integration_details"] = YAML.load(SS_integration_details)
 
-  execute_resource_automation_script_from_module("bladelogic", "select_job", script_params, parent_id, offset, max_records)
+  BrpmScriptExecutor.execute_resource_automation_script("bladelogic", "select_job", script_params, parent_id, offset, max_records)
 end
