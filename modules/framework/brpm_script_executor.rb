@@ -83,6 +83,6 @@ class BrpmScriptExecutor
 end
 
 def add_logs(logs)
-  pack_response "results_link", results_full_path
+  pack_response "results_link", "abc"
 #  write_to(logs)
 end
