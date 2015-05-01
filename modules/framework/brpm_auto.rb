@@ -51,6 +51,7 @@ class BrpmAuto
 
     def require_files(files, log = true)
       failed_files = []
+      error_messages = []
       files.each do |file|
         if File.file?(file)
           log ? (BrpmAuto.log "Loading #{file}...") : (print "Loading #{file}...\n")
@@ -59,15 +60,13 @@ class BrpmAuto
             require file
           rescue NameError => ne # when we require a set of files with inter-dependencies, the order is important, therefore we will retry the failed files later
             failed_files << file
-          rescue e
-            BrpmAuto.log(e)
-            raise e
+            error_messages << ne
           end
         end
       end
       if failed_files.count > 0
         if failed_files.count == files.count
-          raise LoadError, "Following files failed loading: #{failed_files.join(", ")}"
+          raise NameError, "Following files failed loading: #{failed_files.join(", ")}\nError messages: #{error_messages.join(", ")}"
         else
           require_files(failed_files, log)
         end
