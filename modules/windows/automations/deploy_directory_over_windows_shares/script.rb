@@ -69,7 +69,7 @@ unless params["exclude_file_list"].empty?
 end
 
 BrpmAuto.log("Getting the list of target servers...")
-servers = get_server_list(params)
+servers = BrpmAuto.get_server_list
 BrpmAuto.log("Found #{servers.count} servers.")
 
 servers.each do |server|

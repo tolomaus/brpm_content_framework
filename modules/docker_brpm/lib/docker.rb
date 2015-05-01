@@ -3,7 +3,7 @@ def get_docker_server_name
 end
 
 def get_docker_host_name
-  @docker_host_name ||= get_server_list($params)[get_docker_server_name]["dns"]
+  @docker_host_name ||= BrpmAuto.get_server_list[get_docker_server_name]["dns"]
 end
 
 def run_docker_command(command, ignore_error=false)

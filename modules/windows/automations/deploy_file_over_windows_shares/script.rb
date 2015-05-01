@@ -17,7 +17,7 @@ smbclient_get_file(
     params["SS_output_dir"]
 )
 
-servers = get_server_list(params)
+servers = BrpmAuto.get_server_list
 
 servers.each do |server|
   BrpmAuto.log("Putting package #{repo_directory}/#{file_name} to server #{server[0]}...")
