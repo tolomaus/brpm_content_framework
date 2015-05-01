@@ -1,3 +1,5 @@
+require "yaml"
+
 class BrpmAuto
   private_class_method :new
 
@@ -56,8 +58,6 @@ class BrpmAuto
           begin
             require file
           rescue NameError => ne # when we require a set of files with inter-dependencies, the order is important, therefore we will retry the failed files later
-            log ? (BrpmAuto.log ne) : (print "#{ne}\n")
-
             failed_files << file
           end
         end
