@@ -10,7 +10,7 @@ def clone_git_repo(git_repo_name, output_dir)
   git_repo_dir = "#{root_git_repo_dir}/#{git_repo_name}"
   Dir.mkdir(git_repo_dir)
 
-  exec_command("git clone https://github.com/brpm-dev/#{git_repo_name}.git #{git_repo_dir}")
+  BrpmAuto.exec_command("git clone https://github.com/brpm-dev/#{git_repo_name}.git #{git_repo_dir}")
 
   git_repo_dir
 end
