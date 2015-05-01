@@ -59,6 +59,9 @@ class BrpmAuto
             require file
           rescue NameError => ne # when we require a set of files with inter-dependencies, the order is important, therefore we will retry the failed files later
             failed_files << file
+          rescue e
+            BrpmAuto.log(e)
+            raise e
           end
         end
       end
