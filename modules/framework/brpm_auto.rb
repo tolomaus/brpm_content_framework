@@ -75,14 +75,14 @@ class BrpmAuto
       BrpmAuto.log "Loading the libraries of module #{modul}..."
       require_libs(modul)
 
-      module_config_file_path = "#{modul}/config.yml"
+      module_config_file_path = "#{@modules_root_path}/#{modul}/config.yml"
       if File.exist?(module_config_file_path)
-        module_config = YAML.load(module_config_file_path)
-        if module_config.has_key?["dependencies"] and module_config["dependencies"].count > 0
+        module_config = YAML.load_file(module_config_file_path)
+        if module_config.has_key?("dependencies") and module_config["dependencies"] and module_config["dependencies"].count > 0
           BrpmAuto.log "Loading the dependent modules..."
-          module_config["dependencies"].each do |k, v|
-            BrpmAuto.log "Loading module #{k}..."
-            require_module(k)
+          module_config["dependencies"].each do |dep|
+            BrpmAuto.log "Loading module #{dep}..."
+            require_module(dep)
           end
         end
       end
