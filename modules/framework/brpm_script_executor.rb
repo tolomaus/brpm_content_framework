@@ -31,7 +31,9 @@ class BrpmScriptExecutor
         BrpmAuto.log ">>>>>>>>>>>>>> STOP automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
 
-        write_to(File.read(BrpmAuto.logger.get_step_run_log_file_path)) if defined? write_to
+        if BrpmAuto.params.run_from_brpm
+          FileInUTF.open(params["SS_output_file"], "a") { |file| file.write(File.read(BrpmAuto.logger.get_step_run_log_file_path)) }
+        end
       end
     end
 
@@ -66,7 +68,9 @@ class BrpmScriptExecutor
         BrpmAuto.log ">>>>>>>>>>>>>> STOP resource automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
 
-        write_to(File.read(BrpmAuto.get_step_run_log_file_path)) if defined? write_to
+        if BrpmAuto.params.run_from_brpm
+          FileInUTF.open(params["SS_output_file"], "a") { |file| file.write(File.read(BrpmAuto.logger.get_step_run_log_file_path)) }
+        end
       end
     end
   end
