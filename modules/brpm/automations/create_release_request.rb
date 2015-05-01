@@ -81,5 +81,6 @@ brpm_rest_client.plan_request(target_request["id"])
 BrpmAuto.log "Starting the request ... "
 brpm_rest_client.start_request(target_request["id"])
 
-target_request["id"]
+BrpmAuto.params["result"] = {}
+BrpmAuto.params["result"]["request_id"] = target_request["id"]
 
