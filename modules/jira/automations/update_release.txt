@@ -14,6 +14,8 @@
 # [integration_id=4]
 #=== End ===#
 
+params["direct_execute"] = "true"
+
 require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_script_executor.rb"
 
 params["SS_integration_dns"] = SS_integration_dns

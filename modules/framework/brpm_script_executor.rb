@@ -12,6 +12,7 @@ class BrpmScriptExecutor
 
         BrpmAuto.log "Loading the dependencies..."
         BrpmAuto.require_module(modul)
+        BrpmAuto.log "Finished loading the dependencies."
 
         automation_script_path = "#{modul}/automations/#{name}.rb"
 

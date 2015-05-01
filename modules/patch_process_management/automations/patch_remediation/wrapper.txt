@@ -37,4 +37,4 @@ params["SS_integration_details"] = YAML.load(SS_integration_details)
 
 params["phase_list"] = { "stage" => "Stage", "commit" => "Stage (if necessary) + Commit" }
 
-BrpmScriptExecutor.execute_automation_script("patch_process_management", "service_aware_patching/patch_remediation", params)
+BrpmScriptExecutor.execute_automation_script("patch_process_management", "patch_remediation", params)

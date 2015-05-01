@@ -19,7 +19,7 @@
 
 #=== BMC Application Automation Integration Server: BladeLogic on C4 ===#
 # [integration_id=6]
-1_patch_readiness.rb#=== End ===#
+#=== End ===#
 
 require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_script_executor.rb"
 
@@ -30,4 +30,4 @@ params["SS_integration_username"] = SS_integration_username
 params["SS_integration_password_enc"] = SS_integration_password_enc
 params["SS_integration_details"] = YAML.load(SS_integration_details)
 
-BrpmScriptExecutor.execute_automation_script("patch_process_management", "service_aware_patching/patch_analysis", params)
+BrpmScriptExecutor.execute_automation_script("patch_process_management", "patch_analysis", params)

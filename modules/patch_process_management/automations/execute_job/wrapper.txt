@@ -36,4 +36,4 @@ params["SS_integration_username"] = SS_integration_username
 params["SS_integration_password_enc"] = SS_integration_password_enc
 params["SS_integration_details"] = YAML.load(SS_integration_details)
 
-BrpmScriptExecutor.execute_automation_script("patch_process_management", "service_aware_patching/execute_job", params)
+BrpmScriptExecutor.execute_automation_script("patch_process_management", "execute_job", params)
