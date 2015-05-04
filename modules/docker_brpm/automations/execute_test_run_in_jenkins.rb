@@ -24,7 +24,7 @@ options["password"] = jenkins_password
 jenkins_test_rest_api_url = "#{jenkins_host}/job/#{jenkins_job}/buildWithParameters?DOCKER_HOST=#{get_docker_host_name}&BRPM_PORT=#{params["port"]}&BRPM_API_TOKEN=#{params["api_token"]}"
 
 BrpmAuto.log "Triggering jenkins to execute the tests ..."
-rest_post jenkins_test_rest_api_url, { :parameter => job_params }, options
+Rest.post jenkins_test_rest_api_url, { :parameter => job_params }, options
 
 raise("build_number not received") if build_number.nil?
 
