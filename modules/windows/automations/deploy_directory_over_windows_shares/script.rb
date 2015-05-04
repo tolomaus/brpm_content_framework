@@ -69,10 +69,9 @@ unless params["exclude_file_list"].empty?
 end
 
 BrpmAuto.log("Getting the list of target servers...")
-servers = BrpmAuto.get_server_list
-BrpmAuto.log("Found #{servers.count} servers.")
+BrpmAuto.log("Found #{BrpmAuto.params.servers.count} servers.")
 
-servers.each do |server|
+BrpmAuto.params.servers.each do |server|
   BrpmAuto.log("Putting directory #{repo_directory} onto server #{server[0]} (//#{server[1]["ip_address"]}/#{server[1]["deploy_share_name"]})...")
   smbclient_put_directory(
       server[1]["ip_address"],
