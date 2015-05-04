@@ -4,12 +4,12 @@ require 'fileutils'
 brpm_rest_client = BrpmRestClient.new
 
 BrpmAuto.log "Retrieving the application..."
-application = brpm_rest_client.get_app_by_name(BrpmAuto.request_params["application_name"])
-application_version = BrpmAuto.request_params["application_version"]
+application = brpm_rest_client.get_app_by_name(BrpmAuto.params["application_name"])
+application_version = BrpmAuto.params["application_version"]
 
-release_request_template_name = BrpmAuto.request_params["release_request_template_name"] || "Release application"
-release_plan_template_name = BrpmAuto.request_params["release_plan_template_name"]
-release_plan_name = BrpmAuto.request_params["release_plan_name"]
+release_request_template_name = BrpmAuto.params["release_request_template_name"] || "Release application"
+release_plan_template_name = BrpmAuto.params["release_plan_template_name"]
+release_plan_name = BrpmAuto.params["release_plan_name"]
 
 request_name = "Release #{application["name"]} #{application_version}"
 
