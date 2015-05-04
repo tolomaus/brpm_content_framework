@@ -1,6 +1,4 @@
-require "#{File.dirname(__FILE__)}/../modules/framework/brpm_auto"
-
-BrpmAuto.initialize_logger("/home/jenkins/logs/test.log")
+require "#{File.dirname(__FILE__)}/../../../../../modules/framework/brpm_auto"
 
 ADMIN_USER_ID = 1
 SMARTRELEASE_APP_ID = 1
@@ -8,6 +6,8 @@ SMARTRELEASE_APP_ID = 1
 def setup
   @brpm_url = "http://#{ENV["BRPM_HOST"]}:#{ENV["BRPM_PORT"]}/brpm"
   @brpm_api_token = ENV["BRPM_API_TOKEN"]
+
+  BrpmAuto.setup( { "output_dir" => "/home/jenkins" } )
 end
 
 def add_token(path)

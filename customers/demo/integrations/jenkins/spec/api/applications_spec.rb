@@ -1,6 +1,10 @@
 require "#{File.dirname(__FILE__)}/../spec_helper"
 
 describe '/api/applications' do
+  before(:all) do
+    setup
+  end
+
   it 'should create an application' do
     app = {}
     app["name"] = "rest_api_test_app1"
