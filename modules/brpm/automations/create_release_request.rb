@@ -4,23 +4,29 @@ require 'fileutils'
 brpm_rest_client = BrpmRestClient.new
 
 BrpmAuto.log "Retrieving the application..."
-application = brpm_rest_client.get_app_by_name(BrpmAuto.params["application_name"])
-application_version = BrpmAuto.params["application_version"]
+application = brpm_rest_client.get_app_by_name(BrpmAuto.request_params["application_name"])
+application_version = BrpmAuto.request_params["application_version"]
 
-release_request_template_name = BrpmAuto.params["release_request_template_name"] || "Release application"
-release_plan_template_name = BrpmAuto.params["release_plan_template_name"]
+release_request_template_name = BrpmAuto.request_params["release_request_template_name"] || "Release application"
+release_plan_template_name = BrpmAuto.request_params["release_plan_template_name"]
+release_plan_name = BrpmAuto.request_params["release_plan_name"]
 
 request_name = "Release #{application["name"]} #{application_version}"
 
-if release_plan_template_name
-  BrpmAuto.log "Creating a new plan from template '#{release_plan_template_name}' for #{application["name"]} v#{application_version} ..."
-  plan = brpm_rest_client.create_plan(release_plan_template_name, "Release #{BrpmAuto.params["application_name"]} v#{application_version}", Time.now)
+if release_plan_template_name or release_plan_name
+  if release_plan_template_name
+    BrpmAuto.log "Creating a new plan from template '#{release_plan_template_name}' for #{application["name"]} v#{application_version} ..."
+    plan = brpm_rest_client.create_plan(release_plan_template_name, "Release #{BrpmAuto.params["application_name"]} v#{application_version}", Time.now)
 
-  BrpmAuto.log "Planning the plan ..."
-  brpm_rest_client.plan_plan(plan["id"])
+    BrpmAuto.log "Planning the plan ..."
+    brpm_rest_client.plan_plan(plan["id"])
 
-  BrpmAuto.log "Starting the plan ..."
-  brpm_rest_client.start_plan(plan["id"])
+    BrpmAuto.log "Starting the plan ..."
+    brpm_rest_client.start_plan(plan["id"])
+  elsif release_plan_name
+    plan = brpm_rest_client.get_plan_by_name(release_plan_name)
+    raise "Release plan '#{release_plan_name}' doesn't exist." unless plan
+  end
 
   BrpmAuto.log "Creating a new request '#{request_name}' from template '#{release_request_template_name}' for application '#{application["name"]}' and plan #{plan["name"]}..."
   target_request = brpm_rest_client.create_request_for_plan_from_template(
@@ -32,6 +38,7 @@ if release_plan_template_name
       false, # execute_now
       { :application_version => application_version, :auto_created => true }
   )
+
 else
   BrpmAuto.log "Creating a new request '#{request_name}' from template '#{release_request_template_name}' for application '#{application["name"]}'..."
   target_request = brpm_rest_client.create_request(

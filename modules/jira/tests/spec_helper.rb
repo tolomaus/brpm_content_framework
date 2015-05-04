@@ -35,11 +35,6 @@ def get_integration_params_for_jira
   params
 end
 
-def cleanup_request_data_file
-  request_params_file = "/tmp/brpm_content/request_data.json"
-  File.delete(request_params_file) if File.exist?(request_params_file)
-end
-
 def cleanup_release(release_name)
   @jira_rest_client.delete_option_for_dropdown_custom_field('10000', release_name)
 end

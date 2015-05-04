@@ -6,7 +6,7 @@ describe 'select application version' do
   end
 
   before(:each) do
-    cleanup_request_data_file
+    cleanup_request_params
     cleanup_version_tags_for_app("E-Finance")
   end
 

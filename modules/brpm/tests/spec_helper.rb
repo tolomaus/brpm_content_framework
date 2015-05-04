@@ -23,9 +23,15 @@ def get_default_params
   params
 end
 
-def cleanup_request_data_file
+def cleanup_request_params
   request_params_file = "/tmp/brpm_content/request_data.json"
   File.delete(request_params_file) if File.exist?(request_params_file)
+end
+
+def set_request_params(request_params)
+  request_params_file = File.new("/tmp/brpm_content/request_data.json", "w")
+  request_params_file.puts(request_params.to_json)
+  request_params_file.close
 end
 
 def cleanup_requests_and_plans_for_app(app_name)

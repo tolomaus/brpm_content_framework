@@ -616,11 +616,11 @@ class BrpmRestClient
     result_hash
   end
 
-  def create_plan(template_name, plan_name, date)
+  def create_plan(template_name, plan_name, date = nil)
     plan = {}
     plan["plan_template_name"] = template_name
     plan["name"] = plan_name
-    plan["release_date"] = date.utc
+    plan["release_date"] = date.utc if date
 
     result = brpm_post "v1/plans", { :plan => plan }
 
