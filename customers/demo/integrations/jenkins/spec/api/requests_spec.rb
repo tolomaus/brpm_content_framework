@@ -40,12 +40,12 @@ describe '/api/requests' do
     result["code"].should eq(202)
   end
 
-  it 'should get all the requests' do
-    result = brpm_get "v1/requests"
-
-    result["code"].should eq(200)
-    result["response"].length.should be >= 1
-  end
+#  it 'should get all the requests' do
+#    result = brpm_get "v1/requests"
+#
+#    result["code"].should eq(200)
+#    result["response"].length.should be >= 1
+#  end
 
   it 'should get a request by name' do
     result = brpm_get "v1/requests?filters[name]=rest_api_test_request"
