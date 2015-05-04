@@ -36,11 +36,6 @@ def get_integration_params_for_bladelogic
   params
 end
 
-def cleanup_request_data_file
-  request_params_file = "/tmp/brpm_content/request_data.json"
-  File.delete(request_params_file) if File.exist?(request_params_file)
-end
-
 def cleanup_requests_and_plans_for_app(app_name)
   app = @brpm_rest_client.get_app_by_name(app_name)
 
