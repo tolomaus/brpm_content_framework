@@ -7,6 +7,10 @@ require "modules/framework/brpm_script_executor"
 params = {}
 params["application_name"] = "$APPLICATION_NAME"
 params["application_version"] = "$APPLICATION_VERSION"
+
+params["ef_net_version"] = "$EF_NET_VERSION"
+params["ef_java_version"] = "$EF_JAVA_VERSION"
+
 params["release_request_template_name"] = "$RELEASE_REQUEST_TEMPLATE_NAME"
 params["release_plan_template_name"] = "$RELEASE_PLAN_TEMPLATE_NAME" unless "$RELEASE_PLAN_TEMPLATE_NAME".empty?
 params["release_plan_name"] = "$RELEASE_PLAN_NAME" unless "$RELEASE_PLAN_NAME".empty?

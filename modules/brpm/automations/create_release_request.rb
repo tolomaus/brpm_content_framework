@@ -13,6 +13,12 @@ release_plan_name = BrpmAuto.params["release_plan_name"]
 
 request_name = "Release #{application["name"]} #{application_version}"
 
+request_params = {}
+request_params["auto_created"] = true
+request_params["component_versions"] = {}
+request_params["component_versions"]["EF - .NET web front end"] = BrpmAuto.params["ef_net_version"]
+request_params["component_versions"]["EF - Java calculation engine"] = BrpmAuto.params["ef_java_version"]
+
 if release_plan_template_name or release_plan_name
   if release_plan_template_name
     BrpmAuto.log "Creating a new plan from template '#{release_plan_template_name}' for #{application["name"]} v#{application_version} ..."
@@ -36,7 +42,7 @@ if release_plan_template_name or release_plan_name
       request_name,
       "release",
       false, # execute_now
-      { :application_version => application_version, :auto_created => true }
+      request_params
   )
 
 else
@@ -46,7 +52,7 @@ else
       request_name,
       "release",
       false, # execute_now
-      { :application_version => application_version, :auto_created => true }
+      request_params
   )
 end
 
