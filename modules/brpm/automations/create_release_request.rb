@@ -15,6 +15,7 @@ request_name = "Release #{application["name"]} #{application_version}"
 
 request_params = {}
 request_params["auto_created"] = true
+request_params["application_version"] = application_version
 request_params["component_versions"] = {}
 request_params["component_versions"]["EF - .NET web front end"] = BrpmAuto.params["ef_net_version"]
 request_params["component_versions"]["EF - Java calculation engine"] = BrpmAuto.params["ef_java_version"]
