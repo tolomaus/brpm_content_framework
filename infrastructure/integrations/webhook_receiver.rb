@@ -3,7 +3,7 @@ require 'rubygems'
 require 'json'
 require 'rest-client'
 require 'webrick'
-require "#{File.dirname(__FILE__)}/../../modules/framework/brpm_auto"
+require "#{File.dirname(__FILE__)}/../../modules/framework/brpm_script_executor"
 
 BrpmAuto.initialize_logger(ENV["WEBHOOK_RECEIVER_LOG_FILE"])
 
