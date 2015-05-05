@@ -67,7 +67,7 @@ describe 'create request' do
       params["target_environment_id"] = '5' #test
       params["release_request_template_name"] = 'Release E-Finance'
       params["request_plan_id"] = plan["id"].to_s
-      params["plan_stage"] = 'Test'
+      params["target_stage"] = 'Test'
       params["execute_target_request"] = 'No'
 
       BrpmScriptExecutor.execute_automation_script("brpm", "create_request", params)

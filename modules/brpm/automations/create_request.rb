@@ -26,8 +26,8 @@ request["environment"] = target_environment["name"]
 request["execute_now"] = false
 request["app_ids"] = [ application["id"] ]
 
-if params.request_plan_id and ! params.request_plan_id.empty? and params["plan_stage"] and ! params["plan_stage"].empty?
-  plan_stage_id = brpm_rest_client.get_plan_stage_id(params.request_plan_id, params["plan_stage"])
+if params.request_plan_id and ! params.request_plan_id.empty? and params["target_stage"] and ! params["target_stage"].empty?
+  plan_stage_id = brpm_rest_client.get_plan_stage_id(params.request_plan_id, params["target_stage"])
   request["plan_member_attributes"] = { "plan_id" => params.request_plan_id, "plan_stage_id" => plan_stage_id }
 end
 
