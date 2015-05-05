@@ -115,19 +115,22 @@ end
 #################################
 # JIRA
 
-def get_jira_integration_settings
+def get_default_params
   params = {}
   params["SS_integration_dns"] = ENV["EVENT_HANDLER_JIRA_URL"]
   params["SS_integration_username"] = ENV["EVENT_HANDLER_JIRA_USERNAME"]
   params["SS_integration_password"] = ENV["EVENT_HANDLER_JIRA_PASSWORD"]
 
+  params["brpm_url"] = "http://#{ENV["EVENT_HANDLER_BRPM_HOST"]}:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm"
+  params["brpm_api_token"] = ENV["EVENT_HANDLER_BRPM_TOKEN"]
+
+  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
   params
 end
 
 def update_tickets_in_jira_by_request(request)
-  params = get_jira_integration_settings
+  params = get_default_params
   params["request_id"] = request["id"][0]["content"]
-  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   request_with_details = @brpm_rest_client.get_request_by_id(request["id"][0]["content"])
   if request_with_details.has_key?("plan_member")
@@ -141,9 +144,8 @@ def update_tickets_in_jira_by_request(request)
 end
 
 def update_tickets_in_jira_by_run(run)
-  params = get_jira_integration_settings
+  params = get_default_params
   params["run_id"] = run["id"][0]["content"]
-  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   BrpmAuto.log "Getting the stage of this run..."
   stage = @brpm_rest_client.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
@@ -155,29 +157,26 @@ def update_tickets_in_jira_by_run(run)
 end
 
 def create_release_in_jira(plan)
-  params = get_jira_integration_settings
+  params = get_default_params
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["release_name"] = plan["name"][0]
-  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   BrpmScriptExecutor.execute_automation_script("jira", "create_release", params)
 end
 
 def update_release_in_jira(old_plan, new_plan)
-  params = get_jira_integration_settings
+  params = get_default_params
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["old_release_name"] = old_plan["name"][0]
   params["new_release_name"] = new_plan["name"][0]
-  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   BrpmScriptExecutor.execute_automation_script("jira", "update_release", params)
 end
 
 def delete_release_in_jira(plan)
-  params = get_jira_integration_settings
+  params = get_default_params
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["release_name"] = plan["name"][0]
-  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   BrpmScriptExecutor.execute_automation_script("jira", "delete_release", params)
 end
