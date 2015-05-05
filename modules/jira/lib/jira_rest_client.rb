@@ -29,7 +29,7 @@ class JiraRestClient
     if expand_transition
       url = "#{url}?expand=transitions.fields"
     end
-    Rest.get(url)["response"]
+    Rest.get(url, { :username => @username, :password => @password })["response"]
   end
 
   # GET /rest/api/2/issue/{issueIdOrKey}/transitions?transitionId={transistion_id}[&expand=transitions.fields]
