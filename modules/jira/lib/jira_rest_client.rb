@@ -163,6 +163,7 @@ class JiraRestClient
     end
   end
 
+
   def delete_option_for_dropdown_custom_field(custom_field_id, option_value)
     # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
 
