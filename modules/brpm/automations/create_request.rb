@@ -24,7 +24,13 @@ request["template_name"] = request_template_name
 request["name"] = "Deploy #{application["name"]} #{application_version}"
 request["environment"] = target_environment["name"]
 request["execute_now"] = false
-request["app_ids"] = [application["id"]]
+request["app_ids"] = [ application["id"] ]
+
+if params.request_plan_id and ! params.request_plan_id.empty? and params["plan_stage"] and ! params["plan_stage"].empty?
+  plan_stage_id = brpm_rest_client.get_plan_stage_id(params.request_plan_id, params["plan_stage"])
+  request["plan_member_attributes"] = { "plan_id" => params.request_plan_id, "plan_stage_id" => plan_stage_id }
+end
+
 target_request = brpm_rest_client.create_request_from_hash(request)
 
 unless target_request["apps"].first["id"] == application["id"]

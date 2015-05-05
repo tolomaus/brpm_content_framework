@@ -5,12 +5,16 @@
 #   position: A1:C1
 #   type: in-external-single-select
 #   external_resource: select_environment
+# target_stage:
+#   name: Target stage
+#   required: no
+#   position: A2:C2
 # execute_target_request:
 #   name: execute_target_request
 #   required: yes
 #   type: in-list-single
 #   list_pairs: 1,No|2,Execute|3,Execute and monitor
-#   position: A2:C2
+#   position: A3:C3
 ###
 params["direct_execute"] = "true"
 
