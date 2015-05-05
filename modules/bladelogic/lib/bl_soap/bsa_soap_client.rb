@@ -8,10 +8,6 @@ class BsaSoapClient < BsaSoapBase
     @blpackage ||= BlPackage.new(@url, @session_id)
   end
 
-  def depot_group
-    @depot_group ||= DepotGroup.new(@url, @session_id)
-  end
-
   def job
     @job ||= Job.new(@url, @session_id)
   end

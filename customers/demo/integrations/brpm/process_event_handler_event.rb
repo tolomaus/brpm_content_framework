@@ -28,8 +28,9 @@ def process_request_event(event)
     if request_old_state["aasm-state"][0] != request_new_state["aasm-state"][0] or request_new_state["aasm-state"][0] == "complete" #TODO bug when a request is moved to complete the old state is also reported as complete
       BrpmAuto.log "Request '#{request_new_state["name"][0]}' moved from state '#{request_old_state["aasm-state"][0]}' to state '#{request_new_state["aasm-state"][0]}'"
 
-      if request_new_state["aasm-state"][0] == "complete"
+      if request["aasm-state"][0] == "planned"
         process_app_release_event(request_new_state)
+      elsif request_new_state["aasm-state"][0] == "complete"
         update_tickets_in_jira_by_request(request_new_state)
       end
     end
@@ -94,20 +95,18 @@ def process_app_release_event(request)
   release_request_template_prefix = "Release"
   deployment_request_stage_name = "Entrance"
 
-  if request["aasm-state"][0] == "planned"
-    request_with_details = get_request_by_id(request["id"][0]["content"])
-    if request_with_details.has_key?("plan_member")
-      plan_id = request_with_details["plan_member"]["plan"]["id"]
-      plan_name = request_with_details["plan_member"]["plan"]["name"]
-      stage_name = request_with_details["plan_member"]["stage"]["name"]
-      app_name = request_with_details["apps"][0]["name"]
-      release_request_template_name = "#{release_request_template_prefix} #{app_name} - with promotion"
-      release_request_name = request_with_details["name"].sub("Deploy", "Release")
+  request_with_details = get_request_by_id(request["id"][0]["content"])
+  if request_with_details.has_key?("plan_member")
+    plan_id = request_with_details["plan_member"]["plan"]["id"]
+    plan_name = request_with_details["plan_member"]["plan"]["name"]
+    stage_name = request_with_details["plan_member"]["stage"]["name"]
+    app_name = request_with_details["apps"][0]["name"]
+    release_request_template_name = "#{release_request_template_prefix} #{app_name} - with promotion"
+    release_request_name = request_with_details["name"].sub("Deploy", "Release")
 
-      if stage_name == deployment_request_stage_name
-        BrpmAuto.log "Creating an app release request for plan '#{plan_name}' and app '#{app_name}' ..."
-        @brpm_rest_client.create_request_for_plan_from_template(plan_id, release_request_stage_name, release_request_template_name, release_request_name, release_request_environment_name, true)
-      end
+    if stage_name == deployment_request_stage_name
+      BrpmAuto.log "Creating an app release request for plan '#{plan_name}' and app '#{app_name}' ..."
+      @brpm_rest_client.create_request_for_plan_from_template(plan_id, release_request_stage_name, release_request_template_name, release_request_name, release_request_environment_name, true)
     end
   end
 end
@@ -131,10 +130,10 @@ def update_tickets_in_jira_by_request(request)
   params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   BrpmAuto.log "Getting the stage of this request..."
-  stage = @brpm_rest_client.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
+  stage = @brpm_rest_client.get_plan_stage_by_id(request["plan_stage_id"][0]["content"])
 
-  BrpmAuto.log "Getting the target status for the issues in JIRA..."
-  params["target_issue_status"] = map_stage_to_issue_status(stage_name)
+  BrpmAuto.log "Getting the target JIRA issue status for stage #{stage["name"]}..."
+  params["target_issue_status"] = map_stage_to_issue_status(stage["name"])
 
   BrpmScriptExecutor.execute_automation_script("jira", "transition_issues_for_request", params)
 end
@@ -147,7 +146,7 @@ def update_tickets_in_jira_by_run(run)
   BrpmAuto.log "Getting the stage of this run..."
   stage = @brpm_rest_client.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
 
-  BrpmAuto.log "Getting the target status for the issues in JIRA..."
+  BrpmAuto.log "Getting the target JIRA issue status for stage #{stage["name"]}..."
   params["target_issue_status"] = map_stage_to_issue_status(stage["name"])
 
   BrpmScriptExecutor.execute_automation_script("jira", "transition_issues_for_run", params)
