@@ -128,6 +128,7 @@ end
 def update_tickets_in_jira_by_request(request)
   params = get_jira_integration_settings
   params["request_id"] = request["id"][0]["content"]
+  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   BrpmAuto.log "Getting the stage of this request..."
   stage = @brpm_rest_client.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
@@ -141,6 +142,7 @@ end
 def update_tickets_in_jira_by_run(run)
   params = get_jira_integration_settings
   params["run_id"] = run["id"][0]["content"]
+  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   BrpmAuto.log "Getting the stage of this run..."
   stage = @brpm_rest_client.get_plan_stage_by_id(run["plan_stage_id"][0]["content"])
@@ -155,6 +157,7 @@ def create_release_in_jira(plan)
   params = get_jira_integration_settings
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["release_name"] = plan["name"][0]
+  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   BrpmScriptExecutor.execute_automation_script("jira", "create_release", params)
 end
@@ -164,6 +167,7 @@ def update_release_in_jira(old_plan, new_plan)
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["old_release_name"] = old_plan["name"][0]
   params["new_release_name"] = new_plan["name"][0]
+  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   BrpmScriptExecutor.execute_automation_script("jira", "update_release", params)
 end
@@ -172,6 +176,7 @@ def delete_release_in_jira(plan)
   params = get_jira_integration_settings
   params["jira_release_field_id"] = ENV["EVENT_HANDLER_JIRA_RELEASE_FIELD_ID"]
   params["release_name"] = plan["name"][0]
+  params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
   BrpmScriptExecutor.execute_automation_script("jira", "delete_release", params)
 end
