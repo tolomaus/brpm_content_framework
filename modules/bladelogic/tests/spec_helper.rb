@@ -80,5 +80,3 @@ end
 def pack_response key, value
   BrpmAuto.log "pack_response: #{key}: #{value}"
 end
-
-setup_brpm_auto
