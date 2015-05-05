@@ -62,7 +62,7 @@ class JiraRestClient
     result = get_issue_transitions(issue_id)
     transitions = result["transitions"]
 
-    transition = transitions.find { |transition| transition["name"] == status }
+    transition = transitions.find { |transition| transition["to"]["name"] == status }
 
     if transition
       BrpmAuto.log "Issuing transition #{transition["name"]} to update the status of the issue to #{status}..."
@@ -162,7 +162,6 @@ class JiraRestClient
       create_option_for_dropdown_custom_field(custom_field_id, new_option_value)
     end
   end
-
 
   def delete_option_for_dropdown_custom_field(custom_field_id, option_value)
     # NOTE: this method assumes that the "Customfield Editor Plugin" is installed on the JIRA instance and that permission was granted for the custom field
