@@ -101,11 +101,12 @@ def process_app_release_event(request)
       plan_name = request_with_details["plan_member"]["plan"]["name"]
       stage_name = request_with_details["plan_member"]["stage"]["name"]
       app_name = request_with_details["apps"][0]["name"]
+      release_request_template_name = "#{release_request_template_prefix} #{app_name} - with promotion"
       release_request_name = request_with_details["name"].sub("Deploy", "Release")
 
       if stage_name == deployment_request_stage_name
         BrpmAuto.log "Creating an app release request for plan '#{plan_name}' and app '#{app_name}' ..."
-        @brpm_rest_client.create_request_for_plan_from_template(plan_id, release_request_stage_name, "#{release_request_template_prefix} #{app_name}", release_request_name, release_request_environment_name, true)
+        @brpm_rest_client.create_request_for_plan_from_template(plan_id, release_request_stage_name, release_request_template_name, release_request_name, release_request_environment_name, true)
       end
     end
   end
