@@ -28,7 +28,7 @@ def process_request_event(event)
     if request_old_state["aasm-state"][0] != request_new_state["aasm-state"][0] or request_new_state["aasm-state"][0] == "complete" #TODO bug when a request is moved to complete the old state is also reported as complete
       BrpmAuto.log "Request '#{request_new_state["name"][0]}' moved from state '#{request_old_state["aasm-state"][0]}' to state '#{request_new_state["aasm-state"][0]}'"
 
-      if request["aasm-state"][0] == "planned"
+      if request_new_state["aasm-state"][0] == "planned"
         process_app_release_event(request_new_state)
       elsif request_new_state["aasm-state"][0] == "complete"
         update_tickets_in_jira_by_request(request_new_state)
@@ -137,7 +137,6 @@ def update_tickets_in_jira_by_request(request)
 
   BrpmScriptExecutor.execute_automation_script("jira", "transition_issues_for_request", params)
 end
-
 
 def update_tickets_in_jira_by_run(run)
   params = get_jira_integration_settings
