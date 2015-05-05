@@ -95,7 +95,7 @@ def process_app_release_event(request)
   release_request_template_prefix = "Release"
   deployment_request_stage_name = "Entrance"
 
-  request_with_details = get_request_by_id(request["id"][0]["content"])
+  request_with_details = @brpm_rest_client.get_request_by_id(request["id"][0]["content"])
   if request_with_details.has_key?("plan_member")
     plan_id = request_with_details["plan_member"]["plan"]["id"]
     plan_name = request_with_details["plan_member"]["plan"]["name"]
@@ -129,7 +129,7 @@ def update_tickets_in_jira_by_request(request)
   params["request_id"] = request["id"][0]["content"]
   params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
-  request_with_details = get_request_by_id(request["id"][0]["content"])
+  request_with_details = @brpm_rest_client.get_request_by_id(request["id"][0]["content"])
   if request_with_details.has_key?("plan_member")
     stage_name = request_with_details["plan_member"]["stage"]["name"]
 
