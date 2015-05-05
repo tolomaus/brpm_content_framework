@@ -129,13 +129,15 @@ def update_tickets_in_jira_by_request(request)
   params["request_id"] = request["id"][0]["content"]
   params["log_file"] = ENV["EVENT_HANDLER_LOG_FILE"]
 
-  BrpmAuto.log "Getting the stage of this request..."
-  stage = @brpm_rest_client.get_plan_stage_by_id(request["plan_stage_id"][0]["content"])
+  request_with_details = get_request_by_id(request["id"][0]["content"])
+  if request_with_details.has_key?("plan_member")
+    stage_name = request_with_details["plan_member"]["stage"]["name"]
 
-  BrpmAuto.log "Getting the target JIRA issue status for stage #{stage["name"]}..."
-  params["target_issue_status"] = map_stage_to_issue_status(stage["name"])
+    BrpmAuto.log "Getting the target JIRA issue status for stage #{stage_name}..."
+    params["target_issue_status"] = map_stage_to_issue_status(stage_name)
 
-  BrpmScriptExecutor.execute_automation_script("jira", "transition_issues_for_request", params)
+    BrpmScriptExecutor.execute_automation_script("jira", "transition_issues_for_request", params)
+  end
 end
 
 def update_tickets_in_jira_by_run(run)
