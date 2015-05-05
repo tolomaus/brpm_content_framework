@@ -18,9 +18,9 @@ end
 def map_stage_to_issue_status(stage)
   case stage
     when "Development"
-      return "Deploy to development"
+      return "Deployed to development"
     when "Test"
-      return "Deploy to test"
+      return "Deployed to test"
     else
       return nil
   end
