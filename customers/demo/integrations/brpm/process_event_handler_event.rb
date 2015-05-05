@@ -138,6 +138,7 @@ def update_tickets_in_jira_by_request(request)
   BrpmScriptExecutor.execute_automation_script("jira", "transition_issues_for_request", params)
 end
 
+
 def update_tickets_in_jira_by_run(run)
   params = get_jira_integration_settings
   params["run_id"] = run["id"][0]["content"]
