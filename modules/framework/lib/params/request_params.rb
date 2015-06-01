@@ -17,6 +17,8 @@ class RequestParams < Hash
     set_request_params
   end
 
+  #TODO: support parallel steps modifying the same request params file
+
   private
 
     def set_request_params

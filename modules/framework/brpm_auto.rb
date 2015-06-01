@@ -15,9 +15,9 @@ class BrpmAuto
       @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
       $LOAD_PATH << @modules_root_path
 
-      require "framework/lib/logger"
+      require "framework/lib/logging/logger"
 
-      require_libs "framework", false
+      require_libs_no_file_logging "framework"
     end
 
     def setup(params)
@@ -42,6 +42,10 @@ class BrpmAuto
             @params["SS_project_server_id"]
         )
       end
+    end
+
+    def require_libs_no_file_logging(modul)
+      require_libs(modul, false)
     end
 
     def require_libs(modul, log = true)
@@ -90,7 +94,7 @@ class BrpmAuto
       require_libs(modul)
     end
 
-    def privatize(expression, sensitive_data)
+    def privatize(expression, sensitive_data = BrpmAuto.params.private_values)
 
       unless sensitive_data.nil? or sensitive_data.empty?
         sensitive_data = [sensitive_data] if sensitive_data.kind_of?(String)
@@ -103,6 +107,65 @@ class BrpmAuto
       expression
     end
 
+    # Returns the dos path from a standard path
+    #
+    # ==== Attributes
+    #
+    # * +source_path+ - path in standard "/" format
+    # * +drive_letter+ - base drive letter if not included in path (defaults to C)
+    #
+    # ==== Returns
+    #
+    # * dos compatible path
+    #
+    def dos_path(source_path, drive_letter = "C")
+      path = ""
+      return source_path if source_path.include?(":\\")
+      path_array = source_path.split("/")
+      if path_array[1].length == 1 # drive letter
+        path = "#{path_array[1]}:\\"
+        path += path_array[2..-1].join("\\")
+      else
+        path = "#{drive_letter}:\\"
+        path += path_array[1..-1].join("\\")
+      end
+      path
+    end
+
+    # Executes a command via shell
+    #
+    # ==== Attributes
+    #
+    # * +command+ - command to execute on command line
+    # ==== Returns
+    #
+    # * command_run hash {stdout => <results>, stderr => any errors, pid => process id, status => exit_code}
+    def execute_shell(command)
+      cmd_result = {"stdout" => "","stderr" => "", "pid" => "", "status" => 1}
+      cmd_result["stdout"] = "Running #{command}\n"
+      output_dir = File.join(@params["SS_output_dir"],"#{precision_timestamp}")
+      errfile = "#{output_dir}_stderr.txt"
+      command = "#{command} 2>#{errfile}#{exit_code_failure}" unless Windows
+      fil = File.open(errfile, "w+")
+      fil.close
+      cmd_result["stdout"] += "Script Output:\n"
+      begin
+        cmd_result["stdout"] += `#{command}`
+        status = $?
+        cmd_result["pid"] = status.pid
+        cmd_result["status"] = status.to_i
+        fil = File.open(errfile)
+        stderr = fil.read
+        fil.close
+        cmd_result["stderr"] = stderr if stderr.length > 2
+      rescue Exception => e
+        cmd_result["stderr"] = "ERROR\n#{e.message}\n#{e.backtrace}"
+      end
+      File.delete(errfile)
+      cmd_result
+    end
+
+    #TODO: merge execute_shell with exec_command
     def exec_command(command, sensitive_data = nil)
       escaped_command = command.gsub("\\", "\\\\")
 

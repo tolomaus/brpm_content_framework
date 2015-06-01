@@ -1,4 +1,6 @@
-class SimpleLogger
+require "framework/lib/logging/logger_base"
+
+class SimpleLogger < LoggerBase
   def initialize(log_file, also_log_to_console = false)
     @log_file = log_file
     @also_log_to_console = also_log_to_console
@@ -21,14 +23,5 @@ class SimpleLogger
     end
 
     print(log_message) if @also_log_to_console
-  end
-
-  def log_error(message)
-    log ""
-    log "******** ERROR ********"
-    log "An error has occurred"
-    log "#{message}"
-    log "***********************"
-    log ""
   end
 end

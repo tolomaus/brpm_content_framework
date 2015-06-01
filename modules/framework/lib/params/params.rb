@@ -46,6 +46,8 @@ class Params < Hash
   attr_reader :run_from_brpm
   attr_reader :also_log_to_console
 
+  attr_reader :private_values
+
   def initialize(params)
     self.merge!(params)
 
@@ -95,6 +97,20 @@ class Params < Hash
 
     @run_from_brpm = (@run_key != nil)
     @also_log_to_console = (params["also_log_to_console"] == "true")
+
+    @private_values = []
+    params.each{|k,v| @private_values << params[k.gsub("_encrypt","")] if k.end_with?("_encrypt") }
+  end
+
+  # Gets a params
+  #
+  # ==== Attributes
+  #
+  # * +key+ - key to find
+  def get(key, default_value = "")
+    result = self.has_key?(key) ? self[key] : nil
+    result = default_value if result.nil? || result == ""
+    result
   end
 
   private

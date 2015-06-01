@@ -1,4 +1,6 @@
-class Logger
+require "framework/lib/logging/logger_base"
+
+class Logger < LoggerBase
   def initialize(request_id, automation_results_dir, step_id, run_key, step_number, step_name, also_log_to_console = false)
     @request_id = request_id
     @automation_results_dir = automation_results_dir
@@ -38,14 +40,5 @@ class Logger
     end
 
     print(log_message) if @also_log_to_console
-  end
-
-  def log_error(message)
-    log ""
-    log "******** ERROR ********"
-    log "An error has occurred"
-    log "#{message}"
-    log "***********************"
-    log ""
   end
 end
