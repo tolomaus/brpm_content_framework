@@ -1,4 +1,4 @@
-class Params < Hash
+class Params < ParamsBase
   attr_reader :application
   attr_reader :component
   attr_reader :component_version
@@ -110,6 +110,23 @@ class Params < Hash
     params.each{|k,v| @private_values << params[k.gsub("_encrypt","")] if k.end_with?("_encrypt") }
   end
 
+  # Servers in params need to be filtered by OS
+  def get_servers_by_os_platform(os_platform, alt_servers = nil)
+    servers = alt_servers || @servers
+    result = servers.select{|k,v| v["os_platform"].downcase =~ /#{os_platform}/ }
+  end
+
+  # Fetches the property value for a server
+  #
+  # ==== Returns
+  #
+  # * property value
+  def get_server_property(server, property)
+    ans = ""
+    ans = @servers[server][property] if @servers.has_key?(server) && @servers[server].has_key?(property)
+    ans
+  end
+
   # Gets a params
   #
   # ==== Attributes
@@ -118,13 +135,44 @@ class Params < Hash
   def get(key, default_value = "")
     result = self.has_key?(key) ? self[key] : nil
     result = default_value if result.nil? || result == ""
-    result
+
+    BrpmAuto.substitute_tokens(result)
   end
 
-  # Servers in params need to be filtered by OS
-  def get_servers_by_os_platform(os_platform, alt_servers = nil)
-    servers = alt_servers || @servers
-    result = servers.select{|k,v| v["os_platform"].downcase =~ /#{os_platform}/ }
+  # Adds a key/value to the params
+  #
+  # ==== Attributes
+  #
+  # * +key_name+ - key name
+  # * +value+ - value to assign
+  #
+  # ==== Returns
+  #
+  # * value added
+  def add(key_name, value)
+    self[key_name] = value
+  end
+
+  # Adds a key/value to the params if not found
+  #
+  # ==== Attributes
+  #
+  # * +key_name+ - key name
+  # * +value+ - value to assign
+  #
+  # ==== Returns
+  #
+  # * value of key
+  def find_or_add(key_name, value)
+    ans = get(key_name)
+    add(key_name, value) if ans == ""
+    ans == "" ? value : ans
+  end
+
+  # Returns the request id for use in rest calls
+  #
+  def rest_request_id
+    (self["request_id"].to_i - 1000).to_s
   end
 
   private

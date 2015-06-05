@@ -1,7 +1,7 @@
 require "yaml"
 
 class BrpmAuto
-  EXIT_CODE_FAILURE = 'Exit_Code_Failure'
+  EXIT_CODE_FAILURE = 'Exit_Code_Failure' #TODO: can we remove this const?
 
   private_class_method :new
 
@@ -35,6 +35,8 @@ class BrpmAuto
         initialize_logger(@params.log_file, @params.also_log_to_console)
         initialize_request_params(@params.output_dir)
       end
+
+      @all_params = AllParams.new(@params, request_params)
 
       if @params["SS_integration_dns"]
         @integration_settings = IntegrationSettings.new(
@@ -158,7 +160,7 @@ class BrpmAuto
     def substitute_tokens(var_string, params = nil)
       return var_string if var_string.nil?
 
-      searchable_params = params || @params
+      searchable_params = params || @all_params
 
       prop_val = var_string.match('rpm{[^{}]*}')
       while ! prop_val.nil? do
