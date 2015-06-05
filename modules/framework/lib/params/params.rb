@@ -35,8 +35,10 @@ class Params < Hash
 
   attr_reader :run_key
 
+  attr_reader :home_dir
   attr_reader :automation_results_dir
   attr_reader :output_dir
+  attr_reader :config_dir
 
   attr_reader :log_file
 
@@ -87,8 +89,14 @@ class Params < Hash
 
     @run_key = params["SS_run_key"]
 
+    if params["SS_automation_results_dir"]
+      @home_dir = params["SS_automation_results_dir"].sub("automation_results", "")
+    else
+      @home_dir = Dir.pwd
+    end
     @automation_results_dir = params["SS_automation_results_dir"]
     @output_dir = params["SS_output_dir"] || params["output_dir"] || Dir.pwd
+    @config_dir = "#{@home_dir}/config"
 
     @log_file = params["log_file"] || "#{@output_dir}/brpm_auto.log"
 
@@ -111,6 +119,12 @@ class Params < Hash
     result = self.has_key?(key) ? self[key] : nil
     result = default_value if result.nil? || result == ""
     result
+  end
+
+  # Servers in params need to be filtered by OS
+  def get_servers_by_os_platform(os_platform, alt_servers = nil)
+    servers = alt_servers || @servers
+    result = servers.select{|k,v| v["os_platform"].downcase =~ /#{os_platform}/ }
   end
 
   private

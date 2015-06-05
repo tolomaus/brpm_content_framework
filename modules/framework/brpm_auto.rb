@@ -1,6 +1,8 @@
 require "yaml"
 
 class BrpmAuto
+  EXIT_CODE_FAILURE = 'Exit_Code_Failure'
+
   private_class_method :new
 
   class << self
@@ -22,6 +24,8 @@ class BrpmAuto
 
     def setup(params)
       @params = Params.new(params)
+
+      load_server_params
 
       if @params.run_from_brpm
         # noinspection RubyArgCount
@@ -94,8 +98,78 @@ class BrpmAuto
       require_libs(modul)
     end
 
-    def privatize(expression, sensitive_data = BrpmAuto.params.private_values)
+    def first_defined(first, second)
+      if first and ! first.empty?
+        return first
+      else
+        return second
+      end
+    end
 
+    def load_server_params
+      server_config_file_path = "#{self.params.config_dir}/server.yml"
+      if File.exists?(server_config_file_path)
+        server_config = YAML.load_file(server_config_file_path)
+        server_config.each do |key, value|
+          @params[key] = value unless @params.has_key?(key)
+        end
+      end
+    end
+
+    def initialize_logger(log_file, also_log_to_console = false)
+      @logger = SimpleLogger.new(log_file, also_log_to_console)
+    end
+
+    def log(message)
+      @logger.log(message)
+    end
+
+    def log_error(message)
+      @logger.log_error(message)
+    end
+
+    def initialize_request_params(path)
+      @request_params = RequestParams.new(path)
+    end
+
+    def get_request_params_for_request(automation_results_dir, application, request_id)
+      RequestParams.new_for_request(automation_results_dir, application, request_id)
+    end
+
+    def initialize_integration_settings(dns, username, password, details)
+      @integration_settings = IntegrationSettings.new(dns, username, password, details)
+    end
+
+    #TODO: merge execute_shell with exec_command
+    def exec_command(command, sensitive_data = nil)
+      escaped_command = command.gsub("\\", "\\\\")
+
+      loggable_command = privatize(escaped_command, sensitive_data)
+
+      BrpmAuto.log loggable_command
+      BrpmAuto.log `#{escaped_command}`
+
+      exit_status = $?.exitstatus
+      unless exit_status == 0
+        raise "Command #{loggable_command} exited with #{exit_status}."
+      end
+    end
+
+    def substitute_tokens(var_string, params = nil)
+      return var_string if var_string.nil?
+
+      searchable_params = params || @params
+
+      prop_val = var_string.match('rpm{[^{}]*}')
+      while ! prop_val.nil? do
+        raise "Property #{prop_val[0][4..-2]} doesn't exist" if searchable_params[prop_val[0][4..-2]].nil?
+        var_string = var_string.sub(prop_val[0],searchable_params[prop_val[0][4..-2]])
+        prop_val = var_string.match('rpm{[^{}]*}')
+      end
+      return var_string
+    end
+
+    def privatize(expression, sensitive_data = BrpmAuto.params.private_values)
       unless sensitive_data.nil? or sensitive_data.empty?
         sensitive_data = [sensitive_data] if sensitive_data.kind_of?(String)
 
@@ -165,66 +239,104 @@ class BrpmAuto
       cmd_result
     end
 
-    #TODO: merge execute_shell with exec_command
-    def exec_command(command, sensitive_data = nil)
-      escaped_command = command.gsub("\\", "\\\\")
-
-      loggable_command = privatize(escaped_command, sensitive_data)
-
-      BrpmAuto.log loggable_command
-      BrpmAuto.log `#{escaped_command}`
-
-      exit_status = $?.exitstatus
-      unless exit_status == 0
-        raise "Command #{loggable_command} exited with #{exit_status}."
-      end
+    # Returns a timestamp to the thousanth of a second
+    #
+    # ==== Returns
+    #
+    # string timestamp 20140921153010456
+    #
+    def precision_timestamp
+      Time.now.strftime("%Y%m%d%H%M%S%L")
     end
 
-    def substitute_tokens(var_string, params = nil)
-      return var_string if var_string.nil?
-
-      searchable_params = params || @params
-
-      prop_val = var_string.match('rpm{[^{}]*}')
-      while ! prop_val.nil? do
-        raise "Property #{prop_val[0][4..-2]} doesn't exist" if searchable_params[prop_val[0][4..-2]].nil?
-        var_string = var_string.sub(prop_val[0],searchable_params[prop_val[0][4..-2]])
-        prop_val = var_string.match('rpm{[^{}]*}')
-      end
-      return var_string
+    # Provides a simple failsafe for working with hash options
+    # returns "" if the option doesn't exist or is blank
+    # ==== Attributes
+    #
+    # * +options+ - the hash
+    # * +key+ - key to find in options
+    # * +default_value+ - if entered will be returned if the option doesn't exist or is blank
+    def get_option(options, key, default_value = "")
+      result = options.has_key?(key) ? options[key] : nil
+      result = default_value if result.nil? || result == ""
+      result
     end
 
-    def first_defined(first, second)
-      if first and ! first.empty?
-        return first
+    # Throws an error if an option is missing
+    #  great for checking if properties exist
+    #
+    # ==== Attributes
+    #
+    # * +options+ - the options hash
+    # * +key+ - key to find
+    def required_option(options, key)
+      result = get_option(options, key)
+      raise ArgumentError, "Missing required option: #{key}" if result == ""
+      result
+    end
+
+    # Splits the server and path from an nsh path
+    # returns same path if no server prepended
+    # ==== Attributes
+    #
+    # * +path+ - nsh path
+    # ==== Returns
+    #
+    # array [server, path] server is blank if not present
+    #
+    def split_nsh_path(path)
+      result = ["",path]
+      result[0] = path.split("/")[2] if path.start_with?("//")
+      result[1] = "/#{path.split("/")[3..-1].join("/")}" if path.start_with?("//")
+      result
+    end
+
+    def read_shebang(os_platform, action_txt)
+      if os_platform.downcase =~ /win/
+        result = {"ext" => ".bat", "cmd" => "cmd /c", "shebang" => ""}
       else
-        return second
+        result = {"ext" => ".sh", "cmd" => "/bin/bash ", "shebang" => ""}
       end
+      if action_txt.include?("#![") # Custom shebang
+        shebang = action_txt.scan(/\#\!.*/).first
+        result["shebang"] = shebang
+        items = shebang.scan(/\#\!\[.*\]/)
+        if items.size > 0
+          ext = items[0].gsub("#![","").gsub("]","")
+          result["ext"] = ext if ext.start_with?(".")
+          result["cmd"] = shebang.gsub(items[0],"").strip
+        else
+          result["cmd"] = shebang
+        end
+      elsif action_txt.include?("#!/") # Basic shebang
+        result["shebang"] = "standard"
+      else # no shebang
+        result["shebang"] = "none"
+      end
+      result
     end
 
-    def initialize_logger(log_file, also_log_to_console = false)
-      @logger = SimpleLogger.new(log_file, also_log_to_console)
-    end
+    private
 
-    def log(message)
-      @logger.log(message)
-    end
+      def exit_code_failure
+        return "" if Windows
+        size_ = EXIT_CODE_FAILURE.size
+        exit_code_failure_first_part  = EXIT_CODE_FAILURE[0..3]
+        exit_code_failure_second_part = EXIT_CODE_FAILURE[4..size_]
+        @params['ignore_exit_codes'] == 'yes' ?
+            '' :
+            "; if [ $? -ne 0 ]; then first_part=#{exit_code_failure_first_part}; echo \"${first_part}#{exit_code_failure_second_part}\"; fi;"
+      end
 
-    def log_error(message)
-      @logger.log_error(message)
-    end
+      def url_encode(name)
+        name.gsub(" ","%20").gsub("/","%2F").gsub("?","%3F")
+      end
 
-    def initialize_request_params(path)
-      @request_params = RequestParams.new(path)
-    end
-
-    def get_request_params_for_request(automation_results_dir, application, request_id)
-      RequestParams.new_for_request(automation_results_dir, application, request_id)
-    end
-
-    def initialize_integration_settings(dns, username, password, details)
-      @integration_settings = IntegrationSettings.new(dns, username, password, details)
-    end
+      def touch_file(file_path)
+        fil = File.open(file_path,"w+")
+        fil.close
+        file_path
+      end
   end
 
   self.init

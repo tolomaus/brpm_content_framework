@@ -1391,6 +1391,23 @@ class BrpmRestClient
     result_hash
   end
 
+  # Sends an email based on step recipients
+  #
+  # ==== Attributes
+  #
+  # * +subject+ - text of email subject
+  # * +body+ - text of email body
+  #
+  # ==== Returns
+  #
+  # * empty string
+  def notify(body, subject = "Mail from automation", recipients = nil, step_id = BrpmAuto.params.step_id)
+    data = { "filters" => { "notify" => { "body" => body, "subject" => subject } } }
+    data["filters"]["notify"]["recipients"] = recipients unless recipients.nil?
+
+    result = brpm_get "v1/steps/#{step_id}/notify", { :data => data } # a REST GET with a request body???
+  end
+
   private
 
     def add_token(path)

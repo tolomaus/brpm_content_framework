@@ -5,7 +5,7 @@ describe 'create package' do
     setup_brpm_auto
   end
 
-  before(:all) do
+  before(:each) do
     cleanup_package "/Applications/E-Finance/EF - Java calculation engine", "1.0.0"
   end
 
