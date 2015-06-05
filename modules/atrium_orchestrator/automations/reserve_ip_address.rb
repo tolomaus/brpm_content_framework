@@ -3,15 +3,11 @@ request_params = BrpmAuto.request_params
 
 host_name = request_params["input_name"]
 
-BrpmAuto.log("Setting up the AO connection parameters ...")
-set_ao_soap_api_url(params["SS_integration_dns"])
-set_ao_soap_api_username(params["SS_integration_username"])
-set_ao_soap_api_password(decrypt_string_with_prefix(params["SS_integration_password_enc"]))
-set_ao_soap_api_grid_name(params["grid_name"])
-set_ao_soap_api_module_name(params["module_name"])
+BrpmAuto.log("Creating the AO client...")
+ao_soap_client = AoSoapClient.new
 
 BrpmAuto.log("Reserving an IP address in AO ...")
-ip_address = ao_reserve_ip_address(host_name)
+ip_address = ao_soap_client.reserve_ip_address(host_name)
 
 BrpmAuto.log("Adding the IP address to the request-level parameters ...")
 request_params["input_ip_address"] = ip_address

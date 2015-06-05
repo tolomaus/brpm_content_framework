@@ -1,0 +1,25 @@
+###
+# workflow:
+#   name: Workflow
+#   position: A1:C1
+#   type: in-list-single
+#   list_pairs: 1,Enable monitoring|2,Disable monitoring|3,Add app to loadbalancer|4,Remove app from load balancer
+#   required: yes
+###
+
+#=== Remedy via AO Integration Server: AtriumOrchestrator on aws ===#
+# [integration_id=7]
+#=== End ===#
+
+params["direct_execute"]=true
+
+require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_script_executor.rb"
+
+params["SS_integration_dns"] = SS_integration_dns
+params["SS_integration_username"] = SS_integration_username
+params["SS_integration_password_enc"] = SS_integration_password_enc
+params["SS_integration_details"] = YAML.load(SS_integration_details)
+
+params["workflow_list"] = { "enable-monitoring" => "Enable monitoring", "disable-monitoring" => "Disable monitoring", "add-to-loadbalancer" => "Add app to loadbalancer", "remove-from-loadbalancer" => "Remove app from loadbalancer" }
+
+BrpmScriptExecutor.execute_automation_script("atrium_orchestrator", "execute_workflow", params)
