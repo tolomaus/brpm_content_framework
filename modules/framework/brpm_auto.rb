@@ -142,7 +142,7 @@ class BrpmAuto
       @integration_settings = IntegrationSettings.new(dns, username, password, details)
     end
 
-    #TODO: merge execute_shell with exec_command
+    #TODO: merge with execute_shell
     def exec_command(command, sensitive_data = nil)
       escaped_command = command.gsub("\\", "\\\\")
 
@@ -157,18 +157,18 @@ class BrpmAuto
       end
     end
 
-    def substitute_tokens(var_string, params = nil)
-      return var_string if var_string.nil?
+    def substitute_tokens(expression, params = nil)
+      return expression if expression.nil?
 
       searchable_params = params || @all_params
 
-      prop_val = var_string.match('rpm{[^{}]*}')
-      while ! prop_val.nil? do
-        raise "Property #{prop_val[0][4..-2]} doesn't exist" if searchable_params[prop_val[0][4..-2]].nil?
-        var_string = var_string.sub(prop_val[0],searchable_params[prop_val[0][4..-2]])
-        prop_val = var_string.match('rpm{[^{}]*}')
+      found_token = expression.match('rpm{[^{}]*}')
+      while ! found_token.nil? do
+        raise "Property #{found_token[0][4..-2]} doesn't exist" if searchable_params[found_token[0][4..-2]].nil?
+        expression = expression.sub(found_token[0],searchable_params[found_token[0][4..-2]])
+        found_token = expression.match('rpm{[^{}]*}')
       end
-      return var_string
+      return expression
     end
 
     def privatize(expression, sensitive_data = BrpmAuto.params.private_values)

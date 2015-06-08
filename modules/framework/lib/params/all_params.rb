@@ -60,7 +60,7 @@ class AllParams < ParamsBase
   def add(key_name, value, store)
     if store == "params"
       @params[key_name] = value
-    elsif store == "json" or "request_params"
+    elsif store == "json" or store == "request_params"
       @request_params[key_name] = value
     end
   end
