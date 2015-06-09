@@ -48,7 +48,7 @@ class Params < ParamsBase
   attr_reader :run_from_brpm
   attr_reader :also_log_to_console
 
-  attr_reader :private_values
+  attr_reader :private_params
 
   def initialize(params)
     self.merge!(params)
@@ -106,8 +106,19 @@ class Params < ParamsBase
     @run_from_brpm = (@run_key != nil)
     @also_log_to_console = (params["also_log_to_console"] == "true")
 
-    @private_values = []
-    params.each{|k,v| @private_values << params[k.gsub("_encrypt","")] if k.end_with?("_encrypt") }
+    @private_params = {}
+    params.each do |k,v|
+      if k.end_with?("_encrypt") || k.end_with?("_enc")
+        if k.end_with?("_encrypt")
+          key_decrypted = k.gsub("_encrypt","")
+        elsif k.end_with?("_enc")
+          key_decrypted = k.gsub("_enc","")
+        end
+        value_decrypted = decrypt_string_with_prefix(v)
+        params[key_decrypted] = value_decrypted
+        @private_params[key_decrypted] = value_decrypted
+      end
+    end
   end
 
   # Servers in params need to be filtered by OS

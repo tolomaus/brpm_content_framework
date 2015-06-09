@@ -1,6 +1,18 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
 
 describe 'BRPM automation framework' do
+  before(:all) do
+    setup_brpm_auto
+  end
+
+  describe 'exec_command' do
+    it 'should execute a command successfully' do
+      result = BrpmAuto.exec_command("echo Hello")
+
+      expect(result).to eql("Hello")
+    end
+  end
+
   describe 'privatize' do
     it 'should hide a sensitive string' do
       result = BrpmAuto.privatize("The password should be replaced here: MySecret, and also here:MySecret! ", "MySecret")
@@ -50,6 +62,14 @@ describe 'BRPM automation framework' do
       result = BrpmAuto.substitute_tokens("The application is called rpm{application} and has component rpm{component} with version number rpm{component_version}", params)
 
       expect(result).to eq("The application is called E-Finance and has component EF - java calculation engine with version number 1.2.3")
+    end
+  end
+
+  describe 'dos_path' do
+    it 'should convert a path from the UNIX to the Windows format' do
+      result = BrpmAuto.dos_path("C/windows/path")
+
+      expect(result).to eq("C:\\windows\\path")
     end
   end
 end

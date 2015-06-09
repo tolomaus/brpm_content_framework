@@ -1,7 +1,11 @@
 require 'fileutils'
 require "#{File.dirname(__FILE__)}/../brpm_auto"
 
-FileUtils.mkdir_p "/tmp/brpm_content"
+def setup_brpm_auto
+  FileUtils.mkdir_p "/tmp/brpm_content"
+
+  BrpmAuto.setup( { "output_dir" => "/tmp/brpm_content" } )
+end
 
 def get_default_params
   params = {}

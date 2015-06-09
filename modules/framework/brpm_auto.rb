@@ -1,7 +1,9 @@
 require "yaml"
 
 class BrpmAuto
-  EXIT_CODE_FAILURE = 'Exit_Code_Failure' #TODO: can we remove this const?
+  #TODO: can we remove this consts?
+  EXIT_CODE_FAILURE = 'Exit_Code_Failure'
+  Windows = (RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/) unless defined?(Windows)
 
   private_class_method :new
 
@@ -9,6 +11,7 @@ class BrpmAuto
     attr_reader :logger
     attr_reader :params
     attr_reader :request_params
+    attr_reader :all_params
     attr_reader :integration_settings
 
     attr_reader :modules_root_path
@@ -149,12 +152,27 @@ class BrpmAuto
       loggable_command = privatize(escaped_command, sensitive_data)
 
       BrpmAuto.log loggable_command
-      BrpmAuto.log `#{escaped_command}`
+      output = `#{escaped_command}`
+      BrpmAuto.log output
 
       exit_status = $?.exitstatus
       unless exit_status == 0
         raise "Command #{loggable_command} exited with #{exit_status}."
       end
+
+      output
+    end
+
+    def privatize(expression, sensitive_data = BrpmAuto.params.private_params.values)
+      unless sensitive_data.nil? or sensitive_data.empty?
+        sensitive_data = [sensitive_data] if sensitive_data.kind_of?(String)
+
+        sensitive_data.each do |sensitive_string|
+          expression = expression.gsub(sensitive_string, "********")
+        end
+      end
+
+      expression
     end
 
     def substitute_tokens(expression, params = nil)
@@ -169,18 +187,6 @@ class BrpmAuto
         found_token = expression.match('rpm{[^{}]*}')
       end
       return expression
-    end
-
-    def privatize(expression, sensitive_data = BrpmAuto.params.private_values)
-      unless sensitive_data.nil? or sensitive_data.empty?
-        sensitive_data = [sensitive_data] if sensitive_data.kind_of?(String)
-
-        sensitive_data.each do |sensitive_string|
-          expression = expression.gsub(sensitive_string, "********")
-        end
-      end
-
-      expression
     end
 
     # Returns the dos path from a standard path
@@ -219,7 +225,7 @@ class BrpmAuto
     def execute_shell(command)
       cmd_result = {"stdout" => "","stderr" => "", "pid" => "", "status" => 1}
       cmd_result["stdout"] = "Running #{command}\n"
-      output_dir = File.join(@params["SS_output_dir"],"#{precision_timestamp}")
+      output_dir = File.join(params.output_dir,"#{precision_timestamp}")
       errfile = "#{output_dir}_stderr.txt"
       command = "#{command} 2>#{errfile}#{exit_code_failure}" unless Windows
       fil = File.open(errfile, "w+")
