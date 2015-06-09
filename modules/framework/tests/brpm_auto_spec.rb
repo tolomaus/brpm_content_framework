@@ -5,14 +5,6 @@ describe 'BRPM automation framework' do
     setup_brpm_auto
   end
 
-  describe 'exec_command' do
-    it 'should execute a command successfully' do
-      result = BrpmAuto.exec_command("echo Hello")
-
-      expect(result).to eql("Hello")
-    end
-  end
-
   describe 'privatize' do
     it 'should hide a sensitive string' do
       result = BrpmAuto.privatize("The password should be replaced here: MySecret, and also here:MySecret! ", "MySecret")
@@ -70,6 +62,21 @@ describe 'BRPM automation framework' do
       result = BrpmAuto.dos_path("C/windows/path")
 
       expect(result).to eq("C:\\windows\\path")
+    end
+  end
+
+  describe 'execute_shell' do
+    it 'should execute a command successfully' do
+      result = BrpmAuto.execute_shell("echo Hello")
+
+      expect(result["status"]).to eql(0)
+      expect(result["stdout"]).to eql("Hello\n")
+    end
+
+    it 'should return with a non-zero status when passing a bad command' do
+      result = BrpmAuto.execute_shell("xxxx")
+
+      expect(result["status"]).not_to eql(0)
     end
   end
 end

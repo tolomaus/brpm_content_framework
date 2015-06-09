@@ -145,24 +145,6 @@ class BrpmAuto
       @integration_settings = IntegrationSettings.new(dns, username, password, details)
     end
 
-    #TODO: merge with execute_shell
-    def exec_command(command, sensitive_data = nil)
-      escaped_command = command.gsub("\\", "\\\\")
-
-      loggable_command = privatize(escaped_command, sensitive_data)
-
-      BrpmAuto.log loggable_command
-      output = `#{escaped_command}`
-      BrpmAuto.log output
-
-      exit_status = $?.exitstatus
-      unless exit_status == 0
-        raise "Command #{loggable_command} exited with #{exit_status}."
-      end
-
-      output
-    end
-
     def privatize(expression, sensitive_data = BrpmAuto.params.private_params.values)
       unless sensitive_data.nil? or sensitive_data.empty?
         sensitive_data = [sensitive_data] if sensitive_data.kind_of?(String)
@@ -222,28 +204,44 @@ class BrpmAuto
     # ==== Returns
     #
     # * command_run hash {stdout => <results>, stderr => any errors, pid => process id, status => exit_code}
-    def execute_shell(command)
+    def execute_shell(command, sensitive_data = nil)
+      escaped_command = command.gsub("\\", "\\\\")
+
+      loggable_command = privatize(escaped_command, sensitive_data)
+      BrpmAuto.log "Executing '#{loggable_command}'..."
+
       cmd_result = {"stdout" => "","stderr" => "", "pid" => "", "status" => 1}
-      cmd_result["stdout"] = "Running #{command}\n"
+
       output_dir = File.join(params.output_dir,"#{precision_timestamp}")
       errfile = "#{output_dir}_stderr.txt"
-      command = "#{command} 2>#{errfile}#{exit_code_failure}" unless Windows
+      complete_command = "#{escaped_command} 2>#{errfile}" unless Windows
       fil = File.open(errfile, "w+")
       fil.close
-      cmd_result["stdout"] += "Script Output:\n"
+
       begin
-        cmd_result["stdout"] += `#{command}`
+        cmd_result["stdout"] = `#{complete_command}`
         status = $?
         cmd_result["pid"] = status.pid
         cmd_result["status"] = status.to_i
+
         fil = File.open(errfile)
         stderr = fil.read
         fil.close
-        cmd_result["stderr"] = stderr if stderr.length > 2
+
+        if stderr.length > 2
+          BrpmAuto.log "Command generated an error: #{stderr}"
+          cmd_result["stderr"] = stderr
+        end
       rescue Exception => e
-        cmd_result["stderr"] = "ERROR\n#{e.message}\n#{e.backtrace}"
+        BrpmAuto.log "Command generated an error: #{e.message}"
+        BrpmAuto.log "Back trace:\n#{e.backtrace}"
+
+        cmd_result["status"] = -1
+        cmd_result["stderr"] = "ERROR\n#{e.message}"
       end
+
       File.delete(errfile)
+
       cmd_result
     end
 
@@ -326,6 +324,7 @@ class BrpmAuto
 
     private
 
+    #TODO: still needed?
       def exit_code_failure
         return "" if Windows
         size_ = EXIT_CODE_FAILURE.size
