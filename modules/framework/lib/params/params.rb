@@ -87,7 +87,7 @@ class Params < ParamsBase
     @ticket_ids = params["ticket_ids"]
     @tickets_foreign_ids = params["tickets_foreign_ids"]
 
-    @run_key = params["SS_run_key"]
+    @run_key = params["SS_run_key"] || params["run_key"]
 
     if params["SS_automation_results_dir"]
       @home_dir = params["SS_automation_results_dir"].sub("automation_results", "")
@@ -107,18 +107,20 @@ class Params < ParamsBase
     @also_log_to_console = (params["also_log_to_console"] == "true")
 
     @private_params = {}
-    params.each do |k,v|
-      if k.end_with?("_encrypt") || k.end_with?("_enc")
-        if k.end_with?("_encrypt")
-          key_decrypted = k.gsub("_encrypt","")
-        elsif k.end_with?("_enc")
-          key_decrypted = k.gsub("_enc","")
+    if self.run_from_brpm
+      params.each do |k,v|
+        if k.end_with?("_encrypt") || k.end_with?("_enc")
+          if k.end_with?("_encrypt")
+            key_decrypted = k.gsub("_encrypt","")
+          elsif k.end_with?("_enc")
+            key_decrypted = k.gsub("_enc","")
+          end
+          value_decrypted = decrypt_string_with_prefix(v)
+          @private_params[key_decrypted] = value_decrypted
         end
-        value_decrypted = decrypt_string_with_prefix(v)
-        params[key_decrypted] = value_decrypted
-        @private_params[key_decrypted] = value_decrypted
       end
     end
+    self.merge!(@private_params)
   end
 
   # Servers in params need to be filtered by OS
@@ -144,8 +146,7 @@ class Params < ParamsBase
   #
   # * +key+ - key to find
   def get(key, default_value = "")
-    result = self.has_key?(key) ? self[key] : nil
-    result = default_value if result.nil? || result == ""
+    result = self[key] || default_value
 
     BrpmAuto.substitute_tokens(result)
   end

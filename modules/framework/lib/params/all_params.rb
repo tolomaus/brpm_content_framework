@@ -47,6 +47,14 @@ class AllParams < ParamsBase
     where ? ans : !ans.nil?
   end
 
+  def present_json?(key_name)
+    @request_params.has_key?(key_name)
+  end
+
+  def present_local?(key_name)
+    @params.has_key?(key_name)
+  end
+
   # Adds a key/value to the params
   #
   # ==== Attributes

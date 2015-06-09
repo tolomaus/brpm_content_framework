@@ -1,4 +1,8 @@
 class ParamsBase < Hash
+  def [] key
+    BrpmAuto.substitute_tokens(super(key))
+  end
+
   # Allows you to specify a key like a method call
   #
   # ==== Attributes

@@ -14,3 +14,9 @@ def get_default_params
 
   params
 end
+
+def decrypt_string_with_prefix(input) # mocked method
+  return nil if input.nil? || !input.kind_of?(String)
+
+  input.gsub("_encrypted", "")
+end

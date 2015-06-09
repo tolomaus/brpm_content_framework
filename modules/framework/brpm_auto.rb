@@ -45,7 +45,7 @@ class BrpmAuto
         @integration_settings = IntegrationSettings.new(
             @params["SS_integration_dns"],
             @params["SS_integration_username"],
-            @params["SS_integration_password"] || decrypt_string_with_prefix(@params["SS_integration_password_enc"]),
+            @params["SS_integration_password"],
             @params["SS_integration_details"],
             @params["SS_project_server"],
             @params["SS_project_server_id"]
@@ -158,7 +158,7 @@ class BrpmAuto
     end
 
     def substitute_tokens(expression, params = nil)
-      return expression if expression.nil?
+      return nil if expression.nil? || !expression.kind_of?(String)
 
       searchable_params = params || @all_params
 
