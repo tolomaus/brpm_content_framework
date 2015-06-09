@@ -147,8 +147,6 @@ class Params < ParamsBase
   # * +key+ - key to find
   def get(key, default_value = "")
     result = self[key] || default_value
-
-    BrpmAuto.substitute_tokens(result)
   end
 
   # Adds a key/value to the params

@@ -1,24 +1,33 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
 
 describe 'Params' do
-  before(:all) do
-    setup_brpm_auto
-  end
-
   it 'should get a param' do
     input_params = {}
     input_params["key1"] = "value1"
 
-    params = Params.new(input_params)
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
 
     expect(params["key1"]).to eql("value1")
   end
 
-  it 'should get a param via its method' do
+  it 'should resolve a tokenized param' do
+    input_params = {}
+    input_params["key1"] = "value1"
+    input_params["tokenized_key"] = "The value is rpm{key1}!"
+
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
+
+    expect(params["tokenized_key"]).to eql("The value is value1!")
+  end
+
+  it 'should get a param via its dedicated method' do
     input_params = {}
     input_params["request_id"] = "123456"
 
-    params = Params.new(input_params)
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
 
     expect(params.request_id).to eql("123456")
   end
@@ -36,7 +45,8 @@ describe 'Params' do
     input_params["server2002_ip_address"] = "192.168.1.2"
     input_params["server2003_os_platform"] = "linux"
 
-    params = Params.new(input_params)
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
 
     expect(params.servers.count).to eql(2)
 
@@ -64,7 +74,8 @@ describe 'Params' do
     input_params["server3000_name"] = "server3"
     input_params["server3003_os_platform"] = "windows"
 
-    params = Params.new(input_params)
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
 
     linux_servers = params.get_servers_by_os_platform("linux")
     expect(linux_servers.count).to eql(2)
@@ -82,18 +93,20 @@ describe 'Params' do
     input_params["server1000_name"] = "server1"
     input_params["server1003_property1"] = "value1"
 
-    params = Params.new(input_params)
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
 
     expect(params.get_server_property("server1", "property1")).to eql("value1")
   end
 
-  it 'should get an enrypted param' do
+  it 'should get an encrypted param' do
     input_params = {}
     input_params["run_key"] = "123" #trick it into thinking that it is run from BRPM
     input_params["key1_encrypt"] = "brpm_encrypted"
     input_params["key2_enc"] = "brpm_encrypted"
 
-    params = Params.new(input_params)
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
 
     expect(params["key1"]).to eql("brpm")
     expect(params["key2"]).to eql("brpm")
@@ -103,7 +116,8 @@ describe 'Params' do
     input_params = {}
     input_params["key1"] = "value1"
 
-    params = Params.new(input_params)
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
 
     expect(params.get("key1")).to eql("value1")
   end
@@ -121,7 +135,8 @@ describe 'Params' do
     input_params = {}
     input_params["key1"] = "value1"
 
-    params = Params.new(input_params)
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
 
     expect(params.find_or_add("key1", "value1-bis")).to eql("value1")
     expect(params.count).to eql(1)
@@ -135,7 +150,8 @@ describe 'Params' do
     input_params = {}
     input_params["request_id"] = "1234"
 
-    params = Params.new(input_params)
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
 
     expect(params.rest_request_id).to eql("234")
   end
