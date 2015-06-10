@@ -324,7 +324,7 @@ class BrpmAuto
 
     private
 
-    #TODO: still needed?
+      #TODO: still needed? the framework's error handling should take care of this already
       def exit_code_failure
         return "" if Windows
         size_ = EXIT_CODE_FAILURE.size

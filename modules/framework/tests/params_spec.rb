@@ -2,7 +2,7 @@ require "#{File.dirname(__FILE__)}/spec_helper"
 
 describe 'Params' do
   it 'should get a param' do
-    input_params = {}
+    input_params = get_default_params
     input_params["key1"] = "value1"
 
     BrpmAuto.setup(input_params)
@@ -12,7 +12,7 @@ describe 'Params' do
   end
 
   it 'should resolve a tokenized param' do
-    input_params = {}
+    input_params = get_default_params
     input_params["key1"] = "value1"
     input_params["tokenized_key"] = "The value is rpm{key1}!"
 
@@ -23,7 +23,7 @@ describe 'Params' do
   end
 
   it 'should get a param via its dedicated method' do
-    input_params = {}
+    input_params = get_default_params
     input_params["request_id"] = "123456"
 
     BrpmAuto.setup(input_params)
@@ -33,7 +33,7 @@ describe 'Params' do
   end
 
   it 'should get the servers' do
-    input_params = {}
+    input_params = get_default_params
 
     input_params["server1000_name"] = "server1"
     input_params["server1001_dns"] = "server1.com"
@@ -63,7 +63,7 @@ describe 'Params' do
   end
 
   it 'should get the servers by os platform' do
-    input_params = {}
+    input_params = get_default_params
 
     input_params["server1000_name"] = "server1"
     input_params["server1003_os_platform"] = "linux"
@@ -88,7 +88,7 @@ describe 'Params' do
   end
 
   it 'should get a server property' do
-    input_params = {}
+    input_params = get_default_params
 
     input_params["server1000_name"] = "server1"
     input_params["server1003_property1"] = "value1"
@@ -100,7 +100,7 @@ describe 'Params' do
   end
 
   it 'should get an encrypted param' do
-    input_params = {}
+    input_params = get_default_params
     input_params["run_key"] = "123" #trick it into thinking that it is run from BRPM
     input_params["key1_encrypt"] = "brpm_encrypted"
     input_params["key2_enc"] = "brpm_encrypted"
@@ -113,7 +113,7 @@ describe 'Params' do
   end
 
   it 'should get a param by the get method' do
-    input_params = {}
+    input_params = get_default_params
     input_params["key1"] = "value1"
 
     BrpmAuto.setup(input_params)
@@ -123,31 +123,33 @@ describe 'Params' do
   end
 
   it 'should add a param by the add method' do
-    input_params = {}
+    input_params = get_default_params
 
-    params = Params.new(input_params)
+    BrpmAuto.setup(input_params)
+    params = BrpmAuto.params
+
     params.add("key1", "value1")
 
     expect(params["key1"]).to eql("value1")
   end
 
   it 'should find or add a param' do
-    input_params = {}
+    input_params = get_default_params
     input_params["key1"] = "value1"
 
     BrpmAuto.setup(input_params)
     params = BrpmAuto.params
 
     expect(params.find_or_add("key1", "value1-bis")).to eql("value1")
-    expect(params.count).to eql(1)
+    expect(params.count).to eql(input_params.count)
 
     expect(params.find_or_add("key2", "value2")).to eql("value2")
-    expect(params.count).to eql(2)
+    expect(params.count).to eql(input_params.count + 1)
     expect(params["key2"]).to eql("value2")
   end
 
   it 'should calculate the REST request id' do
-    input_params = {}
+    input_params = get_default_params
     input_params["request_id"] = "1234"
 
     BrpmAuto.setup(input_params)

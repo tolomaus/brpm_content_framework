@@ -23,10 +23,7 @@ class RequestParams < ParamsBase
   #
   # * +key+ - key to find
   def get(key, default_value = "")
-    result = self.has_key?(key) ? self[key] : nil
-    result = default_value if result.nil? || result == ""
-
-    BrpmAuto.substitute_tokens(result)
+    result = self[key] || default_value
   end
 
   # Adds a key/value to the params
