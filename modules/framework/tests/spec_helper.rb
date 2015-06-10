@@ -30,6 +30,11 @@ def get_request_params
   end
 end
 
+def cleanup_request_params
+  request_params_file = "/tmp/brpm_content/request_data.json"
+  File.delete(request_params_file) if File.exist?(request_params_file)
+end
+
 def decrypt_string_with_prefix(input) # mocked method
   return nil if input.nil? || !input.kind_of?(String)
 

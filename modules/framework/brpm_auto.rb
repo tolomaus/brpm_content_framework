@@ -1,7 +1,7 @@
 require "yaml"
 
 class BrpmAuto
-  #TODO: can we remove this consts?
+  #TODO: can we remove these consts?
   EXIT_CODE_FAILURE = 'Exit_Code_Failure'
   Windows = (RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/) unless defined?(Windows)
 
@@ -39,7 +39,7 @@ class BrpmAuto
         initialize_request_params(@params.output_dir)
       end
 
-      @all_params = AllParams.new(@params, request_params)
+      @all_params = AllParams.new(@params, @request_params)
 
       if @params["SS_integration_dns"]
         @integration_settings = IntegrationSettings.new(

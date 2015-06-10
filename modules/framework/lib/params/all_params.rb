@@ -2,16 +2,20 @@ class AllParams < ParamsBase
   def initialize(params, request_params)
     @params = params
     @request_params = request_params
+
+    # this class acts as a virtual hash on top of two real hashes for all write-related methods (which need to be overriden)
+    # the values from both hashes are also synchronized in this class to avoid having to override all read-related methods
+    self.merge!(@params)
+    self.merge!(@request_params)
   end
 
-  def [] key
-    @params.has_key?(key) ? @params[key] : @request_params[key]
-  end
+  alias :super_add :[]=
 
   def []=(key,val)
     raise RuntimeError.new("This is a virtual hash based on two physical hashes, use the add method instead.")
   end
 
+  #TODO: refactor out the where functionality
   # Test if a param is present
   #
   # ==== Attributes
@@ -47,12 +51,13 @@ class AllParams < ParamsBase
   # ==== Returns
   #
   # * value added
-  def add(key_name, value, store)
+  def add(key, value, store)
     if store == "params"
-      @params[key_name] = value
-    elsif store == "json" or store == "request_params"
-      @request_params[key_name] = value
+      @params[key] = value
+    elsif store == "json"
+      @request_params[key] = value
     end
+    super_add(key, value)
   end
 
   # Adds a key/value to the params if not found

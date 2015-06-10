@@ -1,6 +1,10 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
 
 describe 'Params' do
+  before(:each) do
+    cleanup_request_params
+  end
+
   it 'should get a param' do
     input_params = get_default_params
     input_params["key1"] = "value1"
@@ -8,6 +12,7 @@ describe 'Params' do
     BrpmAuto.setup(input_params)
     params = BrpmAuto.params
 
+    expect(params).to have_key("key1")
     expect(params["key1"]).to eql("value1")
   end
 
@@ -19,6 +24,7 @@ describe 'Params' do
     BrpmAuto.setup(input_params)
     params = BrpmAuto.params
 
+    expect(params).to have_key("tokenized_key")
     expect(params["tokenized_key"]).to eql("The value is value1!")
   end
 
