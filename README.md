@@ -8,7 +8,7 @@
 ## Usage
 
 ### Architecture
-![alt text](https://github.com/bmc-rlm/brpm-content/blob/master/architecture.png "architecture")
+![alt text](https://github.com/BMC-RLM/brpm_content/blob/master/architecture.png "architecture")
 
 ### Modularity
 
