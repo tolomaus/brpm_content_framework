@@ -12,24 +12,6 @@ class AllParams < ParamsBase
     raise RuntimeError.new("This is a virtual hash based on two physical hashes, use the add method instead.")
   end
 
-  # Finds a key in params or json_params
-  #
-  # ==== Attributes
-  #
-  # * +key_name+ - key name
-  # * +default+ - value to return if key is blank or not found
-  #
-  # ==== Returns
-  #
-  # * value of key - including resolved properties that may be embedded
-  # *  Like this: /opt/bmc/${component_version}/appserver
-  def get(key_name, default = "")
-    ans = nil
-    ans = @params.get(key_name) if @params.has_key?(key_name)
-    ans = @request_params.get(key_name) if @request_params.has_key?(key_name)
-    ans = default if ans.nil? || ans == ""
-  end
-
   # Test if a param is present
   #
   # ==== Attributes

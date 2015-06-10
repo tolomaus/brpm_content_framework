@@ -17,45 +17,6 @@ class RequestParams < ParamsBase
     set_request_params
   end
 
-  # Gets a params
-  #
-  # ==== Attributes
-  #
-  # * +key+ - key to find
-  def get(key, default_value = "")
-    result = self[key] || default_value
-  end
-
-  # Adds a key/value to the params
-  #
-  # ==== Attributes
-  #
-  # * +key_name+ - key name
-  # * +value+ - value to assign
-  #
-  # ==== Returns
-  #
-  # * value added
-  def add(key_name, value)
-    self[key_name] = value
-  end
-
-  # Adds a key/value to the params if not found
-  #
-  # ==== Attributes
-  #
-  # * +key_name+ - key name
-  # * +value+ - value to assign
-  #
-  # ==== Returns
-  #
-  # * value of key
-  def find_or_add(key_name, value)
-    ans = get(key_name)
-    add(key_name, value) if ans == ""
-    ans == "" ? value : ans
-  end
-
   #TODO: support parallel steps modifying the same request params file
 
   private
