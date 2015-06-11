@@ -15,11 +15,12 @@ if [ ! -z "$LOCATION" ]; then
 fi
 
 CURRENT_VERSION=$(eval "sed -n \"s=  root: $BRPM_HOME/releases/\(.*\)/RPM=\1=p\" $BRPM_HOME/server/jboss/standalone/deployments/RPM-knob.yml")
-CONTENT_REPO_PATH=$BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos/brpm_content
+CONTENT_REPOS_PATH=$BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
+CONTENT_REPO_PATH=$CONTENT_REPOS_PATH/brpm_content
 
-if [ ! -d "$BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos" ]; then
-  echo "Creating directory $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos..."
-  mkdir -p $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
+if [ ! -d "$CONTENT_REPOS_PATH" ]; then
+  echo "Creating directory $CONTENT_REPOS_PATH..."
+  mkdir -p $CONTENT_REPOS_PATH
 fi
 
 if [ -d "$CONTENT_REPO_PATH" ]; then
@@ -29,18 +30,17 @@ if [ -d "$CONTENT_REPO_PATH" ]; then
 fi
 
 if [ -z "$LOCATION" ]; then
-  echo "Doing a git clone git@github.com:BMC-RLM/brpm_content.git on $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos..."
+  echo "Doing a 'git clone https://github.com/BMC-RLM/brpm_content.git' on $CONTENT_REPOS_PATH..."
   tmp_dir=$(pwd)
-  mkdir -p $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
-  cd $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
+  cd $CONTENT_REPOS_PATH
   git clone https://github.com/BMC-RLM/brpm_content.git
   cd $tmp_dir
 else
   echo "Unzipping $LOCATION..."
-  unzip "$LOCATION" -d $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos
+  unzip "$LOCATION" -d $CONTENT_REPOS_PATH
 
   echo "Renaming the directory to $CONTENT_REPO_PATH..."
-  mv $BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/git_repos/brpm_content-master $CONTENT_REPO_PATH
+  mv $CONTENT_REPOS_PATH/brpm_content-master $CONTENT_REPO_PATH
 fi
 
 cp $CONTENT_REPO_PATH/modules/framework/log.html $BRPM_HOME/automation_results
