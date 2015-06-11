@@ -14,9 +14,17 @@
 
 Phase 2: modules will be maintained in dedicated github (or other) repositories
 
-### Dependency management
-
-### Parameters
+### Framework
+#### Dependency management
+#### Parameters
+##### input params
+##### request params
+##### integration settings
+#### Logging
+#### Error handling
+#### Other framework features
+##### execute command
+##### Semaphores
 
 ### Testability
 
