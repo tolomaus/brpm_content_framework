@@ -30,7 +30,7 @@ The above remark applies to both automation scripts as well as resource automati
  
 Finally, make sure that the following item is added to Metadata > Lists > AutomationErrors: 
 ```
-******** ERROR ******** 
+******** ERROR ********
 ```
 This will allow non caught exceptions from the automation scripts to cause the step to go in problem mode.
 
