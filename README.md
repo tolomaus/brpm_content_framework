@@ -74,6 +74,7 @@ Phase 2: all modules will be maintained in dedicated github (or other) repositor
 External modules are modules that are not part of this repository. They can be developed by anyone who may have an interest in creating and sharing one or a set of automation scripts.
  
 The file structure of a module is very simple: 
+```
 +-- automations
 |   +-- my_automation_script.rb
 |   +-- my_automation_script.txt
@@ -86,6 +87,7 @@ The file structure of a module is very simple:
 |   +-- my_automation_script_spec.rb
 |   +-- spec_helper.rb
 +-- config.yml
+```
 
 For an example see the Selenium module.
 
