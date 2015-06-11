@@ -20,12 +20,12 @@ class BrpmAuto
       @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
       $LOAD_PATH << @modules_root_path
 
-      @external_modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
-      $LOAD_PATH << @modules_root_path
+      @external_modules_root_path = File.expand_path("#{@modules_root_path}/../../modules")
+      $LOAD_PATH << @external_modules_root_path if Dir.exists?(@external_modules_root_path)
 
       require "framework/lib/logging/logger"
 
-      require_libs_no_file_logging "framework"
+      require_libs_no_file_logging "#{@modules_root_path}/framework"
     end
 
     def setup(params)
@@ -56,12 +56,12 @@ class BrpmAuto
       end
     end
 
-    def require_libs_no_file_logging(modul)
-      require_libs(modul, false)
+    def require_libs_no_file_logging(module_path)
+      require_libs(module_path, false)
     end
 
-    def require_libs(modul, log = true)
-      lib_path = "#{@modules_root_path}/#{modul}/lib/**/*.rb"
+    def require_libs(module_path, log = true)
+      lib_path = "#{module_path}/lib/**/*.rb"
       require_files(Dir[lib_path], log)
     end
 
@@ -90,7 +90,18 @@ class BrpmAuto
     end
 
     def require_module(modul)
-      module_config_file_path = "#{@modules_root_path}/#{modul}/config.yml"
+      BrpmAuto.log "Loading module #{modul}..."
+
+      if File.exists?("#{@modules_root_path}/#{modul}")
+        module_path = "#{@modules_root_path}/#{modul}"
+      elsif File.exists?("#{@external_modules_root_path}/#{modul}")
+        module_path = "#{@external_modules_root_path}/#{modul}"
+      else
+        raise "Module #{modul} is not installed."
+      end
+      BrpmAuto.log "Found the module on #{module_path}."
+
+      module_config_file_path = "#{module_path}/config.yml"
       if File.exist?(module_config_file_path)
         module_config = YAML.load_file(module_config_file_path)
         if module_config.has_key?("dependencies") and module_config["dependencies"] and module_config["dependencies"].count > 0
@@ -103,7 +114,7 @@ class BrpmAuto
       end
 
       BrpmAuto.log "Loading the libraries of module #{modul}..."
-      require_libs(modul)
+      require_libs(module_path)
     end
 
     def first_defined(first, second)
