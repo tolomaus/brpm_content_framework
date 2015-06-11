@@ -20,6 +20,9 @@ class BrpmAuto
       @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
       $LOAD_PATH << @modules_root_path
 
+      @external_modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
+      $LOAD_PATH << @modules_root_path
+
       require "framework/lib/logging/logger"
 
       require_libs_no_file_logging "framework"
