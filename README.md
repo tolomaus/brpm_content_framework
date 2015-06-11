@@ -16,8 +16,8 @@ chmod +x install_content_repo.sh
 ./chmod +x install_content_repo.sh
 ```
 
-The script will ask for the location of a zip file that contains the files. If the box has access to the internet you can leave it empty in which case it will directly grab the files from this github.com repo.
-You can find the zip file on [https://github.com/BMC-RLM/brpm_content/archive/master.zip](https://github.com/BMC-RLM/brpm_content/archive/master.zip)
+The script will ask for the location of a zip file that contains the files. If the BRPM instance has access to the internet you can leave it empty in which case it will directly grab the files from this github.com repo.
+If you need the zip file of this repo you can find it on [https://github.com/BMC-RLM/brpm_content/archive/master.zip](https://github.com/BMC-RLM/brpm_content/archive/master.zip)
 
 At this early stage it is still necessary to manually configure the automation scripts that come with this content repository in BRPM before you can start using them in the request steps. 
 
@@ -28,7 +28,11 @@ This can be done as following:
  
 The above remark applies to both automation scripts as well as resource automation scripts
  
-Finally, make sure that the following item is added to Metadata > Lists > AutomationErrors: '******** ERROR ********'. This will allow non caught exceptions from the automation scripts to cause the step to go in problem mode.
+Finally, make sure that the following item is added to Metadata > Lists > AutomationErrors: 
+```
+'******** ERROR ********'. 
+```
+This will allow non caught exceptions from the automation scripts to cause the step to go in problem mode.
 
 ## Architecture
 ![alt text](https://github.com/BMC-RLM/brpm_content/blob/master/architecture.png "architecture")
