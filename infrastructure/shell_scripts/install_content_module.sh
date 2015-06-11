@@ -43,7 +43,7 @@ fi
 
 if [ -d "$CONTENT_MODULE_PATH" ]; then
   DATE=$(date +"%Y%m%d%H%M")
-  echo "Archiving current content module to ${CONTENT_MODULES_PATH}_archive/$NAME_${DATE}..."
+  echo "Archiving current content module to ${CONTENT_MODULES_PATH}_archive/${NAME}_${DATE}..."
   mv ${CONTENT_MODULE_PATH} ${CONTENT_MODULES_PATH}_archive/${NAME}_${DATE}
 fi
 
