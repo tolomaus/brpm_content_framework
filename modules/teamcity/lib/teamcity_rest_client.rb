@@ -1,13 +1,6 @@
 require 'json'
 require 'uri'
 
-#=============================================================================#
-# Jira Rest Module                                                            #
-#-----------------------------------------------------------------------------#
-# The REST module currently supports the 6.0.8 version of the Jira API as     #
-# well as a rest client which supports both HTTP and HTTPS                    #
-#=============================================================================#
-
 class TeamcityRestClient
   def initialize(integration_settings = BrpmAuto.integration_settings)
     @url = integration_settings.dns
