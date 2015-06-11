@@ -5,17 +5,19 @@ if [ -z "$BRPM_HOME" ]; then
     exit 1
 fi
 
-read -p "What is the location of the content module? You may specify either the location of a zip file on the local file system or the url of a githug repo (e.g. https://github.com/BMC-RLM/brpm_module_mymodule.git)" LOCATION
+read -p "What is the location of the content module? You may specify either the location of a zip file on the local file system or the url of a github repo (e.g. https://github.com/BMC-RLM/brpm_module_mymodule.git)" LOCATION
 
 if [ -z "$LOCATION" ]; then
-  echo "The name was not specified. Aborting the installation."
+  echo "The location was not specified. Aborting the installation."
   exit 1
 fi
 
 if [[ $LOCATION == *"github.com"* ]]; then
+  echo "The location refers to a github repo."
   IS_GITHUB_LOCATION=true
 else
   IS_GITHUB_LOCATION=false
+  echo "The location refers to a file."
   if [ ! -f "$LOCATION" ]; then
     echo "The specified location is not a file. Aborting the installation."
     exit 1
@@ -40,7 +42,7 @@ if [ -d "$CONTENT_MODULE_PATH" ]; then
   mv ${CONTENT_MODULE_PATH} ${CONTENT_MODULE_PATH}_${DATE}
 fi
 
-if [ $IS_GITHUB_LOCATION ]; then
+if [ "$IS_GITHUB_LOCATION" = true ]; then
   echo "Doing a 'git clone $LOCATION' on $CONTENT_MODULES_PATH..."
   tmp_dir=$(pwd)
   cd $CONTENT_MODULES_PATH
