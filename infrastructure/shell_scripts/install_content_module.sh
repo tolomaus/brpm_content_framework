@@ -34,13 +34,17 @@ CONTENT_MODULE_PATH=$BRPM_HOME/releases/$CURRENT_VERSION/RPM/lib/script_support/
 if [ ! -d "$CONTENT_MODULES_PATH" ]; then
   echo "Creating directory $CONTENT_MODULES_PATH..."
   mkdir -p $CONTENT_MODULES_PATH
+fi
+
+if [ ! -d "${CONTENT_MODULES_PATH}_archive" ]; then
+  echo "Creating directory ${CONTENT_MODULES_PATH}_archive..."
   mkdir -p ${CONTENT_MODULES_PATH}_archive
 fi
 
 if [ -d "$CONTENT_MODULE_PATH" ]; then
   DATE=$(date +"%Y%m%d%H%M")
   echo "Archiving current content module to ${CONTENT_MODULES_PATH}_archive/$NAME_${DATE}..."
-  mv ${CONTENT_MODULE_PATH} ${CONTENT_MODULES_PATH}_archive/$NAME_${DATE}
+  mv ${CONTENT_MODULE_PATH} ${CONTENT_MODULES_PATH}_archive/${NAME}_${DATE}
 fi
 
 if [ "$IS_GITHUB_LOCATION" = true ]; then
