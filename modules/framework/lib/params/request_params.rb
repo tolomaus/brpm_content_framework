@@ -22,9 +22,9 @@ class RequestParams < ParamsBase
   private
 
     def set_request_params
-      request_params_file = File.new(@file_path, "w")
-      request_params_file.puts(self.to_json)
-      request_params_file.close
+      File.open(@file_path, "w") do |file|
+        file.puts(self.to_json)
+      end
     end
 
     def get_request_params
