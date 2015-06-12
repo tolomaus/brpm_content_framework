@@ -9,11 +9,11 @@ First of all, make sure that the environment variable BRPM_HOME is set to the lo
 export BRPM_HOME=/opt/bmc/RLM
 ```
 
-Then copy the installation script to the instance on which BRPM is installed and execute it:
+Then copy the installation script to the instance on which BRPM is installed and execute it, e.g.:
 ```shell
 wget https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh
 chmod +x install_content_repo.sh
-./chmod +x install_content_repo.sh
+./install_content_repo.sh
 ```
 
 The script will ask for the location of a zip file that contains the files. If the BRPM instance has access to the internet you can leave it empty in which case it will directly grab the files from this github.com repo.
