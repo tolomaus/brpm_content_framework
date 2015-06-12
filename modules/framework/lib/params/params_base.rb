@@ -22,8 +22,8 @@ class ParamsBase < Hash
   # ==== Returns
   #
   # * value added
-  def add(key_name, value)
-    self[key_name] = value
+  def add(key, value)
+    self[key] = value
   end
 
   # Adds a key/value to the params if not found
@@ -36,9 +36,9 @@ class ParamsBase < Hash
   # ==== Returns
   #
   # * value of key
-  def find_or_add(key_name, value)
-    ans = get(key_name)
-    add(key_name, value) if ans == ""
+  def find_or_add(key, value)
+    ans = get(key)
+    add(key, value) if ans == ""
     ans == "" ? value : ans
   end
 
@@ -58,8 +58,8 @@ class ParamsBase < Hash
   #   @p = Params.new(params)
   #   @p.SS_application
   #   => "Sales"
-  def method_missing(key_name, *args)
-    ans = get(key_name.to_s)
+  def method_missing(key, *args)
+    ans = get(key.to_s)
     ans = args[0] if ans == "" && args[0]
     ans
   end
@@ -73,9 +73,9 @@ class ParamsBase < Hash
   # ==== Returns
   #
   # * value of key
-  def required(key_name)
-    raise "ParamsError: param #{key_name} must be present" unless self.has_key?(key_name)
-    get(key_name)
+  def required(key)
+    raise "ParamsError: param #{key} must be present" unless self.has_key?(key)
+    get(key)
   end
 
 end
