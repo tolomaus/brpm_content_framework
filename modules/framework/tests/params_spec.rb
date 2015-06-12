@@ -107,7 +107,13 @@ describe 'Params' do
 
   it 'should get an encrypted param' do
     input_params = get_default_params
-    input_params["run_key"] = "123" #trick it into thinking that it is run from BRPM
+
+    #trick it into thinking that it is run from BRPM
+    input_params["run_key"] = "123"
+    input_params["automation_results_dir"] = input_params["output_dir"]
+    input_params["request_id"] = "123"
+    input_params["step_id"] = "123"
+
     input_params["key1_encrypt"] = "brpm_encrypted"
     input_params["key2_enc"] = "brpm_encrypted"
 

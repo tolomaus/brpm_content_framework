@@ -10,7 +10,7 @@ class BrpmLogger < LoggerBase
     @step_name = step_name
     @also_log_to_console = also_log_to_console
 
-    print "Logging to #{get_step_run_log_file_path} and #{get_request_log_file_path}\n"
+    print "Logging to #{get_step_run_log_file_path} and #{get_request_log_file_path}\n" unless also_log_to_console
   end
 
   def get_request_log_file_path
