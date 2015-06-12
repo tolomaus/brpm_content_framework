@@ -5,7 +5,7 @@ class SimpleLogger < LoggerBase
     @log_file = log_file
     @also_log_to_console = also_log_to_console
 
-    print "Logging to #{@log_file}\n"
+    print "Logging to #{@log_file}\n" unless also_log_to_console
   end
 
   def log(message)

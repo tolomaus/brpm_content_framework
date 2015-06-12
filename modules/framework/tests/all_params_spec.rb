@@ -65,7 +65,6 @@ describe 'All params' do
 
   it 'should add a param by the add method to the request_param store' do
     input_params = get_default_params
-
     BrpmAuto.setup(input_params)
     all_params = BrpmAuto.all_params
 
@@ -73,7 +72,7 @@ describe 'All params' do
 
     expect(all_params).to have_key("key1")
     expect(all_params["key1"]).to eql("value1")
-    expect(all_params.count).to eql(get_default_params.count + 1)
+    expect(all_params.count).to eql(input_params.count + 1)
 
     expect(BrpmAuto.params.count).to eql(all_params.count - 1)
 
@@ -97,12 +96,11 @@ describe 'All params' do
   end
 
   it 'should find or add a param to the request_params store' do
-    input_params = get_default_params
-
     input_request_params = {}
     input_request_params["key1"] = "value1"
     set_request_params(input_request_params)
 
+    input_params = get_default_params
     BrpmAuto.setup(input_params)
     all_params = BrpmAuto.all_params
 

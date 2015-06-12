@@ -129,9 +129,7 @@ describe 'Params' do
   end
 
   it 'should add a param by the add method' do
-    input_params = get_default_params
-
-    BrpmAuto.setup(input_params)
+    BrpmAuto.setup(get_default_params)
     params = BrpmAuto.params
 
     params.add("key1", "value1")
