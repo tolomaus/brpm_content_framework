@@ -23,7 +23,7 @@ class BrpmAuto
       @external_modules_root_path = File.expand_path("#{@modules_root_path}/../../modules")
       $LOAD_PATH << @external_modules_root_path if Dir.exists?(@external_modules_root_path)
 
-      require "framework/lib/logging/logger"
+      require "framework/lib/logging/brpm_logger"
 
       require_libs_no_file_logging "#{@modules_root_path}/framework"
     end
@@ -35,7 +35,7 @@ class BrpmAuto
 
       if @params.run_from_brpm
         # noinspection RubyArgCount
-        @logger = Logger.new(@params.request_id, @params.automation_results_dir, @params.step_id, @params.run_key, @params.step_number, @params.step_name, @params.also_log_to_console)
+        @logger = BrpmLogger.new(@params.request_id, @params.automation_results_dir, @params.step_id, @params.run_key, @params.step_number, @params.step_name, @params.also_log_to_console)
         @request_params = RequestParams.new_for_request(@params.automation_results_dir, @params.application, @params.request_id)
       else
         initialize_logger(@params.log_file, @params.also_log_to_console)

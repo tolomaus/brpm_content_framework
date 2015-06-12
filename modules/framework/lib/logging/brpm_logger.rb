@@ -1,6 +1,6 @@
 require "framework/lib/logging/logger_base"
 
-class Logger < LoggerBase
+class BrpmLogger < LoggerBase
   def initialize(request_id, automation_results_dir, step_id, run_key, step_number, step_name, also_log_to_console = false)
     @request_id = request_id
     @automation_results_dir = automation_results_dir
