@@ -172,7 +172,7 @@ class BrpmAuto
     end
 
     def substitute_tokens(expression, params = nil)
-      return nil if expression.nil? || !expression.kind_of?(String)
+      return expression if expression.nil? || !expression.kind_of?(String)
 
       searchable_params = params || @all_params
 
