@@ -16,9 +16,9 @@ def get_default_params
 end
 
 def set_request_params(request_params)
-  request_params_file = File.new("/tmp/brpm_content/request_data.json", "w")
-  request_params_file.puts(request_params.to_json)
-  request_params_file.close
+  File.open("/tmp/brpm_content/request_data.json", "w") do |file|
+    file.puts(request_params.to_json)
+  end
 end
 
 def get_request_params
