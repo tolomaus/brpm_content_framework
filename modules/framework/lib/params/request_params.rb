@@ -22,8 +22,6 @@ class RequestParams < ParamsBase
   private
 
     def set_request_params
-      BrpmAuto.log "Dir #{File.dirname(@file_path)} exists? #{Dir.exists?(File.dirname(@file_path))}"
-      BrpmAuto.log "File #{@file_path} exists? #{File.exists?(@file_path)}"
       File.open(@file_path, "w") do |file|
         file.puts(self.to_json)
       end
