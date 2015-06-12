@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-failed_tests = false
+failed_tests=false
 
 bundle exec rspec ./modules/framework/tests --format documentation
 rc=$?; if [ $rc != 0 ]; then failed_tests=true; fi
