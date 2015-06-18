@@ -32,9 +32,9 @@ class BrpmAuto
       @params = Params.new(params)
 
       load_server_params
+      load_customer_include_file
 
       if @params.run_from_brpm
-        # noinspection RubyArgCount
         @logger = BrpmLogger.new(@params.request_id, @params.automation_results_dir, @params.step_id, @params.run_key, @params.step_number, @params.step_name, @params.also_log_to_console)
         @request_params = RequestParams.new_for_request(@params.automation_results_dir, @params.application, @params.request_id)
       else
@@ -131,6 +131,19 @@ class BrpmAuto
         server_config = YAML.load_file(server_config_file_path)
         server_config.each do |key, value|
           @params[key] = value unless @params.has_key?(key)
+        end
+      end
+    end
+
+    def load_customer_include_file
+      customer_include_file_path = "#{self.params.config_dir}/customer_include.rb"
+      if File.exists?(customer_include_file_path)
+        load customer_include_file_path # use load instead of require to avoid having to restart BRPM after modifying the customer include file in a resource automation scenario
+        if defined?(get_customer_include_params)
+          customer_include_params = get_customer_include_params
+          customer_include_params.each do |key, value|
+            @params[key] = value
+          end
         end
       end
     end
