@@ -65,8 +65,9 @@ echo "Replacing the version number in RPM-knob.yml ..."
 sed -i -e s/$OLD_VERSION/$NEW_VERSION/g $BRPM_HOME/server/jboss/standalone/deployments/RPM-knob.yml
 
 echo "Replacing the hostname to the public hostname in torquebox.yml ..."
-CURRENT_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$OLD_VERSION/RPM/config/torquebox.yml")
-sed -i -e s/$CURRENT_HOSTNAME/$BRPM_HOSTNAME/g $BRPM_HOME/releases/$NEW_VERSION/RPM/config/torquebox.yml
+PREVIOUS_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$OLD_VERSION/RPM/config/torquebox.yml")
+DEFAULT_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$NEW_VERSION/RPM/config/torquebox.yml")
+sed -i -e s/$DEFAULT_HOSTNAME/$PREVIOUS_HOSTNAME/g $BRPM_HOME/releases/$NEW_VERSION/RPM/config/torquebox.yml
 
 . $BRPM_HOME/bin/setenv.sh
 cd $BRPM_HOME/releases/$NEW_VERSION/RPM/config

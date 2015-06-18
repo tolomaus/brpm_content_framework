@@ -49,8 +49,8 @@ echo "Stopping BRPM..."
 
 echo "Replacing the hostname to the public hostname in torquebox.yml ..."
 CURRENT_VERSION=$(eval "sed -n \"s=  root: $BRPM_HOME/releases/\(.*\)/RPM=\1=p\" $BRPM_HOME/server/jboss/standalone/deployments/RPM-knob.yml")
-CURRENT_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml")
-sed -i -e s/$CURRENT_HOSTNAME/$BRPM_HOSTNAME/g $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml
+DEFAULT_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml")
+sed -i -e s/$DEFAULT_HOSTNAME/$BRPM_HOSTNAME/g $BRPM_HOME/releases/$CURRENT_VERSION/RPM/config/torquebox.yml
 
 echo "Restarting BRPM..."
 /etc/init.d/bmcrpm-4.6.00 start
