@@ -97,11 +97,11 @@ Any ruby exception that is not trapped inside the automation scripts will cause 
 
 #### server yaml file
 
-The framework allows you to define your own parameters that will automatically be made available to all automation scripts. You can do this by creating a file server.yml in $BRPM_HOME/config and adding your parameters into it, in YAML format. See [here](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/config/server_example.yml) for an example. 
+The framework allows you to define your own parameters that will automatically be made available to all automation scripts. You can do this by creating a file server.yml in $BRPM_HOME/config and adding your parameters into it, in YAML format. See [here](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/config/server.yml) for an example. 
 
 #### customer include file
 
-The framework allows you to create your own ruby methods that you will automatically be able to use in all automation scripts. You can do this by creating a file customer_include.rb in $BRPM_HOME/config and adding your custom methods into it. See [here](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/config/customer_include_example.rb) for an example.
+The framework allows you to create your own ruby methods that you will automatically be able to use in all automation scripts. You can do this by creating a file customer_include.rb in $BRPM_HOME/config and adding your custom methods into it. See [here](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/config/customer_include.rb) for an example.
 
 Note
 If a get_customer_include_params method exists, the framework will automatically execute it and add the resulting hash into the parameters hash.
