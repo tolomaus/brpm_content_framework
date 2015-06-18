@@ -68,9 +68,13 @@ echo "Replacing the hostname to the public hostname in torquebox.yml ..."
 CURRENT_HOSTNAME=$(eval "sed -n \"s=  host: \(.*\)=\1=p\" $BRPM_HOME/releases/$OLD_VERSION/RPM/config/torquebox.yml")
 sed -i -e s/$CURRENT_HOSTNAME/$BRPM_HOSTNAME/g $BRPM_HOME/releases/$NEW_VERSION/RPM/config/torquebox.yml
 
-echo "Migrating the database ..."
 . $BRPM_HOME/bin/setenv.sh
 cd $BRPM_HOME/releases/$NEW_VERSION/RPM/config
+
+echo "Updating gems..."
+jruby -S bundle install
+
+echo "Migrating the database..."
 jruby -S rake --verbose db:migrate RAILS_ENV=production
 
 echo "Patch $NEW_VERSION was applied successfully."
