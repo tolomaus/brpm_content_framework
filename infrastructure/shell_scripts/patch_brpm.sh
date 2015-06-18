@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Usage:
-# patch_brpm.sh <new version>
+# patch_brpm.sh <new version> <location (ftp or local file system)>
 
 NEW_VERSION=$1
+LOCATION=$2
 
 if [ -z "$BRPM_HOME" ]; then
     echo "BRPM_HOME is not set (e.g. /opt/bmc/RLM). Aborting the patch installation."
@@ -14,8 +15,6 @@ if [ -z "$NEW_VERSION" ]; then
     echo "NEW_VERSION is not specified. Aborting the patch installation."
     exit 1
 fi
-
-read -p "What is the location of the patch file? (either ftp link or local file system)" LOCATION
 
 if [ -z "$LOCATION" ]; then
     echo "The location was not specified. Aborting the installation."
@@ -32,9 +31,9 @@ if [ ! -f "$LOCATION" ]; then
     exit 1
 fi
 
-if [ -f ~/backup_database.sh ]; then
-    echo "Found ~/backup_database.sh so taking a database backup first..."
-    ~/backup_database.sh
+if [ -f ~/shell_scripts/backup_database.sh ]; then
+    echo "Found ~/shell_scripts/backup_database.sh so taking a database backup first..."
+    ~/shell_scripts/backup_database.sh
     echo ""
 fi
 
