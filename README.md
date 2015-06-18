@@ -70,7 +70,7 @@ The installation itself can be done by executing the installation script:
 ~/shell_scripts/install_content_module.sh
 ```
 
-The script will ask for the location of a zip file or the url of a github.com repository that contains the module's files, e.g. [https://github.com/BMC-RLM/brpm_module_selenium](https://github.com/BMC-RLM/brpm_module_selenium).
+The script will ask for the location of a zip file or the url of a github.com repository that contains the module's files. For the Selenium module this url would be [https://github.com/BMC-RLM/brpm_module_selenium](https://github.com/BMC-RLM/brpm_module_selenium).
 
 Note that the BRPM Content framework contains a number of core [modules](https://github.com/BMC-RLM/brpm_content/tree/master/modules) that will be installed by default. The purpose is to gradually move these built-in modules into their own dedicated github repositories.  
 
