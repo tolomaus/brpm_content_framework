@@ -19,7 +19,7 @@ def rpm_load_module(*module_names)
   module_names.each do |mod_name|
     user_load_path = defined?(CUSTOMER_LIB_DIR) ? "#{CUSTOMER_LIB_DIR}/lib/#{mod_name}" : nil
     load_path = "#{FRAMEWORK_DIR}/lib/#{mod_name}"
-    transport_load_path = "#{File.dirname(FRAMEWORK_DIR)}/brpm/lib/transport/#{mod_name}"
+    transport_load_path = "#{FRAMEWORK_DIR}/transport/#{mod_name}"
     if File.exist?("#{load_path}.rb")
       require load_path
       result += "success - #{load_path}\n"

@@ -4,8 +4,6 @@ require "#{FRAMEWORK_DIR}/lib/brpm_base"
 
 class BrpmAuto
   #TODO: can we remove these consts?
-  EXIT_CODE_FAILURE = 'Exit_Code_Failure'
-  Windows = (RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/) unless defined?(Windows)
 
   private_class_method :new
 
