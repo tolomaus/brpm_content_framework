@@ -1,9 +1,9 @@
-# Helper Routines for Capistrano
-require 'capistrano'
-require 'capistrano/cli'
-require 'timeout'
 
 class TransportSSH
+  # Helper Routines for Capistrano
+  require 'capistrano'
+  require 'capistrano/cli'
+  require 'timeout'
   
   # Initialize the class
   #

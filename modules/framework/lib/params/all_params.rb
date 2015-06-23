@@ -47,11 +47,12 @@ class AllParams < ParamsBase
   #
   # * +key_name+ - key name
   # * +value+ - value to assign
+  # * +store+ - place to add params or json (default = params)
   #
   # ==== Returns
   #
   # * value added
-  def add(key, value, store)
+  def add(key, value, store = "params")
     if store == "params"
       @params[key] = value
     elsif store == "json"
@@ -66,11 +67,12 @@ class AllParams < ParamsBase
   #
   # * +key_name+ - key name
   # * +value+ - value to assign
+  # * +store+ - place to add params or json (default = params)
   #
   # ==== Returns
   #
   # * value of key
-  def find_or_add(key_name, value, store)
+  def find_or_add(key_name, value, store = "params")
     ans = get(key_name)
     add(key_name, value, store) if ans == ""
     ans == "" ? value : ans

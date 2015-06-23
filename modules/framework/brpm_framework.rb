@@ -36,12 +36,16 @@ def rpm_load_module(*module_names)
   result
 end
 
+def update_output
+  load "#{FRAMEWORK_DIR}/write_to.rb" if BrpmAuto.params.run_from_brpm
+end
+
 # == Initialization on Include
 # Objects are set for most of the classes on requiring the file
 # these will be available in the BRPM automation
 #  Customers should modify the BAA_BASE_PATH constant
 # == Note the customer_include.rb reference.  To add your own routines and override methods use this file.
-customer_include_file = File.join(FRAMEWORK_DIR, "customer_include.rb")
+customer_include_file = File.join(FRAMEWORK_DIR.gsub("brpm_content/modules/framework/", ""), "customer_include.rb")
 customer_include_file = File.join(CUSTOMER_LIB_DIR,"customer_include.rb") if defined?(CUSTOMER_LIB_DIR)
 customer_include_file = File.join(FRAMEWORK_DIR,"customer_include_default.rb") if !File.exist?(customer_include_file)
 
