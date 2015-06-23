@@ -1,6 +1,6 @@
 @p = BrpmAuto.all_params
 
-result = run_command(params, @p.get("command"),"")
+result = run_command(@p, @p.get("command"),"")
 
 # Apply success or failure criteria
 if result.include?(@p.get("success"))
