@@ -1,4 +1,6 @@
 require "yaml"
+FRAMEWORK_DIR = File.expand_path(File.dirname(__FILE__)) unless defined?(FRAMEWORK_DIR)
+require "#{FRAMEWORK_DIR}/lib/brpm_base"
 
 class BrpmAuto
   #TODO: can we remove these consts?
@@ -17,11 +19,11 @@ class BrpmAuto
     attr_reader :modules_root_path
 
     def init
-      @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
+      self.extend BrpmBase
+      @modules_root_path = File.dirname(FRAMEWORK_DIR)
       $LOAD_PATH << @modules_root_path
-
       @external_modules_root_path = File.expand_path("#{@modules_root_path}/../../modules")
-      $LOAD_PATH << @external_modules_root_path if Dir.exists?(@external_modules_root_path)
+      $LOAD_PATH << @external_modules_root_path if File.exist?(@external_modules_root_path)
 
       require "framework/lib/logging/brpm_logger"
 
@@ -160,6 +162,10 @@ class BrpmAuto
       @logger.log_error(message)
     end
 
+    def message_box(message)
+      @logger.message_box(message)
+    end
+
     def initialize_request_params(path)
       @request_params = RequestParams.new(path)
     end
@@ -198,179 +204,6 @@ class BrpmAuto
       return expression
     end
 
-    # Returns the dos path from a standard path
-    #
-    # ==== Attributes
-    #
-    # * +source_path+ - path in standard "/" format
-    # * +drive_letter+ - base drive letter if not included in path (defaults to C)
-    #
-    # ==== Returns
-    #
-    # * dos compatible path
-    #
-    def dos_path(source_path, drive_letter = "C")
-      path = ""
-      return source_path if source_path.include?(":\\")
-      path_array = source_path.split("/")
-      if path_array[1].length == 1 # drive letter
-        path = "#{path_array[1]}:\\"
-        path += path_array[2..-1].join("\\")
-      else
-        path = "#{drive_letter}:\\"
-        path += path_array[1..-1].join("\\")
-      end
-      path
-    end
-
-    # Executes a command via shell
-    #
-    # ==== Attributes
-    #
-    # * +command+ - command to execute on command line
-    # ==== Returns
-    #
-    # * command_run hash {stdout => <results>, stderr => any errors, pid => process id, status => exit_code}
-    def execute_shell(command, sensitive_data = nil)
-      escaped_command = command.gsub("\\", "\\\\")
-
-      loggable_command = privatize(escaped_command, sensitive_data)
-      BrpmAuto.log "Executing '#{loggable_command}'..."
-
-      cmd_result = {"stdout" => "","stderr" => "", "pid" => "", "status" => 1}
-
-      output_dir = File.join(params.output_dir,"#{precision_timestamp}")
-      errfile = "#{output_dir}_stderr.txt"
-      complete_command = "#{escaped_command} 2>#{errfile}" unless Windows
-      fil = File.open(errfile, "w+")
-      fil.close
-
-      begin
-        cmd_result["stdout"] = `#{complete_command}`
-        status = $?
-        cmd_result["pid"] = status.pid
-        cmd_result["status"] = status.to_i
-
-        fil = File.open(errfile)
-        stderr = fil.read
-        fil.close
-
-        if stderr.length > 2
-          BrpmAuto.log "Command generated an error: #{stderr}"
-          cmd_result["stderr"] = stderr
-        end
-      rescue Exception => e
-        BrpmAuto.log "Command generated an error: #{e.message}"
-        BrpmAuto.log "Back trace:\n#{e.backtrace}"
-
-        cmd_result["status"] = -1
-        cmd_result["stderr"] = "ERROR\n#{e.message}"
-      end
-
-      File.delete(errfile)
-
-      cmd_result
-    end
-
-    # Returns a timestamp to the thousanth of a second
-    #
-    # ==== Returns
-    #
-    # string timestamp 20140921153010456
-    #
-    def precision_timestamp
-      Time.now.strftime("%Y%m%d%H%M%S%L")
-    end
-
-    # Provides a simple failsafe for working with hash options
-    # returns "" if the option doesn't exist or is blank
-    # ==== Attributes
-    #
-    # * +options+ - the hash
-    # * +key+ - key to find in options
-    # * +default_value+ - if entered will be returned if the option doesn't exist or is blank
-    def get_option(options, key, default_value = "")
-      result = options.has_key?(key) ? options[key] : nil
-      result = default_value if result.nil? || result == ""
-      result
-    end
-
-    # Throws an error if an option is missing
-    #  great for checking if properties exist
-    #
-    # ==== Attributes
-    #
-    # * +options+ - the options hash
-    # * +key+ - key to find
-    def required_option(options, key)
-      result = get_option(options, key)
-      raise ArgumentError, "Missing required option: #{key}" if result == ""
-      result
-    end
-
-    # Splits the server and path from an nsh path
-    # returns same path if no server prepended
-    # ==== Attributes
-    #
-    # * +path+ - nsh path
-    # ==== Returns
-    #
-    # array [server, path] server is blank if not present
-    #
-    def split_nsh_path(path)
-      result = ["",path]
-      result[0] = path.split("/")[2] if path.start_with?("//")
-      result[1] = "/#{path.split("/")[3..-1].join("/")}" if path.start_with?("//")
-      result
-    end
-
-    def read_shebang(os_platform, action_txt)
-      if os_platform.downcase =~ /win/
-        result = {"ext" => ".bat", "cmd" => "cmd /c", "shebang" => ""}
-      else
-        result = {"ext" => ".sh", "cmd" => "/bin/bash ", "shebang" => ""}
-      end
-      if action_txt.include?("#![") # Custom shebang
-        shebang = action_txt.scan(/\#\!.*/).first
-        result["shebang"] = shebang
-        items = shebang.scan(/\#\!\[.*\]/)
-        if items.size > 0
-          ext = items[0].gsub("#![","").gsub("]","")
-          result["ext"] = ext if ext.start_with?(".")
-          result["cmd"] = shebang.gsub(items[0],"").strip
-        else
-          result["cmd"] = shebang
-        end
-      elsif action_txt.include?("#!/") # Basic shebang
-        result["shebang"] = "standard"
-      else # no shebang
-        result["shebang"] = "none"
-      end
-      result
-    end
-
-    private
-
-      #TODO: still needed? the framework's error handling should take care of this already
-      def exit_code_failure
-        return "" if Windows
-        size_ = EXIT_CODE_FAILURE.size
-        exit_code_failure_first_part  = EXIT_CODE_FAILURE[0..3]
-        exit_code_failure_second_part = EXIT_CODE_FAILURE[4..size_]
-        @params['ignore_exit_codes'] == 'yes' ?
-            '' :
-            "; if [ $? -ne 0 ]; then first_part=#{exit_code_failure_first_part}; echo \"${first_part}#{exit_code_failure_second_part}\"; fi;"
-      end
-
-      def url_encode(name)
-        name.gsub(" ","%20").gsub("/","%2F").gsub("?","%3F")
-      end
-
-      def touch_file(file_path)
-        fil = File.open(file_path,"w+")
-        fil.close
-        file_path
-      end
   end
 
   self.init

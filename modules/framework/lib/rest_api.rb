@@ -23,6 +23,26 @@ class Rest
       rest_call(url, "delete", options)
     end
 
+    # Makes an http method call and returns data in JSON
+    #
+    # ==== Attributes
+    #
+    # * +url+ - the url for the request
+    # * +method+ - the http method [get, put, post]
+    # * +options+ - a hash of options
+    #      +verbose+: gives verbose output (yes/no)
+    #      +data+: required for put and post methods a hash of post data
+    #      +username+: username for basic http authentication
+    #      +password+: password for basic http authentication
+    #      +suppress_errors+: continues after errors if true
+    #      
+    # ==== Returns
+    #
+    # * returns a hash of the http response with these keys
+    # * +status+ - success or ERROR
+    # * +message+ - if status is ERROR this will hold an error message
+    # * +code+ - the http status code 200=ok, 404=not found, 500=error, 504=not authorized
+    # * +data+ - the body of the http response
     def rest_call(url, method, options = {})
       methods = %w{get post put delete}
       result = rest_params = {}

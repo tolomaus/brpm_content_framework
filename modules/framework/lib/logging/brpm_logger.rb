@@ -41,4 +41,27 @@ class BrpmLogger < LoggerBase
 
     print(log_message) if @also_log_to_console
   end
+  
+  # Provides a pretty box for titles
+  #
+  # ==== Attributes
+  #
+  # * +msg+ - the text to output
+  # * +mtype+ - box type to display sep: a separator line, title a box around the message
+  def message_box(msg, mtype = "sep")
+    tot = 72
+    msg = msg[0..64] if msg.length > 65
+    ilen = tot - msg.length
+    if mtype == "sep"
+      start = "##{"-" * (ilen/2).to_i} #{msg} "
+      res = "#{start}#{"-" * (tot- start.length + 1)}#"
+    else
+      res = "##{"-" * tot}#\n"
+      start = "##{" " * (ilen/2).to_i} #{msg} "
+      res += "#{start}#{" " * (tot- start.length + 1)}#\n"
+      res += "##{"-" * tot}#\n"   
+    end
+    log(res)
+  end
+  
 end

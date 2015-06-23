@@ -1,0 +1,7 @@
+dependencies:
+ - brpm
+
+integration_servers:
+ - JIRA
+
+version: 1.0.0
