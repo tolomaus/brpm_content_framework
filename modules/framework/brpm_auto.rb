@@ -53,6 +53,14 @@ class BrpmAuto
             @params["SS_project_server"],
             @params["SS_project_server_id"]
         )
+      elsif defined?(SS_integration_dns)
+        @integration_settings = IntegrationSettings.new(
+            SS_integration_dns,
+            SS_integration_username,
+            SS_integration_password,
+            SS_integration_details,
+            SS_project_server,
+            SS_project_server_id
       end
     end
 
@@ -160,8 +168,8 @@ class BrpmAuto
       @logger.log_error(message)
     end
 
-    def message_box(message)
-      @logger.message_box(message)
+    def message_box(message, m_type = "sep")
+      @logger.message_box(message, m_type)
     end
 
     def initialize_request_params(path)

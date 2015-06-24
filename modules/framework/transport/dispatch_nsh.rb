@@ -222,7 +222,7 @@ class DispatchNSH < DispatchBase
   end
   
   # Copies remote files to a local staging repository
-  # 
+  #  
   # ==== Attributes
   #
   # * +source+ - nsh path to source file
