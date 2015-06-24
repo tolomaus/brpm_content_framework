@@ -36,7 +36,7 @@ class BrpmLogger < LoggerBase
     end
 
 #    File.open(get_step_run_log_file_path, "a") do |log_file|
-    File.open(BrpmAuto.params.output_file, "a") do |log_file|
+    File.open(BrpmAuto.params["SS_output_file"], "a") do |log_file|
       log_file.print(log_message)
     end
 

@@ -63,6 +63,7 @@ class BrpmAuto
             SS_integration_details,
             SS_project_server,
             SS_project_server_id
+        )
       end
     end
 
