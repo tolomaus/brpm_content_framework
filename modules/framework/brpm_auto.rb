@@ -23,7 +23,7 @@ class BrpmAuto
 
       require_libs_no_file_logging "#{@modules_root_path}/framework"
 
-      self.extend BrpmBase
+      self.extend Utilities
     end
 
     def setup(params)

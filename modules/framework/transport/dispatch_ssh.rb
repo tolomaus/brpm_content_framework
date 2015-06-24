@@ -14,7 +14,7 @@ class DispatchSSH < DispatchBase
   # * +test_mode+ - true/false to simulate commands instead of running them
   #
   def initialize(ssh_object, options = {}, compat_options = {})
-    self.extend BrpmBase
+    self.extend Utilities
     if options.has_key?("SS_output_dir")
       BrpmAuto.log "Load for this class has changed, no longer necessary to send params as 2nd argument"
       options = compat_options 
