@@ -13,7 +13,7 @@ class BrpmAuto
     attr_reader :modules_root_path
 
     def init
-      @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}")
+      @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
       $LOAD_PATH << @modules_root_path
 
       @external_modules_root_path = File.expand_path("#{@modules_root_path}/../../modules")
