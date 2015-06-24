@@ -173,33 +173,6 @@ class BrpmAuto
     def initialize_integration_settings(dns, username, password, details)
       @integration_settings = IntegrationSettings.new(dns, username, password, details)
     end
-
-    def privatize(expression, sensitive_data = BrpmAuto.params.private_params.values)
-      unless sensitive_data.nil? or sensitive_data.empty?
-        sensitive_data = [sensitive_data] if sensitive_data.kind_of?(String)
-
-        sensitive_data.each do |sensitive_string|
-          expression = expression.gsub(sensitive_string, "********")
-        end
-      end
-
-      expression
-    end
-
-    def substitute_tokens(expression, params = nil)
-      return expression if expression.nil? || !expression.kind_of?(String)
-
-      searchable_params = params || @all_params
-
-      found_token = expression.match('rpm{[^{}]*}')
-      while ! found_token.nil? do
-        raise "Property #{found_token[0][4..-2]} doesn't exist" if searchable_params[found_token[0][4..-2]].nil?
-        expression = expression.sub(found_token[0],searchable_params[found_token[0][4..-2]])
-        found_token = expression.match('rpm{[^{}]*}')
-      end
-      return expression
-    end
-
   end
 
   self.init

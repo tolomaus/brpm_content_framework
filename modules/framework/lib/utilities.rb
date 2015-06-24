@@ -1,5 +1,3 @@
-require 'rest-client'
-
 module Utilities
   
   EXIT_CODE_FAILURE = 'Exit_Code_Failure'
@@ -240,12 +238,14 @@ module Utilities
     txt.gsub(" ", "_").gsub(/\,|\[|\]/,"")
   end
 
+  # DEPRECATED - use BrpmAuto.params.get_servers_by_os_platform instead
   # Servers in params need to be filtered by OS
   def get_platform_servers(os_platform, alt_servers = nil)
     servers = alt_servers.nil? ? get_server_list(@params) : alt_servers
     result = servers.select{|k,v| v["os_platform"].downcase =~ /#{os_platform}/ }
   end
 
+  # DEPRECATED - use BrpmAuto.params.servers instead
   # Builds a hash of servers and properties from params
   # 
   # ==== Attributes
@@ -275,7 +275,8 @@ module Utilities
     end
     return slist
   end
-    
+
+  # DEPRECATED - use substitute_tokens instead (token has the format rpm{MY_TOKEN} instead of $${MY_TOKEN} to avid interference with shell variables)
   def get_keyword_items(script_content = nil)
     result = {}
     content = script_content unless script_content.nil?
@@ -288,6 +289,32 @@ module Utilities
       end
     end
     result
+  end
+
+  def privatize(expression, sensitive_data = BrpmAuto.params.private_params.values)
+    unless sensitive_data.nil? or sensitive_data.empty?
+      sensitive_data = [sensitive_data] if sensitive_data.kind_of?(String)
+
+      sensitive_data.each do |sensitive_string|
+        expression = expression.gsub(sensitive_string, "********")
+      end
+    end
+
+    expression
+  end
+
+  def substitute_tokens(expression, params = nil)
+    return expression if expression.nil? || !expression.kind_of?(String)
+
+    searchable_params = params || @all_params
+
+    found_token = expression.match('rpm{[^{}]*}')
+    while ! found_token.nil? do
+      raise "Property #{found_token[0][4..-2]} doesn't exist" if searchable_params[found_token[0][4..-2]].nil?
+      expression = expression.sub(found_token[0],searchable_params[found_token[0][4..-2]])
+      found_token = expression.match('rpm{[^{}]*}')
+    end
+    return expression
   end
 
   private
