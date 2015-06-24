@@ -1,5 +1,6 @@
 
 module ResourceFramework
+  #DEPRECATED: this functionality already exists, see modules/framework/lib/request_params.rb
   def create_request_params_file
     request_data_file_dir = File.dirname(@params["SS_output_dir"])
     request_data_file = "#{request_data_file_dir}/request_data.json"
@@ -12,12 +13,13 @@ module ResourceFramework
     request_data_file
   end
 
+  #DEPRECATED: this functionality already exists, see modules/framework/lib/request_params.rb
   def init_request_params
     request_data_file_dir = File.dirname(@params["SS_output_dir"])
     request_data_file = "#{request_data_file_dir}/request_data.json"
     sleep(2) unless File.exist?(request_data_file)
     unless File.exist?(request_data_file)
-      create_request_params_file  
+      create_request_params_file
     end
     file_part = request_data_file[request_data_file.index("/automation_results")..255]
     data_file_url = "#{@params["SS_base_url"]}#{file_part}"
@@ -25,6 +27,7 @@ module ResourceFramework
     request_data_file
   end
 
+  #DEPRECATED: this functionality already exists, see modules/framework/lib/request_params.rb
   def get_request_params
     # Uses a json document in automation_results to store free-form information
     cur = init_request_params
@@ -35,6 +38,7 @@ module ResourceFramework
     @request_params
   end
 
+  #DEPRECATED: this functionality already exists, see modules/framework/lib/request_params.rb
   def save_request_params
     # Uses a json document in automation_results to store free-form information
     cur = init_request_params
@@ -47,6 +51,7 @@ module ResourceFramework
     end
   end
 
+  #DEPRECATED: is this specific to a particular use case?
   def default_table(other_rows = nil)
     totalItems = 1
     table_entries = [["#","Status","Information"]]
@@ -54,14 +59,16 @@ module ResourceFramework
     other_rows.each{|row| table_entries << row } unless other_rows.nil?
     per_page=10
     {:totalItems => totalItems, :perPage => per_page, :data => table_entries }
-  end  
+  end
 
+  #DEPRECATED: what does this method do?
   def default_list(msg)
     result = [{msg => 0}]
     select_hash = {}
     result.unshift(select_hash)
-  end  
+  end
 
+  #DEPRECATED: this functionality already exists, see modules/framework/lib/logger.rb
   def log_it(it)
     log_path = File.join(@params["SS_automation_results_dir"], "resource_logs")
     txt = it.is_a?(String) ? it : it.inspect
@@ -73,35 +80,41 @@ module ResourceFramework
     fil.flush
     fil.close
   end
-  
+
+  #DEPRECATED: OK - implemented it with a server.yml file instead (located in BRPM_HOME/config)
   def load_customer_include(framework_dir)
     customer_include_file = File.join(framework_dir, "customer_include.rb")
     begin
       if File.exist?(customer_include_file)
         log_it "Loading customer include file: #{customer_include_file}"
-        eval(File.open(customer_include_file).read) 
+        eval(File.open(customer_include_file).read)
       elsif File.exist customer_include_file = File.join(framework_dir,"customer_include_default.rb")
         log_it "Loading default customer include file: #{customer_include_file}"
         eval(File.open(customer_include_file).read)
       end
     rescue Exception => e
       log_it "Error loading customer include: #{e.message}\n#{e.backtrace}"
-    end 
+    end
   end
-    
+
+  #DEPRECATED: what does this method do?
   def hashify_list(list)
     response = {}
-    list.each do |item,val| 
+    list.each do |item,val|
       response[val] = item
     end
     return [response]
   end
-  
+
+  #DEPRECATED: already implemented differently
   def action_library_path
     raise "Command_Failed: no library path defined, set property: ACTION_LIBRARY_PATH" if !defined?(ACTION_LIBRARY_PATH)
     ACTION_LIBRARY_PATH
   end
-  
+
+
+  #DEPRECATED: what's the difference with the method with the same name from brpm_automation?
+
   # Makes an http method call and returns data in JSON
   #
   # ==== Attributes
@@ -175,7 +188,10 @@ module ResourceFramework
     end
     result
   end
-  
+
+
+  #DEPRECATED: what's the difference with the method with the same name from brpm_automation?
+
   # Provides a simple failsafe for working with hash options
   # returns "" if the option doesn't exist or is blank
   # ==== Attributes
@@ -186,9 +202,9 @@ module ResourceFramework
   def get_option(options, key, default_value = "")
     result = options.has_key?(key) ? options[key] : nil
     result = default_value if result.nil? || result == ""
-    result 
+    result
   end
-  
+
 end
 
 extend ResourceFramework

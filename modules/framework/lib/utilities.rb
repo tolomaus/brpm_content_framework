@@ -1,6 +1,4 @@
-require 'rest-client'
-
-module BrpmBase
+module Utilities
   
   EXIT_CODE_FAILURE = 'Exit_Code_Failure'
   Windows = (RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/) unless defined?(Windows)
@@ -241,42 +239,7 @@ module BrpmBase
     txt.gsub(" ", "_").gsub(/\,|\[|\]/,"")
   end
 
-  # Servers in params need to be filtered by OS
-  def get_platform_servers(os_platform, alt_servers = nil)
-    servers = alt_servers.nil? ? get_server_list(BrpmAuto.all_params) : alt_servers
-    result = servers.select{|k,v| v["os_platform"].downcase =~ /#{os_platform}/ }
-  end
-
-  # Builds a hash of servers and properties from params
-  # 
-  # ==== Attributes
-  #
-  # * +params+ - optional, defaults to the BrpmAuto.all_params from step
-  # ==== Returns
-  #
-  # Hash of servers and properties, like this:
-  # servers = {"ip-172-31-36-115.ec2.internal"=>{"dns"=>"ip-172-31-36-115.ec2.internal", "ip_address"=>"", "os_platform"=>"Linux", "CHANNEL_ROOT"=>"/mnt/deploy"}, 
-  # "ip-172-31-45-229.ec2.internal"=>{"dns"=>"ip-172-31-45-229.ec2.internal", "ip_address"=>"", "os_platform"=>"Linux", "CHANNEL_ROOT"=>"/mnt/deploy"}}
-  #  
-  def get_server_list(params = BrpmAuto.all_params)
-    rxp = /server\d+_/
-    slist = {}
-    lastcur = -1
-    curname = ""
-    params.sort.reject{ |k| k[0].scan(rxp).empty? }.each_with_index do |server, idx|
-      cur = (server[0].scan(rxp)[0].gsub("server","").to_i * 0.001).round * 1000
-      if cur == lastcur
-        prop = server[0].gsub(rxp, "")
-        slist[curname][prop] = server[1]
-      else # new server
-        lastcur = cur
-        curname = server[1].chomp("0")
-        slist[curname] = {}
-      end
-    end
-    return slist
-  end
-    
+  # DEPRECATED - use substitute_tokens instead (token has the format rpm{MY_TOKEN} instead of $${MY_TOKEN} to avid interference with shell variables)
   def get_keyword_items(script_content = nil)
     result = {}
     content = script_content unless script_content.nil?
@@ -295,6 +258,32 @@ module BrpmBase
     Windows
   end
   
+  def privatize(expression, sensitive_data = BrpmAuto.params.private_params.values)
+    unless sensitive_data.nil? or sensitive_data.empty?
+      sensitive_data = [sensitive_data] if sensitive_data.kind_of?(String)
+
+      sensitive_data.each do |sensitive_string|
+        expression = expression.gsub(sensitive_string, "********")
+      end
+    end
+
+    expression
+  end
+
+  def substitute_tokens(expression, params = nil)
+    return expression if expression.nil? || !expression.kind_of?(String)
+
+    searchable_params = params || @all_params
+
+    found_token = expression.match('rpm{[^{}]*}')
+    while ! found_token.nil? do
+      raise "Property #{found_token[0][4..-2]} doesn't exist" if searchable_params[found_token[0][4..-2]].nil?
+      expression = expression.sub(found_token[0],searchable_params[found_token[0][4..-2]])
+      found_token = expression.match('rpm{[^{}]*}')
+    end
+    return expression
+  end
+
   private
 
     #TODO: still needed? the framework's error handling should take care of this already

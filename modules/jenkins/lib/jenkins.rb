@@ -18,7 +18,7 @@ class Jenkins
   #   simulate - simulate command - echo it (default = false)...
   #
   def initialize(url, options, compat_options = {})
-    self.extend BrpmBase
+    self.extend Utilities
     if options.has_key?("SS_output_dir")
       BrpmAuto.log "Load for this class has changed, no longer necessary to send params as 2nd argument"
       options = compat_options 

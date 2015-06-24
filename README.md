@@ -1,4 +1,4 @@
-# BRPM Content
+# BRPM Content framework
 
 [![Build Status](https://travis-ci.org/BMC-RLM/brpm_content.svg?branch=master)](https://travis-ci.org/BMC-RLM/brpm_content)
 
@@ -39,11 +39,20 @@ Finally, make sure that the following item is added to Metadata > Lists > Automa
 This will allow non caught exceptions from the automation scripts to cause the step to go in problem mode.
 
 ## Architecture
+
+The BRPM Content framework is an automation platform that is built on top of BRPM. It allows to create, install and run what are called modules that contain automation logic that naturally belongs together. The framework itself provides a number of general purpose features like an automation script executor, dependency management, parameter handling, logging, etc.
+ 
 ![alt text](https://github.com/BMC-RLM/brpm_content/blob/master/architecture.png "architecture")
+
+The BRPM Content framework was built with the following design principles in mind, all further explained in the remainder of this document: 
+- **modularity**
+- **re-usability**
+- **testability**
+- **developer-friendliness**.
 
 ## Modularity
 
-One of the core concept of the framework is its modularity. The framework itself is deliberately chosen to be very lightweight. The purpose is that all custom automation logic is added by means of modules. Modules will typically group multiple automation scripts, resource automation scripts and libraries of one specific domain and can be developed by anyone who may have an interest in creating and sharing automation logic.
+One of the core design principles of the framework is its modularity. The framework itself is deliberately chosen to be very lightweight. The purpose is that all custom automation logic is added by means of modules. Modules will typically group multiple automation scripts, resource automation scripts and libraries of one specific domain and can be developed by anyone who may have an interest in creating and sharing automation logic.
  
 The file structure of a module is very simple: 
 ```
@@ -76,15 +85,112 @@ Note that the BRPM Content framework contains a number of core [modules](https:/
 
 The config.yml file contains the integration server and any other modules it may depend on, both are optional. In the future it will also be possible to version modules. 
 
+## Re-usability
+
+### Automation scripts
+
+Although the initial purpose of the BRPM Content framework is to exist on top of BRPM, it is perfectly possible to use it outside of BRPM. Let's say that you initially developed an automation script for usage within BRPM but now you need to run it from Jenkins, a shell script, or even a unit test? As the framework is highly decoupled from BRPM nothing prevents you from doing this.
+
+As an example, see here how the create_package automation script from the bladelogic module can be executed in stand-alone mode:                                                                                                                                                                                                                                                                                                                                                                                               
+
+```ruby
+# Load the BRPM Content framework's script executor
+require "modules/framework/brpm_script_executor"
+
+# Supply the input parameters for the automation script, if any
+params = {}
+params["application"] = "E-Finance"
+params["component"] = "EF - Java calculation engine"
+params["component_version"] = "1.2.3"
+
+params["SS_integration_dns"] = "bladelogic"
+params["SS_integration_username"] = "brpm"
+params["SS_integration_password"] = "password"
+
+# Execute the automation script
+BrpmScriptExecutor.execute_automation_script("bladelogic", "create_package", params)
+```
+[source](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/shell_scripts/create_bl_package.sh)
+
+### Libraries
+
+It is also possible to re-use the module's libraries in stand-alone mode:
+
+```ruby
+# Load the BRPM Content framework 
+require "framework/brpm_auto"
+
+# Set up the framework and load the brpm module
+BrpmAuto.setup()
+BrpmAuto.require_module "brpm"
+
+# Create a BRPM REST client and find all requests for application E-Finance
+@brpm_rest_client = BrpmRestClient.new("http://my-brpm-server/brpm', "<api token>")
+
+app = @brpm_rest_client.get_app_by_name("E-Finance")
+requests = @brpm_rest_client.get_requests_by({ "app_id" => app["id"]})
+```
+
+## Testability
+
+Thanks to the decoupling between the BRPM Content framework and BRPM itself, it is very easy to write automated tests for the automation logic that runs on top of the framework.
+ 
+As an example, see here a unit test written in RSpec that will create a plan and a request in that plan:
+
+```ruby
+describe 'create release request' do
+  ...
+  describe 'in new plan' do
+    it 'should create a plan from template and a request from template in that plan' do
+      # Supply the input parameters for the automation script, if any
+      params = {}
+      params["application_name"] = 'E-Finance'
+      params["application_version"] = '1.2.3'
+      params["release_request_template_name"] = 'Release E-Finance'
+      params["release_plan_template_name"] = 'E-Finance Release Plan'
+
+      # Execute the automation script
+      BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
+
+      # Verify that the request was created and linked to the plan
+      @brpm_rest_client = BrpmRestClient.new("http://my-brpm-server/brpm', "<api token>")
+      request = @brpm_rest_client.get_request_by_id(BrpmAuto.params["result"]["request_id"])
+
+      expect(request["aasm_state"]).to eq("started")
+      expect(request).to have_key("plan_member")
+      expect(request["plan_member"]["plan"]["id"]).not_to be_nil
+    end
+  end
+  ...
+end
+```
+[source](https://github.com/BMC-RLM/brpm_content/blob/master/modules/brpm/tests/create_release_request_spec.rb)
+
+The framework itself comes with a set of RSpec tests that are executed automatically by [Travis CI](https://travis-ci.org/) after each commit. The status can be consulted on top of this page.
+
+Before you can test the external modules in a similar fashion, make sure that the framework is installed. See the [.travis.yml](https://github.com/BMC-RLM/brpm_module_selenium/blob/master/.travis.yml) file in the Selenium module for more information on how to do this. 
+
 ## Framework
 ### Dependency management
 
 If you want to use a library or automation script from a different module you can indicate a dependency to that module in your own module's config.yml file. This will automatically make all libraries and automation modules available to all of the scripts in your own module. No need to add 'require' statements yourself.
 
 ### Parameters
+
+The framework parses the input parameters it receives from the caller and stores them into an easy to use structure for usage by the automation scripts.
+
 #### input params
+
+Input params are the regular parameters that are received from the caller.
+
 #### request params
+
+Request params are special in the sense that they are kept over the whole life cycle of the request in which they exist. When one step needs information from a previous step this information can be stored as a request param.
+
 #### integration settings
+
+The integration settings are the connection parameters that are needed to connect with the integration server that was defined for the automation script in BRPM. They are stored as part of the input params.
+
 ### Logging
 
 You can use the built-in logging feature for any logging needs. The logs will be visible on the 'Notes' tab of the associated BRPM step after the automation is finished. You can also consult the logs in real-time by navigating to <BRPM server>brpm/automation_results/log.html?request=<request id>
@@ -112,16 +218,25 @@ This feature is deprecated. Consider creating a server.yml file for storing cust
 #### Execute command
 #### Semaphores
 
-
-## Testability
-
-## Re-usability
-### Automation scripts
-### Libraries
-
 ## Integrations
+
+The BRPM Content framework makes it easy to integrate with other tools using web hook and messaging technology. In both cases it is possible to execute an automation script (or use a library) whenever a notification is received.
+
 ### Web hook receivers
+
+The framework contains a generic [web hook receiver script](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/integrations/webhook_receiver.rb) with an associated [bash wrapper script](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/shell_scripts/run_webhook_receiver.sh) that can be run as a daemon. You can pass it a custom script that can take care of processing the received events. Typically this event processing script will then execute the appropriate automation scripts.
+ 
+A web hook receiver solution can be used for synchronizing data that is owned by another system (assuming it supports web hooks) with BRPM.
+
+For an example of how to synchronize JIRA issues with BRPM tickets see the [event handler script](https://github.com/BMC-RLM/brpm_content/blob/master/customers/demo/integrations/jira/process_webhook_event.rb) that could be used for this purpose. As soon as the script is run in daemon mode (and JIRA is configured to send event notifications to a web hook) it will start receiving events when issues are created or updated. 
+
 ### Messaging engine
+
+BRPM comes with a messaging engine that can send a notification for many events like the creation or update or requests, plans etc. The framework contains an [event handler script](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/integrations/event_handler.rb) with an associated [bash wrapper script](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/shell_scripts/run_event_handler.sh) that can be set up to listen to these incoming events. You can pass it a custom script that can take care of processing the received events. Typically this event processing script will then execute the appropriate automation scripts.
+
+A messaging solution can be used for extending the out-of-the-box BRPM feature set or for synchronizing BRPM owned data with other systems. 
+
+For an example of how to update the status of the associated JIRA tickets after a deployment request finished successfully see the [event handler script](https://github.com/BMC-RLM/brpm_content/blob/master/customers/demo/integrations/brpm/process_event_handler_event.rb) (search for update_tickets_in_jira_by_request) that could be used for this purpose. As soon as the script is run in daemon mode it will start receiving events when requests change status. 
 
 ## Modules
 ### BRPM   

@@ -4,6 +4,66 @@ class BrpmRestClient
     @brpm_api_token = brpm_api_token
   end
 
+  # Performs a get on the passed model
+  #
+  # ==== Attributes
+  #
+  # * +model_name+ - rpm model [requests, plans, steps, version_tags, etc]
+  # * +model_id+ - id of a specific item in the model (optional)
+  # * +options+ - hash of options includes
+  #    +filters+ - string of the filter text: filters[BrpmAuto.login]=bbyrd
+  #    includes all the Rest.rest_call options
+  #
+  # ==== Returns
+  #
+  # * hash of http response
+  def get(model_name, model_id = nil, options = {})
+    url = get_brpm_url(model_name, model_id) if get_option(options, "filters") == ""
+    url = get_brpm_url(model_name, nil, options["filters"]) if get_option(options, "filters") != ""
+    result = Rest.get(url, options)
+
+    result = brpm_get "v1/#{model_name}#{model_id == nil ? "" : "/#{model_id}" }"
+  end
+
+  # Performs a put on the passed model
+  #  use this to update a single record
+  # ==== Attributes
+  #
+  # * +model_name+ - rpm model [requests, plans, steps, version_tags, etc]
+  # * +model_id+ - id of a specific item in the model (optional)
+  # * +data+ - hash of the put data
+  # * +options+ - hash of options includes
+  #    includes all the Rest.rest_call options
+  #
+  # ==== Returns
+  #
+  # * hash of http response
+  def update(model_name, model_id, data, options = {})
+    url = get_brpm_url(model_name, model_id)
+    options["data"] = data
+    result = Rest.put(url, options)
+    result
+  end
+
+  # Performs a post on the passed model
+  #  use this to create a new record
+  # ==== Attributes
+  #
+  # * +model_name+ - rpm model [requests, plans, steps, version_tags, etc]
+  # * +data+ - hash of the put data
+  # * +options+ - hash of options includes
+  #    includes all the Rest.rest_call options
+  #
+  # ==== Returns
+  #
+  # * hash of http response
+  def create(model_name, data, options = {})
+    options["data"] = data
+    url = get_brpm_url(model_name)
+    result = Rest.post(url, options)
+    result
+  end
+
   def get_user_by_id(user_id)
     result = brpm_get "v1/users/#{user_id}"
 
@@ -1412,6 +1472,13 @@ class BrpmRestClient
 
     def add_token(path)
       path + (path.include?("?") ? "&" : "?") + "token=#{@brpm_api_token}"
+    end
+
+    def get_brpm_url(model_name, id = nil, filters = nil)
+      url = "#{@brpm_url}/v1/#{model_name}#{id == nil ? "" : "/#{id}" }"
+      url += "?#{filters}" if filters
+
+      add_token(url)
     end
 
     def brpm_get(path, options = {})
