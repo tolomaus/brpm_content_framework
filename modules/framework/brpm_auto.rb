@@ -1,10 +1,8 @@
 require "yaml"
+
 FRAMEWORK_DIR = File.expand_path(File.dirname(__FILE__)) unless defined?(FRAMEWORK_DIR)
-require "#{FRAMEWORK_DIR}/lib/brpm_base"
 
 class BrpmAuto
-  #TODO: can we remove these consts?
-
   private_class_method :new
 
   class << self
@@ -17,15 +15,17 @@ class BrpmAuto
     attr_reader :modules_root_path
 
     def init
-      self.extend BrpmBase
-      @modules_root_path = File.dirname(FRAMEWORK_DIR)
+      @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
       $LOAD_PATH << @modules_root_path
+
       @external_modules_root_path = File.expand_path("#{@modules_root_path}/../../modules")
-      $LOAD_PATH << @external_modules_root_path if File.exist?(@external_modules_root_path)
+      $LOAD_PATH << @external_modules_root_path if Dir.exist?(@external_modules_root_path)
 
       require "framework/lib/logging/brpm_logger"
 
       require_libs_no_file_logging "#{@modules_root_path}/framework"
+
+      self.extend BrpmBase
     end
 
     def setup(params)
