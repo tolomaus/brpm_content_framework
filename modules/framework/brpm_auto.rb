@@ -10,10 +10,14 @@ class BrpmAuto
     attr_reader :all_params
     attr_reader :integration_settings
 
+    attr_reader :framework_root_path
     attr_reader :modules_root_path
+    attr_reader :external_modules_root_path
 
     def init
-      @modules_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
+      @framework_root_path = File.expand_path("#{File.dirname(__FILE__)}")
+
+      @modules_root_path = File.expand_path("#{@framework_root_path}/..")
       $LOAD_PATH << @modules_root_path
 
       @external_modules_root_path = File.expand_path("#{@modules_root_path}/../../modules")
@@ -26,7 +30,7 @@ class BrpmAuto
       self.extend Utilities
     end
 
-    def setup(params)
+    def setup(params = {})
       @params = Params.new(params)
 
       load_server_params
