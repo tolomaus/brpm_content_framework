@@ -120,7 +120,6 @@ It is also possible to re-use the module's libraries in stand-alone mode:
 # Load the BRPM Content framework 
 require "framework/brpm_auto"
 
-
 # Set up the framework and load the brpm module
 BrpmAuto.setup()
 BrpmAuto.require_module "brpm"
@@ -134,23 +133,26 @@ requests = @brpm_rest_client.get_requests_by({ "app_id" => app["id"]})
 
 ## Testability
 
-Thanks to the decoupling between the BRPM Content framework and BRPM itself, it becomes very easy to write automated tests for your automation logic on top of the framework.
+Thanks to the decoupling between the BRPM Content framework and BRPM itself, it is very easy to write automated tests for the automation logic that runs on top of the framework.
  
-As an example, see here a unit test written in RSpec that will create a plan and a request for it:
+As an example, see here a unit test written in RSpec that will create a plan and a request in that plan:
 
 ```ruby
 describe 'create release request' do
   ...
   describe 'in new plan' do
     it 'should create a plan from template and a request from template in that plan' do
+      # Supply the input parameters for the automation script, if any
       params = {}
       params["application_name"] = 'E-Finance'
       params["application_version"] = '1.2.3'
       params["release_request_template_name"] = 'Release E-Finance'
       params["release_plan_template_name"] = 'E-Finance Release Plan'
 
+      # Execute the automation script
       BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
 
+      # Verify that the request was created and linked to the plan
       @brpm_rest_client = BrpmRestClient.new("http://my-brpm-server/brpm', "<api token>")
       request = @brpm_rest_client.get_request_by_id(BrpmAuto.params["result"]["request_id"])
 
