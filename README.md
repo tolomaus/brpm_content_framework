@@ -39,11 +39,16 @@ Finally, make sure that the following item is added to Metadata > Lists > Automa
 This will allow non caught exceptions from the automation scripts to cause the step to go in problem mode.
 
 ## Architecture
+
+The BRPM Content framework is an automation platform that is built on top of BRPM. It allows to create, install and run what are called modules that contain automation logic that naturally belongs together. The framework itself provides a number of general purpose features like an automation script executor, dependency management, parameter handling, logging, etc.
+ 
 ![alt text](https://github.com/BMC-RLM/brpm_content/blob/master/architecture.png "architecture")
+
+The BRPM Content framework was built with the following design principles in mind, all further explained in the remainder of this document: **modularity**, **re-usability**, **testability** and **developer-friendliness**.
 
 ## Modularity
 
-One of the core concept of the framework is its modularity. The framework itself is deliberately chosen to be very lightweight. The purpose is that all custom automation logic is added by means of modules. Modules will typically group multiple automation scripts, resource automation scripts and libraries of one specific domain and can be developed by anyone who may have an interest in creating and sharing automation logic.
+One of the core design principles of the framework is its modularity. The framework itself is deliberately chosen to be very lightweight. The purpose is that all custom automation logic is added by means of modules. Modules will typically group multiple automation scripts, resource automation scripts and libraries of one specific domain and can be developed by anyone who may have an interest in creating and sharing automation logic.
  
 The file structure of a module is very simple: 
 ```
@@ -76,6 +81,45 @@ Note that the BRPM Content framework contains a number of core [modules](https:/
 
 The config.yml file contains the integration server and any other modules it may depend on, both are optional. In the future it will also be possible to version modules. 
 
+## Re-usability
+
+### Automation scripts
+
+Although the initial purpose of the BRPM Content framework is to exist on top of BRPM, it is perfectly possible to use it outside of BRPM. Let's say that you initially developed an automation script for usage within BRPM but now you need to run it from Jenkins, a shell script, or even a unit test? As the framework is highly decoupled from BRPM nothing prevents you from doing this.
+
+As an example, see here how the create_package automation script from the bladelogic module can be executed in stand-alone mode:                                                                                                                                                                                                                                                                                                                                                                                               
+
+```ruby
+# Make sure the BRPM Content framework files are loaded
+require "modules/framework/brpm_script_executor"
+
+# Supply the input parameters of the automation script, if any
+params = {}
+params["application"] = "E-Finance"
+params["component"] = "EF - Java calculation engine"
+params["component_version"] = "1.2.3"
+
+params["brpm_url"] = "http://myserver/brpm"
+params["brpm_api_token"] = "123abc456"
+
+params["SS_integration_dns"] = "bladelogic"
+params["SS_integration_username"] = "brpm"
+params["SS_integration_password"] = "password"
+
+# Execute the automation script
+BrpmScriptExecutor.execute_automation_script("bladelogic", "create_package", params)
+```
+
+### Libraries
+
+It is also possible to re-use the module's libraries in stand-alone mode:
+
+
+
+## Testability
+
+The BRPM Content framework makes it very easy to write automated tests for your automation logic. 
+
 ## Framework
 ### Dependency management
 
@@ -85,6 +129,7 @@ If you want to use a library or automation script from a different module you ca
 #### input params
 #### request params
 #### integration settings
+
 ### Logging
 
 You can use the built-in logging feature for any logging needs. The logs will be visible on the 'Notes' tab of the associated BRPM step after the automation is finished. You can also consult the logs in real-time by navigating to <BRPM server>brpm/automation_results/log.html?request=<request id>
@@ -111,13 +156,6 @@ This feature is deprecated. Consider creating a server.yml file for storing cust
 ### Other framework features
 #### Execute command
 #### Semaphores
-
-
-## Testability
-
-## Re-usability
-### Automation scripts
-### Libraries
 
 ## Integrations
 ### Web hook receivers
