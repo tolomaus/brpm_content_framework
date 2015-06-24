@@ -13,7 +13,7 @@ class BrpmRest
   #   output_file: file for BrpmAuto.log results (usually @p.SS_output_file)
   #
   def initialize(base_url, options = {}, compat_options = {})
-    self.extend BrpmBase
+    self.extend Utilities
     if options.has_key?("SS_output_dir")
       BrpmAuto.log "Load for this class has changed, no longer necessary to send params as 2nd argument"
       options = compat_options 

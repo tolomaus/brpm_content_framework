@@ -21,7 +21,7 @@ class Svn
   #   command_options - options to pass on command line e.g. --non-interactive
   #
   def initialize(svn, params, options)
-    self.extend BrpmBase
+    self.extend Utilities
     @url = required_option(options,"url")
     @base_path = required_option(options,"base_path")
     user = get_option(options,"username")
@@ -239,7 +239,7 @@ class Git
   #   output_file - file for logging results (default = step output file)
   #
   def initialize(git, options, compat_options = {})
-    self.extend BrpmBase
+    self.extend Utilities
     if options.has_key?("SS_output_dir")
       BrpmAuto.log "Load for this class has changed, no longer necessary to send params as 2nd argument"
       options = compat_options 

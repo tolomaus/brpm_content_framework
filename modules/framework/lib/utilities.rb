@@ -1,6 +1,6 @@
 require 'rest-client'
 
-module BrpmBase
+module Utilities
   
   EXIT_CODE_FAILURE = 'Exit_Code_Failure'
   Windows = (RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/) unless defined?(Windows)
