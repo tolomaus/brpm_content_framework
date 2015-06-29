@@ -215,9 +215,30 @@ The framework parses the input parameters it receives from the caller and stores
 
 Input params are the regular parameters that are received from the caller.
 
+They can be used as following:
+```ruby
+application = BrpmAuto.params.application
+
+my_custom_param = BrpmAuto.params["my_custom_param"]
+```
+
+Check out the [automated tests](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/tests/params_spec.rb) for more complex use cases.
+
 #### request params
 
 Request params are special in the sense that they are kept over the whole life cycle of the request in which they exist. When one step needs information from a previous step this information can be stored as a request param.
+
+They can be used as following:
+- In step 1:
+```ruby
+BrpmAuto.request_params["something_I_need_to_pass_to_a_next_step"] = "foo"
+```
+- In step 2:
+```ruby
+BrpmAuto.log BrpmAuto.request_params["something_I_need_to_pass_to_a_next_step"]
+```
+
+Check out the [automated tests](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/tests/request_params_spec.rb) for more complex use cases.
 
 #### integration settings
 
@@ -225,7 +246,12 @@ The integration settings are the connection parameters that are needed to connec
 
 ### Logging
 
-You can use the built-in logging feature for any logging needs. The logs will be visible on the 'Notes' tab of the associated BRPM step after the automation is finished. You can also consult the logs in real-time by navigating to <BRPM server>brpm/automation_results/log.html?request=<request id>
+You can use the built-in logging feature for any logging needs. The logs will be visible on the 'Notes' tab of the associated BRPM step after the automation is finished. You can also consult the logs in real-time by navigating to my_brpm_server/brpm/automation_results/log.html?request=request id
+
+Example:
+```ruby
+BrpmAuto.log "Hello World"
+```
 
 ### Error handling
 
