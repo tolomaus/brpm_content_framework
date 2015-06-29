@@ -13,15 +13,22 @@ First of all, make sure that the environment variable BRPM_HOME is set to the lo
 export BRPM_HOME=/opt/bmc/RLM
 ```
 
-Then copy the [installation script](https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh) to the instance on which BRPM is installed and execute it.
+Then copy the [BRPM Content framework's installation script](https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh) to the instance on which BRPM is installed and execute it.
 
-If the BRPM instance has internet access and wget is installed the framework can be installed by simply executing the following command as root:
+See here the commands to get you started:
 ```shell
-wget -qO- https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh | INSTALL=ONLINE sh
+wget https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh
+chmod +x install_content_repo.sh
+./install_content_repo.sh
 ```
 
 The script will ask for the location of a zip file that contains the files. If the BRPM instance has access to the internet you can leave it empty in which case it will directly grab the files from this github.com repo.
 If you need the zip file of this repo you can find it on [https://github.com/BMC-RLM/brpm_content/archive/master.zip](https://github.com/BMC-RLM/brpm_content/archive/master.zip)
+
+Alternatively, if the BRPM instance has internet access and wget is installed the framework can be installed by simply executing the following command on the BRPM instance as root:
+```shell
+wget -qO- https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh | INSTALL=ONLINE sh
+```
 
 At this early stage it is still necessary to manually configure the automation scripts that come with this content repository in BRPM before you can start using them in the request steps. 
 
