@@ -38,6 +38,7 @@ class Params < ParamsBase
   attr_reader :home_dir
   attr_reader :automation_results_dir
   attr_reader :output_dir
+  attr_reader :output_file
   attr_reader :config_dir
 
   attr_reader :log_file
@@ -96,6 +97,7 @@ class Params < ParamsBase
     end
     @automation_results_dir = params["SS_automation_results_dir"]
     @output_dir = params["SS_output_dir"] || params["output_dir"] || Dir.pwd
+    @output_file = params["SS_output_file"]
     @config_dir = "#{@home_dir}/config"
 
     @log_file = params["log_file"] || "#{@output_dir}/brpm_auto.log"

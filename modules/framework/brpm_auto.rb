@@ -37,7 +37,7 @@ class BrpmAuto
       load_customer_include_file
 
       if @params.run_from_brpm
-        @logger = BrpmLogger.new(@params.request_id, @params.automation_results_dir, @params.step_id, @params.run_key, @params.step_number, @params.step_name, @params.also_log_to_console)
+        @logger = BrpmLogger.new
         @request_params = RequestParams.new_for_request(@params.automation_results_dir, @params.application, @params.request_id)
       else
         initialize_logger(@params.log_file, @params.also_log_to_console)
