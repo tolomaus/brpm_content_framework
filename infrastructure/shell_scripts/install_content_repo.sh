@@ -5,12 +5,16 @@ if [ -z "$BRPM_HOME" ]; then
     exit 1
 fi
 
-read -p "What is the location of the content zip file? (leave empty to do a git clone from github)" LOCATION
+INSTALL=${INSTALL:-LOCAL}
 
-if [ ! -z "$LOCATION" ]; then
-  if [ ! -f "$LOCATION" ]; then
-    echo "The specified location is not a file. Aborting the installation."
-    exit 1
+if [ $INSTALL = "LOCAL" ]; then
+  read -p "What is the location of the content zip file? (leave empty to do a git clone from github)" LOCATION
+
+  if [ ! -z "$LOCATION" ]; then
+    if [ ! -f "$LOCATION" ]; then
+      echo "The specified location is not a file. Aborting the installation."
+      exit 1
+    fi
   fi
 fi
 

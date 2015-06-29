@@ -8,16 +8,16 @@ It is designed around a number of core concepts like modularity, re-usability, t
 
 ## Installation
 
-First of all, make sure that the environment variable BRPM_HOME is set to the location where BRPM is installed, e.g. /opt/bmc/RLM:
+First of all, make sure that the environment variable BRPM_HOME is set to the location where BRPM is installed, e.g.:
 ```shell
 export BRPM_HOME=/opt/bmc/RLM
 ```
 
-Then copy the installation script to the instance on which BRPM is installed and execute it, e.g.:
+Then copy the [installation script](https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh) to the instance on which BRPM is installed and execute it.
+
+If the BRPM instance has internet access and wget is installed the framework can be installed by simply executing the following command as root:
 ```shell
-wget https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh
-chmod +x install_content_repo.sh
-./install_content_repo.sh
+wget -qO- https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh | INSTALL=ONLINE sh
 ```
 
 The script will ask for the location of a zip file that contains the files. If the BRPM instance has access to the internet you can leave it empty in which case it will directly grab the files from this github.com repo.
