@@ -231,11 +231,11 @@ Request params are special in the sense that they are kept over the whole life c
 They can be used as following:
 - In step 1:
 ```ruby
-BrpmAuto.request_params["something_I_need_to_pass_to_a_next_step"] = "foo"
+BrpmAuto.request_params["created_issue_id"] = 123
 ```
 - In step 2:
 ```ruby
-BrpmAuto.log BrpmAuto.request_params["something_I_need_to_pass_to_a_next_step"]
+BrpmAuto.log "The id of the issue that was created by step 1 is #{BrpmAuto.request_params["created_issue_id"]}"
 ```
 
 Check out the [automated tests](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/tests/request_params_spec.rb) for more complex use cases.
