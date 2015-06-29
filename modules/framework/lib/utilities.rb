@@ -284,6 +284,14 @@ module Utilities
     return expression
   end
 
+  def first_defined(first, second)
+    if first and ! first.empty?
+      return first
+    else
+      return second
+    end
+  end
+
   private
 
     #TODO: still needed? the framework's error handling should take care of this already

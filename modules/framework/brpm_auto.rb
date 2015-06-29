@@ -128,14 +128,6 @@ class BrpmAuto
       require_libs(module_path)
     end
 
-    def first_defined(first, second)
-      if first and ! first.empty?
-        return first
-      else
-        return second
-      end
-    end
-
     def load_server_params
       server_config_file_path = "#{self.params.config_dir}/server.yml"
       if File.exists?(server_config_file_path)
