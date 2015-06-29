@@ -76,7 +76,7 @@ The script will ask for the location of a zip file or the url of a github.com re
 
 Note that the BRPM Content framework contains a number of core [modules](https://github.com/BMC-RLM/brpm_content/tree/master/modules) that will be installed by default. The purpose is to gradually move these built-in modules into their own dedicated github repositories.  
 
-# Creating your own modules
+### Creating your own modules
 
 It is very simple to create your own module. 
 
