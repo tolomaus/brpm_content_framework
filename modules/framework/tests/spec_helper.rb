@@ -1,5 +1,5 @@
 require 'fileutils'
-require "#{File.dirname(__FILE__)}/../brpm_auto"
+require_relative "../brpm_auto"
 
 FileUtils.mkdir_p "/tmp/brpm_content"
 

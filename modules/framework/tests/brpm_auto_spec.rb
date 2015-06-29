@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/spec_helper"
+require_relative "spec_helper"
 
 describe 'BRPM automation framework' do
   before(:all) do

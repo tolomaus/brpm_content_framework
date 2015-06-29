@@ -193,7 +193,7 @@ When setting up an automated testing platform for your modules, make sure that t
 
 Clone this repository to a location that is side by side with your module's location. Then 'require' the brpm_script_executor in your spec_helper.rb:
 ```ruby
-require "#{File.dirname(__FILE__)}/../../../brpm_content/modules/framework/brpm_script_executor"
+require_relative "../../../brpm_content/modules/framework/brpm_script_executor"
 ```
 
 Make sure that you are running on ruby 1.9.3 and that all gem dependencies as specified in the Gemfile are installed.

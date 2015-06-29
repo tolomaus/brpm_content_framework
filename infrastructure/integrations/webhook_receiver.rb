@@ -3,7 +3,7 @@ require 'rubygems'
 require 'json'
 require 'rest-client'
 require 'webrick'
-require "#{File.dirname(__FILE__)}/../../modules/framework/brpm_script_executor"
+require_relative "../../modules/framework/brpm_script_executor"
 
 BrpmAuto.initialize_logger(ENV["WEBHOOK_RECEIVER_LOG_FILE"])
 
@@ -11,7 +11,7 @@ port = ENV["WEBHOOK_RECEIVER_PORT"]
 mount_point = "/#{ENV["WEBHOOK_RECEIVER_MOUNT_POINT"]}"
 process_event_script = ENV["WEBHOOK_RECEIVER_PROCESS_EVENT_SCRIPT"]
 
-require "#{File.dirname(__FILE__)}/../../#{process_event_script}"
+require_relative "../../#{process_event_script}"
 
 class EventProcessor < WEBrick::HTTPServlet::AbstractServlet
   def do_POST(request, response)

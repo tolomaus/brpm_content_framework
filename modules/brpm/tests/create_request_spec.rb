@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/spec_helper"
+require_relative "spec_helper"
 
 describe 'create request' do
   before(:all) do

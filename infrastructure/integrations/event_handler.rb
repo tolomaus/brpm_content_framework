@@ -3,7 +3,7 @@ require 'rubygems'
 require 'torquebox'
 require 'torquebox-messaging'
 require 'xmlsimple'
-require "#{File.dirname(__FILE__)}/../../modules/framework/brpm_script_executor"
+require_relative "../../modules/framework/brpm_script_executor"
 
 BrpmAuto.initialize_logger(ENV["EVENT_HANDLER_LOG_FILE"])
 
@@ -13,7 +13,7 @@ username = ENV["EVENT_HANDLER_MESSAGING_USERNAME"]
 password = ENV["EVENT_HANDLER_MESSAGING_PASSWORD"]
 process_event_script = ENV["EVENT_HANDLER_PROCESS_EVENT_SCRIPT"]
 
-require "#{File.dirname(__FILE__)}/../../#{process_event_script}"
+require_relative "../../#{process_event_script}"
 
 class MessagingProcessor < TorqueBox::Messaging::MessageProcessor
 

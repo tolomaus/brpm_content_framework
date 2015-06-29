@@ -1,5 +1,5 @@
 BrpmAuto.require_module "brpm"
-require "#{File.dirname(__FILE__)}/../../jira_mappings"
+require_relative "../../jira_mappings"
 
 def process_event(event)
   @brpm_rest_client = BrpmRestClient.new("http://#{ENV["EVENT_HANDLER_BRPM_HOST"]}:#{ENV["EVENT_HANDLER_BRPM_PORT"]}/brpm", ENV["EVENT_HANDLER_BRPM_TOKEN"])

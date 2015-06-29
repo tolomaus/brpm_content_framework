@@ -1,5 +1,5 @@
 require 'fileutils'
-require "#{File.dirname(__FILE__)}/../../framework/brpm_script_executor"
+require_relative "../../framework/brpm_script_executor"
 
 def setup_brpm_auto
   FileUtils.mkdir_p "/tmp/brpm_content"

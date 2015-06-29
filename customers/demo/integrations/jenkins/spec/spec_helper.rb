@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/../../../../../modules/framework/brpm_auto"
+require_relative "../../../../../modules/framework/brpm_auto"
 
 ADMIN_USER_ID = 1
 SMARTRELEASE_APP_ID = 1

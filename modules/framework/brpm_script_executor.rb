@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/brpm_auto"
+require_relative "brpm_auto"
 
 class BrpmScriptExecutor
   class << self

@@ -1,5 +1,5 @@
 BrpmAuto.require_module "brpm"
-require "#{File.dirname(__FILE__)}/../../jira_mappings"
+require_relative "../../jira_mappings"
 
 def process_event(event)
   BrpmAuto.log "Processing event #{event["id"]} ..."

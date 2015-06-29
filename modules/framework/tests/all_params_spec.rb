@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/spec_helper"
+require_relative "spec_helper"
 
 describe 'All params' do
   before(:each) do
