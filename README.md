@@ -6,7 +6,9 @@ The BRPM Content framework is intended to make the creation and usage of content
 
 It is designed around a number of core concepts like modularity, re-usability, testability that are further explained below.
 
-## Installation
+## Getting started
+
+### Installation
 
 First of all, make sure that the environment variable BRPM_HOME is set to the location where BRPM is installed, e.g.:
 ```shell
@@ -29,6 +31,8 @@ Alternatively, if the BRPM instance has internet access and wget is installed th
 ```shell
 wget -qO- https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh | INSTALL=ONLINE sh
 ```
+
+### Configuration
 
 At this early stage it is still necessary to manually configure the automation scripts that come with this content repository in BRPM before you can start using them in the request steps. 
 
@@ -59,9 +63,24 @@ The BRPM Content framework was built with the following design principles in min
 
 ## Modularity
 
-One of the core design principles of the framework is its modularity. The framework itself is deliberately chosen to be very lightweight. The purpose is that all custom automation logic is added by means of modules. Modules will typically group multiple automation scripts, resource automation scripts and libraries of one specific domain and can be developed by anyone who may have an interest in creating and sharing automation logic.
- 
-The file structure of a module is very simple: 
+### Using existing modules
+
+One of the core design principles of the framework is its modularity. The framework itself is deliberately chosen to be very lightweight. The purpose is that all custom automation logic is added by means of modules. Modules will typically group multiple automation scripts, resource automation scripts and libraries of one specific domain.
+
+Modules can be installed by executing the [module installation](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/shell_scripts/install_content_module.sh) script on the BRPM instance: 
+```shell
+~/shell_scripts/install_content_module.sh
+```
+
+The script will ask for the location of a zip file or the url of a github.com repository that contains the module's files. For the Selenium module this url would be [https://github.com/BMC-RLM/brpm_module_selenium](https://github.com/BMC-RLM/brpm_module_selenium).
+
+Note that the BRPM Content framework contains a number of core [modules](https://github.com/BMC-RLM/brpm_content/tree/master/modules) that will be installed by default. The purpose is to gradually move these built-in modules into their own dedicated github repositories.  
+
+# Creating your own modules
+
+It is very simple to create your own module. 
+
+Just make sure to stick with the following file structure: 
 ```
 +-- automations
 |   +-- my_automation_script.rb
@@ -77,20 +96,13 @@ The file structure of a module is very simple:
 +-- config.yml
 ```
 
+The config.yml file contains the integration server and all other modules it depends on. Both settings are optional. In the future it will also be possible to version modules.
+
+If you use a github.com repository to host the source code of the module you can directly install it from there. Otherwise you can create a zip file of the module and install it as such.
+
+It is also possible to execute (and debug if your ruby IDE supports it, e.g. RubyMine) the logic. See further the section on Testability. 
+ 
 For an example see the [Selenium](https://github.com/BMC-RLM/brpm_module_selenium) module.
-
-Modules can be installed from a zip file or directly from a github repo. Just make sure that you follow the expected file structure. 
-
-The installation itself can be done by executing the installation script: 
-```shell
-~/shell_scripts/install_content_module.sh
-```
-
-The script will ask for the location of a zip file or the url of a github.com repository that contains the module's files. For the Selenium module this url would be [https://github.com/BMC-RLM/brpm_module_selenium](https://github.com/BMC-RLM/brpm_module_selenium).
-
-Note that the BRPM Content framework contains a number of core [modules](https://github.com/BMC-RLM/brpm_content/tree/master/modules) that will be installed by default. The purpose is to gradually move these built-in modules into their own dedicated github repositories.  
-
-The config.yml file contains the integration server and any other modules it may depend on, both are optional. In the future it will also be possible to version modules. 
 
 ## Re-usability
 
@@ -175,7 +187,18 @@ end
 
 The framework itself comes with a set of RSpec tests that are executed automatically by [Travis CI](https://travis-ci.org/) after each commit. The status can be consulted on top of this page.
 
-Before you can test the external modules in a similar fashion, make sure that the framework is installed. See the [.travis.yml](https://github.com/BMC-RLM/brpm_module_selenium/blob/master/.travis.yml) file in the Selenium module for more information on how to do this. 
+When setting up an automated testing platform for your modules, make sure that the framework is installed before executing the tests. 
+
+### Mac OS X
+
+Clone this repository to a location that is side by side with your module's location. Then 'require' the brpm_script_executor in your spec_helper.rb:
+```ruby
+require "#{File.dirname(__FILE__)}/../../../brpm_content/modules/framework/brpm_script_executor"
+```
+ 
+### Travis CI
+
+See the [.travis.yml](https://github.com/BMC-RLM/brpm_module_selenium/blob/master/.travis.yml) file in the Selenium module for more information on how to do this.
 
 ## Framework
 ### Dependency management
