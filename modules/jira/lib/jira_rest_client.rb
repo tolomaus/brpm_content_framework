@@ -18,7 +18,7 @@ class JiraRestClient
   end
 
   # POST /rest/api/2/issue/{issueIdOrKey}/comment
-  def create_comment(issue_id, comment_body = 'Dummy Comment')
+  def add_comment(issue_id, comment_body = 'Dummy Comment')
     cmmnt = {:body => comment_body}
     Rest.post("#{@api_url}/issue/#{issue_id}/comment", cmmnt, { :username => @username, :password => @password })["response"]
   end
