@@ -6,6 +6,7 @@ class LoggerBase
   # * +msg+ - the text to output
   # * +mtype+ - box type to display sep: a separator line, title a box around the message
   def message_box(msg, mtype = "sep")
+    return "" if msg.nil? || msg.length < 1
     tot = 72
     msg = msg[0..64] if msg.length > 65
 

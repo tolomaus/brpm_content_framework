@@ -2,6 +2,7 @@ module Utilities
   
   EXIT_CODE_FAILURE = 'Exit_Code_Failure'
   Windows = (RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/) unless defined?(Windows)
+  
   # Returns the dos path from a standard path
   #
   # ==== Attributes
@@ -38,12 +39,12 @@ module Utilities
   def execute_shell(command, sensitive_data = nil)
     escaped_command = command.gsub("\\", "\\\\")
 
-    loggable_command = privatize(escaped_command, sensitive_data)
+    loggable_command = BrpmAuto.privatize(escaped_command, sensitive_data)
     BrpmAuto.log "Executing '#{loggable_command}'..."
 
     cmd_result = {"stdout" => "","stderr" => "", "pid" => "", "status" => 1}
 
-    output_dir = File.join(params.output_dir,"#{precision_timestamp}")
+    output_dir = File.join(BrpmAuto.params.output_dir,"#{precision_timestamp}")
     errfile = "#{output_dir}_stderr.txt"
     complete_command = "#{escaped_command} 2>#{errfile}" unless Windows
     fil = File.open(errfile, "w+")
@@ -222,7 +223,7 @@ module Utilities
   # staging path or ERROR_ if force is false and path does not exist
   #  
   def get_staging_dir(version, force = false)
-    staging_path = defined?(RPM_STAGING_PATH) ? RPM_STAGING_PATH : File.join(@params["SS_automation_results_dir"],"staging")
+    staging_path = defined?(RPM_STAGING_PATH) ? RPM_STAGING_PATH : File.join(BrpmAuto.all_params["SS_automation_results_dir"],"staging")
     pattern = File.join(staging_path, "#{Time.now.year.to_s}", path_safe(get_param("SS_application")), path_safe(get_param("SS_component")), path_safe(version))
     if force
       FileUtils.mkdir_p(pattern)
@@ -238,49 +239,11 @@ module Utilities
     txt.gsub(" ", "_").gsub(/\,|\[|\]/,"")
   end
 
-  # DEPRECATED - use BrpmAuto.params.get_servers_by_os_platform instead
-  # Servers in params need to be filtered by OS
-  def get_platform_servers(os_platform, alt_servers = nil)
-    servers = alt_servers.nil? ? get_server_list(@params) : alt_servers
-    result = servers.select{|k,v| v["os_platform"].downcase =~ /#{os_platform}/ }
-  end
-
-  # DEPRECATED - use BrpmAuto.params.servers instead
-  # Builds a hash of servers and properties from params
-  # 
-  # ==== Attributes
-  #
-  # * +params+ - optional, defaults to the @params from step
-  # ==== Returns
-  #
-  # Hash of servers and properties, like this:
-  # servers = {"ip-172-31-36-115.ec2.internal"=>{"dns"=>"ip-172-31-36-115.ec2.internal", "ip_address"=>"", "os_platform"=>"Linux", "CHANNEL_ROOT"=>"/mnt/deploy"}, 
-  # "ip-172-31-45-229.ec2.internal"=>{"dns"=>"ip-172-31-45-229.ec2.internal", "ip_address"=>"", "os_platform"=>"Linux", "CHANNEL_ROOT"=>"/mnt/deploy"}}
-  #  
-  def get_server_list(params = @params)
-    rxp = /server\d+_/
-    slist = {}
-    lastcur = -1
-    curname = ""
-    params.sort.reject{ |k| k[0].scan(rxp).empty? }.each_with_index do |server, idx|
-      cur = (server[0].scan(rxp)[0].gsub("server","").to_i * 0.001).round * 1000
-      if cur == lastcur
-        prop = server[0].gsub(rxp, "")
-        slist[curname][prop] = server[1]
-      else # new server
-        lastcur = cur
-        curname = server[1].chomp("0")
-        slist[curname] = {}
-      end
-    end
-    return slist
-  end
-
   # DEPRECATED - use substitute_tokens instead (token has the format rpm{MY_TOKEN} instead of $${MY_TOKEN} to avid interference with shell variables)
   def get_keyword_items(script_content = nil)
     result = {}
     content = script_content unless script_content.nil?
-    content = File.open(@params["SS_script_file"]).read if script_content.nil?
+    content = File.open(BrpmAuto.all_params["SS_script_file"]).read if script_content.nil?
     KEYWORD_SWITCHES.each do |keyword|
       reg = /\$\$\{#{keyword}\=.*\}\$\$/
       items = content.scan(reg)
@@ -291,6 +254,10 @@ module Utilities
     result
   end
 
+  def windows?
+    Windows
+  end
+  
   def privatize(expression, sensitive_data = BrpmAuto.params.private_params.values)
     unless sensitive_data.nil? or sensitive_data.empty?
       sensitive_data = [sensitive_data] if sensitive_data.kind_of?(String)
@@ -325,7 +292,7 @@ module Utilities
       size_ = EXIT_CODE_FAILURE.size
       exit_code_failure_first_part  = EXIT_CODE_FAILURE[0..3]
       exit_code_failure_second_part = EXIT_CODE_FAILURE[4..size_]
-      @params['ignore_exit_codes'] == 'yes' ?
+      BrpmAuto.all_params['ignore_exit_codes'] == 'yes' ?
           '' :
           "; if [ $? -ne 0 ]; then first_part=#{exit_code_failure_first_part}; echo \"${first_part}#{exit_code_failure_second_part}\"; fi;"
     end

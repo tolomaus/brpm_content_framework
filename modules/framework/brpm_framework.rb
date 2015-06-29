@@ -45,7 +45,7 @@ end
 # these will be available in the BRPM automation
 #  Customers should modify the BAA_BASE_PATH constant
 # == Note the customer_include.rb reference.  To add your own routines and override methods use this file.
-customer_include_file = File.join(FRAMEWORK_DIR.gsub("brpm_content/modules/framework/", ""), "customer_include.rb")
+customer_include_file = File.join(FRAMEWORK_DIR.gsub("/brpm_content/modules/framework", ""), "/customer_include.rb")
 customer_include_file = File.join(CUSTOMER_LIB_DIR,"customer_include.rb") if defined?(CUSTOMER_LIB_DIR)
 customer_include_file = File.join(FRAMEWORK_DIR,"customer_include_default.rb") if !File.exist?(customer_include_file)
 
@@ -67,7 +67,7 @@ else
   end  
   @request_params = {} if not defined?(@request_params)
   SS_output_file = @params["SS_output_file"]
-  rpm_load_module("rest") 
+  BrpmAuto.require_module("brpm")
   @p = BrpmAuto.all_params
   @request_params = BrpmAuto.request_params
   ARG_PREFIX = "ARG_" unless defined?(ARG_PREFIX)

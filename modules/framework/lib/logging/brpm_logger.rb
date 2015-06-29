@@ -19,6 +19,7 @@ class BrpmLogger < LoggerBase
 
   def get_step_run_log_file_path
     "#{@automation_results_dir}/#{@request_id}_#{@step_id}_#{@run_key}.log"
+    BrpmAuto.params["SS_output_file"]
   end
 
   def log(message)

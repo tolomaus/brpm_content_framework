@@ -67,6 +67,7 @@ class Rest
         end
 
         if %{put post}.include?(method.downcase)
+          options[:data] = options["data"] if options.has_key?("data")
           rest_params[:payload] = options[:data].to_json if options.has_key?(:data)
           if !options.has_key?(:data) || rest_params[:payload].length < 4
             result["code"] = -1

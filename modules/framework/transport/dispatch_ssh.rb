@@ -49,8 +49,8 @@ class DispatchSSH < DispatchBase
     result = "No servers to execute on"
     # Loop through the platforms
     OS_PLATFORMS.each do |os, os_details|
-      servers = get_platform_servers(os) if seed_servers == ""
-      servers = get_platform_servers(os, seed_servers) if seed_servers != ""
+      servers = BrpmAuto.params.get_servers_by_os_platform(os) if seed_servers == ""
+      servers = BrpmAuto.params.get_servers_by_os_platform(os, seed_servers) if seed_servers != ""
       BrpmAuto.message_box "OS Platform: #{os_details["name"]}"
       BrpmAuto.log "No servers selected for: #{os_details["name"]}" if servers.size == 0
       next if servers.size == 0
@@ -127,7 +127,7 @@ class DispatchSSH < DispatchBase
     result = "No servers to execute on"
     # Loop through the platforms
     OS_PLATFORMS.each do |os, os_details|
-      servers = get_platform_servers(os)
+      servers = BrpmAuto.params.get_servers_by_os_platform(os)
       BrpmAuto.message_box "OS Platform: #{os_details["name"]}"
       BrpmAuto.log "No servers selected for: #{os_details["name"]}" if servers.size == 0
       next if servers.size == 0

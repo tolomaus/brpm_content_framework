@@ -320,10 +320,26 @@ class DispatchBase
   
   # Returns the short name for the os platform
   # Send the OS
-  def os_platform(platform)
-    return "nix" if platform.downcase =~ /nix/
-    return "win" if platform.downcase =~ /win/
-    "nux"
+  def os_platform(platform, abbrev = true)
+    result = "nux"
+    result = "nix" if platform.downcase =~ /nix/
+    result = "win" if platform.downcase =~ /win/
+    result = {"nux" => "unix", "nix" => "linux", "win" => "windows"}[result] unless abbrev
+    result
   end
-  
+
+  # Returns plaform information about the first server assigned
+  # (works on teh assumption that all assigned servers are similar!)
+  # ==== Returns
+  #
+  # * hash of server information {"server", "os", "channel_root"}
+  # 
+  def lead_server_info
+    servers = BrpmAuto.params.servers
+    cur = servers.keys.first
+    os = os_platform(servers[cur]["os_platform"], false)
+    channel_root = servers[cur].has_key?("CHANNEL_ROOT") ? servers[cur]["CHANNEL_ROOT"] : (os == "windows" ? "C:\\temp" : "/tmp")
+    server_info = {"server" => cur, "os" => os, "channel_root" => channel_root}
+  end
+    
 end

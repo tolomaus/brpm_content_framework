@@ -32,7 +32,7 @@ class BrpmScriptExecutor
         BrpmAuto.log ">>>>>>>>>>>>>> STOP automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
 
-        load "#{File.dirname(__FILE__)}/write_to.rb" if BrpmAuto.params.run_from_brpm
+        #load "#{File.dirname(__FILE__)}/write_to.rb" if BrpmAuto.params.run_from_brpm
       end
     end
 
@@ -67,7 +67,7 @@ class BrpmScriptExecutor
         BrpmAuto.log ">>>>>>>>>>>>>> STOP resource automation #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
 
-        load "#{File.dirname(__FILE__)}/write_to.rb" if BrpmAuto.params.run_from_brpm
+        #load "#{File.dirname(__FILE__)}/write_to.rb" if BrpmAuto.params.run_from_brpm
       end
     end
   end
