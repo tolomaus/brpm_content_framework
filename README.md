@@ -100,7 +100,7 @@ The config.yml file contains the integration server and all other modules it dep
 
 If you use a github.com repository to host the source code of the module you can directly install it from there. Otherwise you can create a zip file of the module and install it as such.
 
-It is also possible to execute (and debug if your ruby IDE supports it, e.g. RubyMine) the logic. See further the section on Testability. 
+It is also possible to execute (and debug if your ruby IDE supports it, e.g. RubyMine) the scripts on your development machine. See further the section on Testability. 
  
 For an example see the [Selenium](https://github.com/BMC-RLM/brpm_module_selenium) module.
 
@@ -195,6 +195,8 @@ Clone this repository to a location that is side by side with your module's loca
 ```ruby
 require "#{File.dirname(__FILE__)}/../../../brpm_content/modules/framework/brpm_script_executor"
 ```
+
+Make sure that you are running on ruby 1.9.3 and that all gem dependencies as specified in the Gemfile are installed.
  
 ### Travis CI
 
