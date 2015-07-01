@@ -106,7 +106,7 @@ class Params < ParamsBase
     @brpm_api_token = params["SS_api_token"] || params["brpm_api_token"]
 
     @run_from_brpm = (@run_key != nil)
-    @also_log_to_console = (params["also_log_to_console"] == "true")
+    @also_log_to_console = (params["also_log_to_console"] == "true" || params["also_log_to_console"] == 'true')
 
     @private_params = {}
     if self.run_from_brpm

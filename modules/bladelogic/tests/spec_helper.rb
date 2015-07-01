@@ -4,7 +4,7 @@ require_relative "../../framework/brpm_script_executor"
 def setup_brpm_auto
   FileUtils.mkdir_p "/tmp/brpm_content"
 
-  BrpmAuto.setup( { "output_dir" => "/tmp/brpm_content" }.merge!(get_integration_params_for_bladelogic) )
+  BrpmAuto.setup( get_default_params.merge!(get_integration_params_for_bladelogic) )
 
   BrpmAuto.require_module "brpm"
   BrpmAuto.require_module "bladelogic"

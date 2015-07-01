@@ -4,7 +4,7 @@ require_relative "../../framework/brpm_script_executor"
 def setup_brpm_auto
   FileUtils.mkdir_p "/tmp/brpm_content"
 
-  BrpmAuto.setup( { "output_dir" => "/tmp/brpm_content" } )
+  BrpmAuto.setup(get_default_params)
 
   BrpmAuto.require_module "brpm"
 
