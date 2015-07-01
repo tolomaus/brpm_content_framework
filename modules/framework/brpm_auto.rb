@@ -101,7 +101,7 @@ class BrpmAuto
     end
 
     def require_module(modul)
-      if dependency.is_a?(Hash)
+      if modul.is_a?(Hash)
         module_name = modul.keys[0]
         options = modul.values[0]
       else
