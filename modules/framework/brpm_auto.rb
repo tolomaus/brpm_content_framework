@@ -101,30 +101,38 @@ class BrpmAuto
     end
 
     def require_module(modul)
-      BrpmAuto.log "Loading module #{modul}..."
-
-      if File.exists?("#{@modules_root_path}/#{modul}")
-        module_path = "#{@modules_root_path}/#{modul}"
-      elsif File.exists?("#{@external_modules_root_path}/#{modul}")
-        module_path = "#{@external_modules_root_path}/#{modul}"
+      if dependency.is_a?(Hash)
+        module_name = modul.keys[0]
+        options = modul.values[0]
       else
-        raise "Module #{modul} is not installed."
+        module_name = modul
+        options = {}
+      end
+
+      BrpmAuto.log "Loading module #{module_name} #{options["version"]}..."
+
+      if File.exists?("#{@modules_root_path}/#{module_name}")
+        module_path = "#{@modules_root_path}/#{module_name}"
+      elsif File.exists?("#{@external_modules_root_path}/#{module_name}")
+        module_path = "#{@external_modules_root_path}/#{module_name}"
+      else
+        raise "Module #{module_name} is not installed."
       end
       BrpmAuto.log "Found the module on #{module_path}."
 
       module_config_file_path = "#{module_path}/config.yml"
       if File.exist?(module_config_file_path)
         module_config = YAML.load_file(module_config_file_path)
-        if module_config.has_key?("dependencies") and module_config["dependencies"] and module_config["dependencies"].count > 0
+        if module_config["dependencies"]
           BrpmAuto.log "Loading the dependent modules..."
-          module_config["dependencies"].each do |dep|
-            BrpmAuto.log "Loading module #{dep}..."
-            require_module(dep)
+          module_config["dependencies"].each do |dependency|
+            BrpmAuto.log "Loading module #{dependency}..."
+            require_module(dependency)
           end
         end
       end
 
-      BrpmAuto.log "Loading the libraries of module #{modul}..."
+      BrpmAuto.log "Loading the libraries of module #{module_name}..."
       require_libs(module_path)
     end
 
