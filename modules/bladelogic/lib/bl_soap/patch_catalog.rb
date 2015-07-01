@@ -1,5 +1,3 @@
-require "bladelogic/lib/bl_soap/bsa_soap_client"
-
 class PatchCatalog < BsaSoapBase
   # internal function
   def internal_delete_obsolete_patches(cmd, options = {})

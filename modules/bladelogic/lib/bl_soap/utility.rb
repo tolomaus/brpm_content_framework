@@ -1,5 +1,3 @@
-require "bladelogic/lib/bl_soap/bsa_soap_client"
-
 class Utility < BsaSoapBase
   def export_deploy_script_run(options = {})
     validate_cli_options_hash([:job_group_name, :job_name, :run_id, :export_file_name], options)

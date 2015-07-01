@@ -1,5 +1,3 @@
-require "bladelogic/lib/bl_soap/bsa_soap_client"
-
 class Server < BsaSoapBase
 	def get_server_id_by_name(ession_id, options = {})
     validate_cli_options_hash([:server_name], options)
