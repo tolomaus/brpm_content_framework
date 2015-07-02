@@ -109,14 +109,14 @@ class BrpmAuto
 
       module_gem_path = "#{ENV["BRPM_CONTENT_PATH"] || "#{params["SS_script_support_path"]}/gemset"}/gems/#{module_name}-#{module_version}"
       if File.exists?(module_gem_path)
-        BrpmAuto.log "Found the module in gem path #{module_path}."
         module_path = module_gem_path
+        BrpmAuto.log "Found the module in gem path #{module_path}."
       elsif File.exists?("#{@modules_root_path}/#{module_name}")
-        BrpmAuto.log "Found the module in framework module path #{module_path}."
         module_path = "#{@modules_root_path}/#{module_name}"
+        BrpmAuto.log "Found the module in framework module path #{module_path}."
       elsif File.exists?("#{@external_modules_root_path}/#{module_name}")
-        BrpmAuto.log "Found the module in external module path #{module_path}."
         module_path = "#{@external_modules_root_path}/#{module_name}"
+        BrpmAuto.log "Found the module in external module path #{module_path}."
       else
         raise "Module #{module_name} is not installed."
       end
