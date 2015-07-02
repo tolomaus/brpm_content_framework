@@ -102,16 +102,20 @@ class BrpmAuto
         module_version = modul.values[0]["version"]
       else
         module_name = modul
-        module_version = "latest"
+        module_version = "default"
       end
 
       BrpmAuto.log "Loading module #{module_name} version #{module_version}..."
 
       module_gem_path = "#{ENV["BRPM_CONTENT_PATH"] || "#{params["SS_script_support_path"]}/gemset"}/gems/#{module_name}-#{module_version}"
+      module_gem_path_latest = "#{ENV["BRPM_CONTENT_PATH"] || "#{params["SS_script_support_path"]}/gemset"}/gems/#{module_name}-latest"
       internal_module_path = "#{@modules_root_path}/#{module_name}"
       external_module_path = "#{@external_modules_root_path}/#{module_name}"
 
       if File.exists?(module_gem_path)
+        module_path = module_gem_path
+        BrpmAuto.log "Found the module in gem path #{module_path}."
+      elsif File.exists?(module_gem_path_latest)
         module_path = module_gem_path
         BrpmAuto.log "Found the module in gem path #{module_path}."
       elsif File.exists?(internal_module_path)
@@ -133,6 +137,9 @@ class BrpmAuto
             require_module(dependency)
           end
         end
+      else
+        BrpmAuto.log "No config file found."
+        BrpmAuto.log `ls -la #{module_path}`
       end
 
       BrpmAuto.log "Loading the libraries of module #{module_name}..."
