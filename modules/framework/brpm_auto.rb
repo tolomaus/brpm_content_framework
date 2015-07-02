@@ -108,17 +108,20 @@ class BrpmAuto
       BrpmAuto.log "Loading module #{module_name} version #{module_version}..."
 
       module_gem_path = "#{ENV["BRPM_CONTENT_PATH"] || "#{params["SS_script_support_path"]}/gemset"}/gems/#{module_name}-#{module_version}"
+      internal_module_path = "#{@modules_root_path}/#{module_name}"
+      external_module_path = "#{@external_modules_root_path}/#{module_name}"
+
       if File.exists?(module_gem_path)
         module_path = module_gem_path
         BrpmAuto.log "Found the module in gem path #{module_path}."
-      elsif File.exists?("#{@modules_root_path}/#{module_name}")
-        module_path = "#{@modules_root_path}/#{module_name}"
+      elsif File.exists?(internal_module_path)
+        module_path = internal_module_path
         BrpmAuto.log "Found the module in framework module path #{module_path}."
-      elsif File.exists?("#{@external_modules_root_path}/#{module_name}")
-        module_path = "#{@external_modules_root_path}/#{module_name}"
+      elsif File.exists?(external_module_path)
+        module_path = external_module_path
         BrpmAuto.log "Found the module in external module path #{module_path}."
       else
-        raise "Module #{module_name} is not installed."
+        raise "Module #{module_name} is not installed.\nSearched in:\n - gem path: #{module_gem_path}\n - internal path: #{internal_module_path}\n - external path: #{external_module_path}"
       end
 
       module_config_file_path = "#{module_path}/config.yml"
