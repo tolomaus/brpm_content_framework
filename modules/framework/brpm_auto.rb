@@ -16,14 +16,10 @@ class BrpmAuto
 
     def init
       @framework_root_path = File.expand_path("#{File.dirname(__FILE__)}")
-
       @modules_root_path = File.expand_path("#{@framework_root_path}/..")
-      $LOAD_PATH << @modules_root_path
-
       @external_modules_root_path = File.expand_path("#{@modules_root_path}/../../modules")
-      $LOAD_PATH << @external_modules_root_path if Dir.exist?(@external_modules_root_path)
 
-      require "framework/lib/logging/brpm_logger"
+      require_relative "lib/logging/brpm_logger"
 
       require_libs_no_file_logging "#{@modules_root_path}/framework"
 
@@ -103,22 +99,27 @@ class BrpmAuto
     def require_module(modul)
       if modul.is_a?(Hash)
         module_name = modul.keys[0]
-        options = modul.values[0]
+        module_version = modul.values[0]["version"]
       else
         module_name = modul
-        options = {}
+        module_version = "latest"
       end
 
-      BrpmAuto.log "Loading module #{module_name} #{options["version"]}..."
+      BrpmAuto.log "Loading module #{module_name} version #{module_version}..."
 
-      if File.exists?("#{@modules_root_path}/#{module_name}")
+      module_gem_path = "#{ENV["BRPM_CONTENT_PATH"] || "#{params["SS_script_support_path"]}/gemset"}/gems/#{module_name}-#{module_version}"
+      if File.exists?(module_gem_path)
+        BrpmAuto.log "Found the module in gem path #{module_path}."
+        module_path = module_gem_path
+      elsif File.exists?("#{@modules_root_path}/#{module_name}")
+        BrpmAuto.log "Found the module in framework module path #{module_path}."
         module_path = "#{@modules_root_path}/#{module_name}"
       elsif File.exists?("#{@external_modules_root_path}/#{module_name}")
+        BrpmAuto.log "Found the module in external module path #{module_path}."
         module_path = "#{@external_modules_root_path}/#{module_name}"
       else
         raise "Module #{module_name} is not installed."
       end
-      BrpmAuto.log "Found the module on #{module_path}."
 
       module_config_file_path = "#{module_path}/config.yml"
       if File.exist?(module_config_file_path)
@@ -126,7 +127,6 @@ class BrpmAuto
         if module_config["dependencies"]
           BrpmAuto.log "Loading the dependent modules..."
           module_config["dependencies"].each do |dependency|
-            BrpmAuto.log "Loading module #{dependency}..."
             require_module(dependency)
           end
         end
@@ -134,6 +134,8 @@ class BrpmAuto
 
       BrpmAuto.log "Loading the libraries of module #{module_name}..."
       require_libs(module_path)
+
+      module_path
     end
 
     def load_server_params

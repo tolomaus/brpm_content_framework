@@ -11,10 +11,10 @@ class BrpmScriptExecutor
         start_time = Time.now
 
         BrpmAuto.log "Loading the dependencies..."
-        BrpmAuto.require_module(modul)
+        module_path = BrpmAuto.require_module(modul)
         BrpmAuto.log "Finished loading the dependencies."
 
-        automation_script_path = "#{modul}/automations/#{name}.rb"
+        automation_script_path = "#{module_path}/automations/#{name}.rb"
 
         BrpmAuto.log "Loading the automation script #{automation_script_path}..."
         load automation_script_path
@@ -45,9 +45,10 @@ class BrpmScriptExecutor
         start_time = Time.now
 
         BrpmAuto.log "Loading the dependencies..."
-        BrpmAuto.require_module(modul)
+        module_path = BrpmAuto.require_module(modul)
+        BrpmAuto.log "Finished loading the dependencies."
 
-        automation_script_path = "#{modul}/resource_automations/#{name}.rb"
+        automation_script_path = "#{module_path}/resource_automations/#{name}.rb"
 
         BrpmAuto.log "Loading the resource automation script #{automation_script_path}..."
         result = load automation_script_path

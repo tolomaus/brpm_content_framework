@@ -1,4 +1,4 @@
-require "framework/lib/logging/logger_base"
+require_relative "logger_base"
 
 class SimpleLogger < LoggerBase
   def initialize(log_file, also_log_to_console = false)

@@ -1,4 +1,4 @@
-require "framework/lib/logging/logger_base"
+require_relative "logger_base"
 
 class BrpmLogger < LoggerBase
   attr_reader :request_log_file_path
