@@ -111,7 +111,7 @@ class BrpmAuto
       if ENV["BRPM_CONTENT_HOME"]
         gem_path = ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
       elsif ENV["BRPM_HOME"]
-        gem_path = "#{ENV["BRPM_HOME"]}/gemset" # default gemset location when BRPM is installed
+        gem_path = "#{ENV["BRPM_HOME"]}/modules" # default gemset location when BRPM is installed
       elsif ENV["GEM_HOME"]
         gem_path = ENV["GEM_HOME"] # default gemset location when BRPM is not installed
       end
