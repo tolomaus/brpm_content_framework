@@ -107,15 +107,20 @@ class BrpmAuto
 
       BrpmAuto.log "Loading module #{module_name} version #{module_version}..."
 
-      module_gem_path = "#{ENV["BRPM_CONTENT_PATH"] || "#{params["SS_script_support_path"]}/gemset"}/gems/#{module_name}-#{module_version}"
-      module_gem_path_latest = "#{ENV["BRPM_CONTENT_PATH"] || "#{params["SS_script_support_path"]}/gemset"}/gems/#{module_name}-latest"
+      gem_path = nil
+      if ENV["BRPM_CONTENT_HOME"]
+        gem_path = ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
+      elsif ENV["BRPM_HOME"]
+        gem_path = "#{ENV["BRPM_HOME"]}/gemset" # default gemset location when BRPM is installed
+      elsif ENV["GEM_HOME"]
+        gem_path = ENV["GEM_HOME"] # default gemset location when BRPM is not installed
+      end
+
+      module_gem_path = "#{gem_path}/gems/#{module_name}-#{module_version}"
       internal_module_path = "#{@modules_root_path}/#{module_name}"
       external_module_path = "#{@external_modules_root_path}/#{module_name}"
 
-      if File.exists?(module_gem_path)
-        module_path = module_gem_path
-        BrpmAuto.log "Found the module in gem path #{module_path}."
-      elsif File.exists?(module_gem_path_latest)
+      if gem_path && File.exists?(module_gem_path)
         module_path = module_gem_path
         BrpmAuto.log "Found the module in gem path #{module_path}."
       elsif File.exists?(internal_module_path)
