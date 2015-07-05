@@ -9,8 +9,8 @@
 #   type: in-text
 ###
 
-require "#{ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content-#{ENV["BRPM_CONTENT_VERSION"] || "default"}/modules/framework/brpm_script_executor.rb"
+require "#{ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content-#{ENV["BRPM_CONTENT_VERSION"] || "latest"}/modules/framework/brpm_script_executor.rb"
 
 params["direct_execute"] = "true"
 
-BrpmScriptExecutor.execute_automation_script("framework", "direct_execute", params)
+BrpmScriptExecutor.execute_automation_script_from_gem("framework", "direct_execute", params)

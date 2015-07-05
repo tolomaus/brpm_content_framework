@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.summary       = config["summary"]
   s.description   = config["description"]
 
-  s.required_rubygems_version = ">=1.9.3"
+  s.required_rubygems_version = "2.1.9"
 
   s.add_runtime_dependency "rest-client"
   s.add_runtime_dependency "json"

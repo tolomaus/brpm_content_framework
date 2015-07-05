@@ -1,3 +1,4 @@
+require 'bundler'
 require "yaml"
 
 class BrpmAuto
@@ -11,11 +12,18 @@ class BrpmAuto
     attr_reader :integration_settings
 
     attr_reader :framework_root_path
+
+    attr_reader :gems_root_path
+    attr_reader :gemfile_lock
+
     attr_reader :modules_root_path
     attr_reader :external_modules_root_path
 
     def init
       @framework_root_path = File.expand_path("#{File.dirname(__FILE__)}")
+
+      @gems_root_path = get_gems_root_path
+
       @modules_root_path = File.expand_path("#{@framework_root_path}/..")
       @external_modules_root_path = File.expand_path("#{@modules_root_path}/../../modules")
 
@@ -63,6 +71,54 @@ class BrpmAuto
       end
     end
 
+    def require_module(module_name)
+      BrpmAuto.log "Loading module #{module_name}..."
+
+      internal_module_path = "#{@modules_root_path}/#{module_name}"
+      external_module_path = "#{@external_modules_root_path}/#{module_name}"
+
+      if File.exists?(internal_module_path)
+        module_path = internal_module_path
+        BrpmAuto.log "Found the module in framework module path #{module_path}."
+      elsif File.exists?(external_module_path)
+        module_path = external_module_path
+        BrpmAuto.log "Found the module in external module path #{module_path}."
+      else
+        raise "Module #{module_name} is not installed.\nSearched in:\n - internal path: #{internal_module_path}\n - external path: #{external_module_path}"
+      end
+
+      module_config_file_path = "#{module_path}/config.yml"
+      if File.exist?(module_config_file_path)
+        module_config = YAML.load_file(module_config_file_path)
+        if module_config["dependencies"]
+          BrpmAuto.log "Loading the dependent modules..."
+          module_config["dependencies"].each do |dependency|
+            require_module(dependency)
+          end
+        end
+      else
+        BrpmAuto.log "No config file found."
+      end
+
+      BrpmAuto.log "Loading the libraries of module #{module_name}..."
+      require_libs(module_path)
+
+      module_path
+    end
+
+    def require_module_from_gem(module_name, module_version = nil)
+      module_version ||= get_highest_installed_version(module_name)
+
+      module_gem_path = get_module_gem_path(module_name, module_version)
+
+      gemfile_lock_path = "#{module_gem_path}/Gemfile.lock"
+      if File.exists?(gemfile_lock_path)
+        @gemfile_lock = Bundler::LockfileParser.new(Bundler.read_file(gemfile_lock_path))
+      end
+
+      require_module_internal(module_name, module_version)
+    end
+
     def require_libs_no_file_logging(module_path)
       require_libs(module_path, false)
     end
@@ -94,63 +150,6 @@ class BrpmAuto
           require_files(failed_files, log)
         end
       end
-    end
-
-    def require_module(modul)
-      if modul.is_a?(Hash)
-        module_name = modul.keys[0]
-        module_version = modul.values[0]["version"]
-      else
-        module_name = modul
-        module_version = "default"
-      end
-
-      BrpmAuto.log "Loading module #{module_name} version #{module_version}..."
-
-      gem_path = nil
-      if ENV["BRPM_CONTENT_HOME"]
-        gem_path = ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
-      elsif ENV["BRPM_HOME"]
-        gem_path = "#{ENV["BRPM_HOME"]}/modules" # default gemset location when BRPM is installed
-      elsif ENV["GEM_HOME"]
-        gem_path = ENV["GEM_HOME"] # default gemset location when BRPM is not installed
-      end
-
-      module_gem_path = "#{gem_path}/gems/#{module_name}-#{module_version}"
-      internal_module_path = "#{@modules_root_path}/#{module_name}"
-      external_module_path = "#{@external_modules_root_path}/#{module_name}"
-
-      if gem_path && File.exists?(module_gem_path)
-        module_path = module_gem_path
-        BrpmAuto.log "Found the module in gem path #{module_path}."
-      elsif File.exists?(internal_module_path)
-        module_path = internal_module_path
-        BrpmAuto.log "Found the module in framework module path #{module_path}."
-      elsif File.exists?(external_module_path)
-        module_path = external_module_path
-        BrpmAuto.log "Found the module in external module path #{module_path}."
-      else
-        raise "Module #{module_name} is not installed.\nSearched in:\n - gem path: #{module_gem_path}\n - internal path: #{internal_module_path}\n - external path: #{external_module_path}"
-      end
-
-      module_config_file_path = "#{module_path}/config.yml"
-      if File.exist?(module_config_file_path)
-        module_config = YAML.load_file(module_config_file_path)
-        if module_config["dependencies"]
-          BrpmAuto.log "Loading the dependent modules..."
-          module_config["dependencies"].each do |dependency|
-            require_module(dependency)
-          end
-        end
-      else
-        BrpmAuto.log "No config file found."
-        BrpmAuto.log `ls -la #{module_path}`
-      end
-
-      BrpmAuto.log "Loading the libraries of module #{module_name}..."
-      require_libs(module_path)
-
-      module_path
     end
 
     def load_server_params
@@ -202,6 +201,89 @@ class BrpmAuto
 
     def initialize_integration_settings(dns, username, password, details)
       @integration_settings = IntegrationSettings.new(dns, username, password, details)
+    end
+
+    private
+
+    def require_module_internal(module_name, module_version)
+      module_gem_path = get_module_gem_path(module_name, module_version)
+      if File.exists?(module_gem_path)
+        module_path = module_gem_path
+        BrpmAuto.log "Found the module in gem path #{module_path}."
+      else
+        raise "Module #{module_name} version #{module_version} is not installed. Expected it on path #{module_gem_path}."
+      end
+
+      module_config_file_path = "#{module_path}/config.yml"
+      if File.exist?(module_config_file_path)
+        module_config = YAML.load_file(module_config_file_path)
+        if module_config["dependencies"]
+          BrpmAuto.log "Loading the dependent modules..."
+          module_config["dependencies"].each do |dependency|
+            if dependency.is_a?(Hash)
+              module_name = dependency.keys[0]
+              if @gemfile_lock
+                module_version = get_version_from_gemfile_lock(module_name)
+              else
+                module_version = dependency.values[0]["version"]
+              end
+            else
+              module_name = dependency
+
+              if ["brpm", "bladelogic", "jira"].include?(module_name)
+                require_module(module_name)
+                next
+              end
+
+              if @gemfile_lock
+                module_version = get_version_from_gemfile_lock(module_name)
+              else
+                module_version = get_highest_installed_version(module_name)
+              end
+            end
+
+            BrpmAuto.log "Loading module #{module_name} version #{module_version}..."
+            require_module_internal(module_name, module_version)
+          end
+        end
+      else
+        BrpmAuto.log "No config file found."
+      end
+
+      BrpmAuto.log "Loading the libraries of module #{module_name}..."
+      require_libs(module_path)
+
+      module_path
+    end
+
+    def get_gems_root_path
+      if ENV["BRPM_CONTENT_HOME"]
+        ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
+      elsif ENV["BRPM_HOME"]
+        "#{ENV["BRPM_HOME"]}/modules" # default gemset location when BRPM is installed
+      elsif ENV["GEM_HOME"]
+        ENV["GEM_HOME"] # default gemset location when BRPM is not installed
+      else
+        raise "Unable to find out the gems root path."
+      end
+    end
+
+    def get_module_gem_path(module_name, module_version)
+      "#{@gems_root_path}/gems/#{module_name}-#{module_version}"
+    end
+
+    def get_highest_installed_version(module_name)
+      latest_version_path = get_module_gem_path(module_name, "latest")
+      return "latest" if File.exists?(latest_version_path)
+
+      all_version_paths = Dir.glob(get_module_gem_path(module_name, "*"))
+
+
+    end
+
+    def get_version_from_gemfile_lock(module_name)
+      spec = @gemfile_lock.specs.find { |spec| spec.name == module_name }
+      spec.version
     end
   end
 
