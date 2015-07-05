@@ -276,9 +276,14 @@ class BrpmAuto
       latest_version_path = get_module_gem_path(module_name, "latest")
       return "latest" if File.exists?(latest_version_path)
 
-      all_version_paths = Dir.glob(get_module_gem_path(module_name, "*"))
+      all_version_search = get_module_gem_path(module_name, "*")
+      version_paths = Dir.glob(all_version_search)
 
+      raise "Could not find any installed version of module #{module_name}. Expected them in #{get_module_gem_path(module_name, "*")}" if version_paths.empty?
 
+      versions = version_paths.map { |path| File.dirname(path) }
+
+      versions.sort{ |a, b| Gem::Version.new(a) <=> Gem::Version.new(b) }.last
     end
 
     def get_version_from_gemfile_lock(module_name)
