@@ -221,29 +221,29 @@ class BrpmAuto
           BrpmAuto.log "Loading the dependent modules..."
           module_config["dependencies"].each do |dependency|
             if dependency.is_a?(Hash)
-              module_name = dependency.keys[0]
+              dep_module_name = dependency.keys[0]
               if @gemfile_lock
-                module_version = get_version_from_gemfile_lock(module_name)
+                dep_module_version = get_version_from_gemfile_lock(dep_module_name)
               else
-                module_version = dependency.values[0]["version"]
+                dep_module_version = dependency.values[0]["version"]
               end
             else
-              module_name = dependency
+              dep_module_name = dependency
 
-              if ["brpm", "bladelogic", "jira"].include?(module_name)
-                require_module(module_name)
+              if ["brpm", "bladelogic", "jira"].include?(dep_module_name)
+                require_module(dep_module_name)
                 next
               end
 
               if @gemfile_lock
-                module_version = get_version_from_gemfile_lock(module_name)
+                dep_module_version = get_version_from_gemfile_lock(dep_module_name)
               else
-                module_version = get_highest_installed_version(module_name)
+                dep_module_version = get_highest_installed_version(dep_module_name)
               end
             end
 
-            BrpmAuto.log "Loading module #{module_name} version #{module_version}..."
-            require_module_internal(module_name, module_version)
+            BrpmAuto.log "Loading module #{dep_module_name} version #{dep_module_version}..."
+            require_module_internal(dep_module_name, dep_module_version)
           end
         end
       else
