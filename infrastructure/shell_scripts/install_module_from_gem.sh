@@ -42,10 +42,6 @@ gemfile_lock = File.join(spec.gem_dir, "Gemfile.lock")
 
 if File.exists?(gemfile) && File.exists?(gemfile_lock)
   puts "Found a Gemfile.lock."
-  #require 'rubygems/user_interaction'
-  #require 'thor/base'
-  #Bundler.ui = Bundler::UI::Shell.new
-  #Bundler::Installer.install("/Users/niek/temp/modules", Bundler.definition, {:gemfile => gemfile})
   puts "GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile}"
   `GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile}`
 end
