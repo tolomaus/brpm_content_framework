@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Usage:
-# patch_brpm.sh <new version> <location (ftp or local file system)>
+USAGE="patch_brpm.sh <new version> <location (ftp or local file system)>"
 
 NEW_VERSION=$1
 LOCATION=$2
@@ -12,12 +11,14 @@ if [ -z "$BRPM_HOME" ]; then
 fi
 
 if [ -z "$NEW_VERSION" ]; then
-    echo "NEW_VERSION is not specified. Aborting the patch installation."
+    echo "New version is not specified. Aborting the patch installation."
+    echo "Usage: $USAGE"
     exit 1
 fi
 
 if [ -z "$LOCATION" ]; then
     echo "The location was not specified. Aborting the installation."
+    echo "Usage: $USAGE"
     exit 1
 fi
 
