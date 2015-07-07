@@ -111,6 +111,12 @@ class BrpmAuto
 
       module_gem_path = get_module_gem_path(module_name, module_version)
 
+      if File.exists?(module_gem_path)
+        BrpmAuto.log "Found the module in gem path #{module_gem_path}."
+      else
+        raise "Module #{module_name} version #{module_version} is not installed. Expected it on path #{module_gem_path}."
+      end
+
       gemfile_lock_path = "#{module_gem_path}/Gemfile.lock"
       if File.exists?(gemfile_lock_path)
         @gemfile_lock = Bundler::LockfileParser.new(Bundler.read_file(gemfile_lock_path))
@@ -206,13 +212,7 @@ class BrpmAuto
     private
 
     def require_module_internal(module_name, module_version)
-      module_gem_path = get_module_gem_path(module_name, module_version)
-      if File.exists?(module_gem_path)
-        module_path = module_gem_path
-        BrpmAuto.log "Found the module in gem path #{module_path}."
-      else
-        raise "Module #{module_name} version #{module_version} is not installed. Expected it on path #{module_gem_path}."
-      end
+      module_path = get_module_gem_path(module_name, module_version)
 
       module_config_file_path = "#{module_path}/config.yml"
       if File.exist?(module_config_file_path)
