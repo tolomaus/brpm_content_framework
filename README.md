@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/BMC-RLM/brpm_content.svg?branch=master)](https://travis-ci.org/BMC-RLM/brpm_content)
 
+[![Gem Version](https://badge.fury.io/rb/brpm_content.png)](http://badge.fury.io/rb/brpm_content)
+
 The BRPM Content framework is intended to make the creation and usage of content (for the moment limited to automation scripts) on top of BRPM as easy as possible.
 
 It is designed around a number of core concepts like modularity, re-usability, testability that are further explained below.
