@@ -23,9 +23,12 @@ fi
 
 . $BRPM_HOME/bin/setenv.sh
 
-jruby <<-EORUBY
+jruby - $MODULE_NAME $MODULE_VERSION <<-EORUBY
 require "rubygems"
 require "bundler"
+
+module_name = ARGV[0]
+module_version = ARGV[1] if ARGV.size >= 2
 
 brpm_content_home = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
 
@@ -33,8 +36,8 @@ ENV["GEM_HOME"] = brpm_content_home
 Gem.paths = ENV
 puts "GEM_HOME=#{ENV["GEM_HOME"]}"
 
-puts "gem install $MODULE_NAME"
-specs = Gem.install "$MODULE_NAME"
+puts "gem install #{module_name}"
+specs = Gem.install(module_name)
 spec = specs.last
 
 gemfile = File.join(spec.gem_dir, "Gemfile")
@@ -53,5 +56,6 @@ puts "The latest version of brpm_content is #{spec_of_latest_version.version}"
 
 FileUtils.ln_sf("#{brpm_content_home}/gems/brpm_content-#{spec_of_latest_version.version}", "#{brpm_content_home}/gems/brpm_content-latest")
 EORUBY
+
 
 echo "Done."
