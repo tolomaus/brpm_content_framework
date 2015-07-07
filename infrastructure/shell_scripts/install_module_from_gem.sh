@@ -46,9 +46,14 @@ gemfile_lock = File.join(spec.gem_dir, "Gemfile.lock")
 if File.exists?(gemfile) && File.exists?(gemfile_lock)
   puts "Found a Gemfile.lock."
   puts "GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile}"
-  `GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile}`
 end
 
+# set symlink to brpm_content-latest if a higher version was installed
+puts "Finding latest installed version of brpm_content..."
+spec_of_latest_version = Gem::Specification.find_all_by_name("brpm_content").sort_by{ |g| [g.name.downcase, g.version] }.last
+puts "The latest version of brpm_content is #{spec_of_latest_version.version}"
+
+FileUtils.ln_sf("#{brpm_content_home}/gems/brpm_content-#{spec_of_latest_version.version}", "#{brpm_content_home}/gems/brpm_content-latest")
 EORUBY
 
 
