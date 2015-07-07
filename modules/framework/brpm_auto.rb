@@ -1,4 +1,4 @@
-require 'bundler'
+require "bundler"
 require "yaml"
 
 class BrpmAuto
@@ -107,7 +107,7 @@ class BrpmAuto
     end
 
     def require_module_from_gem(module_name, module_version = nil)
-      module_version ||= get_highest_installed_version(module_name)
+      module_version ||= get_latest_installed_version(module_name)
 
       module_gem_path = get_module_gem_path(module_name, module_version)
 
@@ -238,7 +238,7 @@ class BrpmAuto
               if @gemfile_lock
                 dep_module_version = get_version_from_gemfile_lock(dep_module_name)
               else
-                dep_module_version = get_highest_installed_version(dep_module_name)
+                dep_module_version = get_latest_installed_version(dep_module_name)
               end
             end
 
@@ -272,18 +272,15 @@ class BrpmAuto
       "#{@gems_root_path}/gems/#{module_name}-#{module_version}"
     end
 
-    def get_highest_installed_version(module_name)
+    def get_latest_installed_version(module_name)
       latest_version_path = get_module_gem_path(module_name, "latest")
       return "latest" if File.exists?(latest_version_path)
 
-      all_version_search = get_module_gem_path(module_name, "*")
-      version_paths = Dir.glob(all_version_search)
+      specs = Gem::Specification.find_all_by_name(module_name).sort_by{ |spec| [spec.name.downcase, spec.version] }
 
-      raise "Could not find any installed version of module #{module_name}. Expected them in #{get_module_gem_path(module_name, "*")}" if version_paths.empty?
+      raise "Could not find any installed version of module #{module_name}. Expected them in #{get_module_gem_path(module_name, "*")}" if specs.empty?
 
-      versions = version_paths.map { |path| File.dirname(path) }
-
-      versions.sort{ |a, b| Gem::Version.new(a) <=> Gem::Version.new(b) }.last
+      specs.last.version
     end
 
     def get_version_from_gemfile_lock(module_name)
