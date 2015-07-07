@@ -36,7 +36,7 @@ ENV["GEM_HOME"] = brpm_content_home
 Gem.paths = ENV
 puts "GEM_HOME=#{ENV["GEM_HOME"]}"
 
-puts "gem install #{module_name}"
+puts "Executing command 'gem install #{module_name}'"
 specs = Gem.install(module_name)
 spec = specs.last
 
@@ -45,7 +45,7 @@ gemfile_lock = File.join(spec.gem_dir, "Gemfile.lock")
 
 if File.exists?(gemfile) && File.exists?(gemfile_lock)
   puts "Found a Gemfile.lock."
-  puts "GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile}"
+  puts "Executing command 'GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile}'"
   %x(GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile})
 end
 
