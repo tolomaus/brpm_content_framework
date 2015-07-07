@@ -35,6 +35,14 @@ brpm_content_home = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
 ENV["GEM_HOME"] = brpm_content_home
 Gem.paths = ENV
 puts "GEM_HOME=#{ENV["GEM_HOME"]}"
+
+puts "gem install #{module_name}"
+specs = Gem.install(module_name)
+spec = specs.last
+
+gemfile = File.join(spec.gem_dir, "Gemfile")
+gemfile_lock = File.join(spec.gem_dir, "Gemfile.lock")
+
 EORUBY
 
 
