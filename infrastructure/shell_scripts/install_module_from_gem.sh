@@ -43,6 +43,12 @@ spec = specs.last
 gemfile = File.join(spec.gem_dir, "Gemfile")
 gemfile_lock = File.join(spec.gem_dir, "Gemfile.lock")
 
+if File.exists?(gemfile) && File.exists?(gemfile_lock)
+  puts "Found a Gemfile.lock."
+  puts "GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile}"
+  `GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile}`
+end
+
 EORUBY
 
 
