@@ -23,7 +23,7 @@ fi
 
 . $BRPM_HOME/bin/setenv.sh
 
-jruby - $MODULE_NAME $MODULE_VERSION <<-EORUBY
+jruby - $MODULE_NAME $MODULE_VERSION <<EORUBY
 require "rubygems"
 require "bundler"
 
