@@ -32,6 +32,10 @@ module_version = "$MODULE_VERSION"
 
 brpm_content_home = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
 
+ENV["GEM_HOME"] = brpm_content_home
+Gem.paths = ENV
+puts "GEM_HOME=#{ENV["GEM_HOME"]}"
+
 EORUBY
 
 
