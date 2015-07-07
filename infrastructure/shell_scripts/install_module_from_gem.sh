@@ -23,12 +23,12 @@ fi
 
 . $BRPM_HOME/bin/setenv.sh
 
-jruby - "$MODULE_NAME" <<EORUBY
+jruby <<EORUBY
 require "rubygems"
 require "bundler"
 
-module_name = ARGV[0]
-module_version = ARGV[1] if ARGV.size >= 2
+module_name = "$MODULE_NAME"
+module_version = "$MODULE_VERSION"
 
 brpm_content_home = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
 
