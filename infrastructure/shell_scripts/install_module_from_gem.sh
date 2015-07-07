@@ -29,6 +29,7 @@ require "bundler"
 
 module_name = "$MODULE_NAME"
 module_version = "$MODULE_VERSION"
+puts "module #{module_name} #{module_version == "" ? "" : module_version}"
 
 brpm_content_home = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
 
@@ -36,8 +37,13 @@ ENV["GEM_HOME"] = brpm_content_home
 Gem.paths = ENV
 puts "GEM_HOME=#{ENV["GEM_HOME"]}"
 
-puts "Executing command 'gem install #{module_name}'"
-specs = Gem.install(module_name)
+if module_version == ""
+  puts "Executing command 'gem install #{module_name}'"
+  specs = Gem.install(module_name)
+else
+  puts "Executing command 'gem install #{module_name} -v #{module_version}'"
+  specs = Gem.install(module_name, module_version)
+end
 spec = specs.last
 
 gemfile = File.join(spec.gem_dir, "Gemfile")
