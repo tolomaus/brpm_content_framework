@@ -46,6 +46,7 @@ gemfile_lock = File.join(spec.gem_dir, "Gemfile.lock")
 if File.exists?(gemfile) && File.exists?(gemfile_lock)
   puts "Found a Gemfile.lock."
   puts "GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile}"
+  %x(GEM_HOME=#{brpm_content_home} && bundle install --gemfile #{gemfile})
 end
 
 # set symlink to brpm_content-latest if a higher version was installed
