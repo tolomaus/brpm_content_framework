@@ -65,7 +65,7 @@ symlink_path = "#{brpm_content_home}/gems/brpm_content-latest"
 
 if File.exists?(symlink_path)
   if File.readlink(symlink_path) != latest_version_path
-    FileUtils.rm(symlink)
+    FileUtils.rm(symlink_path)
   end
 end
 
