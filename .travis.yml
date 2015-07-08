@@ -2,7 +2,8 @@ language: ruby
 rvm:
   - 1.9.3
 
-script: - rspec /modules/framework/tests --format documentation --color
+script:
+  - rspec /modules/framework/tests --format documentation --color
 
 notifications:
   email:
