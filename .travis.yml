@@ -2,7 +2,7 @@ language: ruby
 rvm:
   - 1.9.3
 
-script: ./infrastructure/shell_scripts/run_tests.sh
+script: - rspec /modules/framework/tests --format documentation --color
 
 notifications:
   email:
