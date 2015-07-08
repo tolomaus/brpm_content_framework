@@ -3,7 +3,7 @@ rvm:
   - 1.9.3
 
 script:
-  - rspec /modules/framework/tests --format documentation --color
+  - rspec modules/framework/tests --format documentation --color
 
 notifications:
   email:
