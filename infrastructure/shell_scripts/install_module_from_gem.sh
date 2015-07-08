@@ -63,7 +63,7 @@ symlink_path = "#{brpm_content_home}/gems/brpm_content-latest"
 
 if File.exists?(symlink_path)
   if File.readlink(symlink_path) == latest_version_path
-    puts "The symlink #{symlink_path} is still pointing to #{latest_version_path}."
+    puts "The symlink #{symlink_path} is already pointing to #{latest_version_path}."
   else
     puts "Removing symlink #{symlink_path}..."
     FileUtils.rm(symlink_path)
