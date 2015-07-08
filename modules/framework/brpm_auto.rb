@@ -281,7 +281,7 @@ class BrpmAuto
 
       raise "Could not find any installed version of module #{module_name}. Expected them in #{get_module_gem_path(module_name, "*")}" if version_paths.empty?
 
-      versions = version_paths.map { |path| File.dirname(path) }
+      versions = version_paths.map { |path| File.basename(path).sub("#{module_name}-", "") }
 
       versions.sort{ |a, b| Gem::Version.new(a) <=> Gem::Version.new(b) }.last
     end
