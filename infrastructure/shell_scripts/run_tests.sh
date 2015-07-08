@@ -4,9 +4,6 @@ failed_tests=false
 bundle exec rspec ./modules/framework/tests --format documentation --color
 rc=$?; if [ $rc != 0 ]; then failed_tests=true; fi
 
-bundle exec rspec ./modules/brpm/tests --format documentation --color
-rc=$?; if [ $rc != 0 ]; then failed_tests=true; fi
-
 bundle exec rspec ./modules/jira/tests --format documentation --color
 rc=$?; if [ $rc != 0 ]; then failed_tests=true; fi
 
