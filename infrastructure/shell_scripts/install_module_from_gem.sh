@@ -58,18 +58,18 @@ puts "Finding latest installed version of brpm_content..."
 spec_of_latest_version = Gem::Specification.find_all_by_name("brpm_content").sort_by{ |g| [g.name.downcase, g.version] }.last
 puts "The latest installed version is #{spec_of_latest_version.version}."
 
-puts "Updating symlink #{brpm_content_home}/gems/brpm_content-latest to #{brpm_content_home}/gems/brpm_content-#{spec_of_latest_version.version}..."
-
 latest_version_path = "#{brpm_content_home}/gems/brpm_content-#{spec_of_latest_version.version}"
 symlink_path = "#{brpm_content_home}/gems/brpm_content-latest"
 
 if File.exists?(symlink_path)
   if File.readlink(symlink_path) != latest_version_path
+    puts "Removing symlink #{symlink_path}..."
     FileUtils.rm(symlink_path)
   end
 end
 
 if ! File.exists?(symlink_path)
+  puts "Creating symlink #{symlink_path} to #{latest_version_path}..."
   FileUtils.ln_s(latest_version_path, symlink_path)
 end
 EORUBY
