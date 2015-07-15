@@ -5,6 +5,8 @@ class BrpmAuto
   private_class_method :new
 
   class << self
+    attr_reader :config
+    attr_reader :version
     attr_reader :logger
     attr_reader :params
     attr_reader :request_params
@@ -20,6 +22,9 @@ class BrpmAuto
     attr_reader :external_modules_root_path
 
     def init
+      @config = get_config
+      @version = @config["version"]
+
       @framework_root_path = File.expand_path("#{File.dirname(__FILE__)}")
 
       @gems_root_path = get_gems_root_path
@@ -255,6 +260,10 @@ class BrpmAuto
       require_libs(module_path)
 
       module_path
+    end
+
+    def get_config
+      YAML.load_file(File.expand_path("#{File.dirname(__FILE__)}/config.yml"))
     end
 
     def get_gems_root_path
