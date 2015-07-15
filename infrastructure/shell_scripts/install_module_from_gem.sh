@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# This script is case wrapper around gem install and exists for the following reasons:
-# 1) We want to keep the module gems and their dependencies in case separate location than the gems that are used by BRPM so we need to override the install dir
-# 2) In case the module gems that needs to be installed comes with a gemfile.lock case "bundle install" should be executed to make sure the locked gem versions are installed
+# This script is a wrapper around gem install and exists for the following reasons:
+# 1) We want to keep the module gems and their dependencies in a separate location than the gems that are used by BRPM so we need to override the install dir
+# 2) In case the module gem that needs to be installed comes with a gemfile.lock a "bundle install" should be executed to make sure the locked gem versions are installed
 # 3) Make sure that brpm_content-latest always symlinks to the latest installed version
 
 USAGE="install_module_from_gem.sh <module name> [<module version>]"

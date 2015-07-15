@@ -1,16 +1,16 @@
 ###
-# command:
-#   name: command to run
-#   position: A1:F1
+# name:
+#   name: name
 #   type: in-text
-# success:
-#   name: term to indicate success
-#   position: A2:D2
+#   required: yes
+# version:
+#   name: version
 #   type: in-text
+#   required: no
 ###
 
 require "#{ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content-#{ENV["BRPM_CONTENT_VERSION"] || "latest"}/modules/framework/brpm_script_executor.rb"
 
 params["direct_execute"] = "true"
 
-BrpmScriptExecutor.execute_automation_script_from_gem("brpm_content", "direct_execute", params)
+BrpmScriptExecutor.execute_automation_script_from_gem("brpm_content", "install_module", params)
