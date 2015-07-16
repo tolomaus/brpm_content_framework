@@ -1,0 +1,94 @@
+#!/usr/bin/env ruby
+require "rubygems"
+require "bundler"
+require "brpm_auto"
+
+def install_gem(module_name, module_version)
+  if module_version
+    puts "Executing command 'gem install #{module_name} -v #{module_version}'..."
+    specs = Gem.install(module_name, module_version)
+  else
+    puts "Executing command 'gem install #{module_name}'..."
+    specs = Gem.install(module_name)
+  end
+  specs.last
+end
+
+def install_bundle(spec)
+  gemfile = File.join(spec.gem_dir, "Gemfile")
+  gemfile_lock = File.join(spec.gem_dir, "Gemfile.lock")
+
+  if File.exists?(gemfile) && File.exists?(gemfile_lock)
+    puts "Found a Gemfile.lock so executing command 'bundle install --gemfile #{gemfile}'..."
+    # %x(bundle install --gemfile #{gemfile})
+    result = BrpmAuto.execute_shell("bundle install --gemfile #{gemfile}")
+    BrpmAuto.log result["stdout"] if result["stdout"] and ! result["stdout"].empty?
+    unless result["status"] == 0
+      raise result["stderr"]
+    end
+  end
+end
+
+def update_symlink_to_brpm_content(specs)
+  brpm_content_spec = specs.find { |spec| spec.name == "brpm_content" }
+  if brpm_content_spec and brpm_content_spec.version > Gem::Version.new(BrpmAuto.version)
+    new_version_path = brpm_content_spec.gem_dir
+    symlink_path = "#{ENV["GEM_HOME"]}/gems/brpm_content-latest"
+
+    result = BrpmAuto.execute_shell("ln -sfn #{new_version_path} #{symlink_path}")
+    BrpmAuto.log result["stdout"] if result["stdout"] and ! result["stdout"].empty?
+    unless result["status"] == 0
+      raise result["stderr"]
+    end
+  end
+end
+
+def install_auto_script_wrappers(spec)
+  brpm_url = "xxx" #TODO: get it from a .brpm file
+  brpm_api_token = "xxx" #TODO: get it from a .brpm file
+
+  brpm_rest_client = BrpmRestClient.new(brpm_url, brpm_api_token)
+
+  integration_servers = brpm_rest_client.get_integration_servers
+
+  Dir.glob("#{spec.gem_dir}/{automations, resource_automations}/*.rb").each do |auto_script|
+    #TODO: open txt file
+    #TODO: add wrapper code
+    #TODO: set integration server id if necessary
+
+    script = {}
+    brpm_rest_client.create_or_update_script(script)
+  end
+end
+
+
+
+if ARGV.size < 1
+  BrpmAuto.log "Missing arguments."
+  BrpmAuto.log "Usage: brpm_install <module name> [<modlue version>]"
+end
+
+module_name = ARGV[0]
+module_version = ARGV[1]
+
+params = {}
+params["log_file"] = "/tmp/brpm_install.log"
+params["also_log_to_console"] = "true"
+BrpmAuto.setup(params)
+
+BrpmAuto.log "Installing module #{module_name} #{module_version.nil? ? "" : module_version}..."
+
+spec = install_gem(module_name, module_version)
+
+install_bundle(spec)
+
+if ENV["BRPM_HOME"] and ! ENV["BRPM_HOME"].empty?
+  update_symlink_to_brpm_content(specs)
+
+  # install_auto_script_wrappers(spec)
+
+  if module_name == "brpm_content"
+    #TODO: cp $CONTENT_REPO_PATH/modules/framework/log.html $BRPM_HOME/automation_results
+
+  end
+end
