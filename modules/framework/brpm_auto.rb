@@ -113,13 +113,12 @@ class BrpmAuto
 
     def require_module_from_gem(module_name, module_version = nil)
       module_version ||= get_latest_installed_version(module_name)
-
       module_gem_path = get_module_gem_path(module_name, module_version)
 
       if File.exists?(module_gem_path)
         BrpmAuto.log "Found the module in gem path #{module_gem_path}."
       else
-        raise "Module #{module_name} version #{module_version} is not installed. Expected it on path #{module_gem_path}."
+        raise GemNotFoundException, "Module #{module_name} version #{module_version} is not installed. Expected it on path #{module_gem_path}."
       end
 
       gemfile_lock_path = "#{module_gem_path}/Gemfile.lock"
@@ -191,6 +190,10 @@ class BrpmAuto
       @logger = SimpleLogger.new(log_file, also_log_to_console)
     end
 
+    def run_from_brpm
+      @params.run_from_brpm
+    end
+
     def log(message)
       @logger.log(message)
     end
@@ -221,8 +224,10 @@ class BrpmAuto
       module_path = get_module_gem_path(module_name, module_version)
 
       module_config_file_path = "#{module_path}/config.yml"
+
       if File.exist?(module_config_file_path)
         module_config = YAML.load_file(module_config_file_path)
+
         if module_config["dependencies"]
           BrpmAuto.log "Loading the dependent modules..."
           module_config["dependencies"].each do |dependency|
@@ -289,7 +294,7 @@ class BrpmAuto
       all_version_search = get_module_gem_path(module_name, "*")
       version_paths = Dir.glob(all_version_search)
 
-      raise "Could not find any installed version of module #{module_name}. Expected them in #{get_module_gem_path(module_name, "*")}" if version_paths.empty?
+      raise GemNoVersionsInstalledError, "Could not find any installed version of module #{module_name}. Expected them in #{get_module_gem_path(module_name, "*")}" if version_paths.empty?
 
       versions = version_paths.map { |path| File.basename(path).sub("#{module_name}-", "") }
 
@@ -305,3 +310,8 @@ class BrpmAuto
   self.init
 end
 
+class GemNoVersionsInstalledError < Gem::GemNotFoundException
+end
+
+class GemNotInstalledError < Gem::GemNotFoundException
+end

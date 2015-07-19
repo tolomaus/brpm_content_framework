@@ -47,6 +47,7 @@ class Params < ParamsBase
   attr_reader :brpm_api_token
 
   attr_reader :run_from_brpm
+  attr_reader :unit_test
   attr_reader :also_log_to_console
 
   attr_reader :private_params
@@ -106,6 +107,7 @@ class Params < ParamsBase
     @brpm_api_token = params["SS_api_token"] || params["brpm_api_token"]
 
     @run_from_brpm = (@run_key != nil)
+    @unit_test = (params["unit_test"] == "true" || params["unit_test"] == 'true')
     @also_log_to_console = (params["also_log_to_console"] == "true" || params["also_log_to_console"] == 'true')
 
     @private_params = {}
