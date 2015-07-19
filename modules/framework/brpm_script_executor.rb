@@ -80,7 +80,7 @@ class BrpmScriptExecutor
         BrpmAuto.log ">>>>>>>>>>>>>> START automation #{name}"
         start_time = Time.now
 
-        BrpmAuto.log "Loading the module and its dependencies..."
+        BrpmAuto.log "Loading module #{modul}#{params["module_version"] ? " #{params["module_version"]}" : ""} and its dependencies..."
         module_path = BrpmAuto.require_module_from_gem(modul, params["module_version"])
         BrpmAuto.log "Finished loading the module."
 
@@ -114,7 +114,7 @@ class BrpmScriptExecutor
         BrpmAuto.log ">>>>>>>>>>>>>> START resource automation #{name}"
         start_time = Time.now
 
-        BrpmAuto.log "Loading the module and its dependencies..."
+        BrpmAuto.log "Loading module #{modul} and its dependencies..."
         module_path = BrpmAuto.require_module_from_gem(modul) #TODO: from where should we get the module version of the script?
         BrpmAuto.log "Finished loading the module."
 
