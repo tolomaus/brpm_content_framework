@@ -241,7 +241,7 @@ class ModuleInstaller
 EOR
 
     if include_position_attribute
-      template += "#   position: A#{input_params_yaml.size + 1}:D#{input_params_yaml.size + 1}\n"
+      template += "#   position: A#{input_params_yaml.size + 1}:C#{input_params_yaml.size + 1}\n"
     end
 
     template += <<EOR
@@ -251,7 +251,7 @@ EOR
 EOR
 
     if include_position_attribute
-      template += "#   position: A#{input_params_yaml.size + 2}:D#{input_params_yaml.size + 2}\n"
+      template += "#   position: A#{input_params_yaml.size + 2}:C#{input_params_yaml.size + 2}\n"
     end
 
     template
