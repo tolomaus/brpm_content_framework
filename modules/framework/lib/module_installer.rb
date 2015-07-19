@@ -18,7 +18,7 @@ class ModuleInstaller
         update_symlink_to_brpm_content_if_necessary(brpm_content_spec)
 
         BrpmAuto.log "Copying the log.html file to te automation_results directory..."
-        File.cp("#{brpm_content_spec.gem_dir}/modules/framework/log.html", "#{ENV["BRPM_HOME"]}/automation_results")
+        FileUtils.cp("#{brpm_content_spec.gem_dir}/modules/framework/log.html", "#{ENV["BRPM_HOME"]}/automation_results")
       end
 
       BrpmAuto.log "Installing the automation script wrappers in the local BRPM instance..."
