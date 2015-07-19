@@ -19,5 +19,5 @@ end
 module_name = ARGV[0]
 module_version = ARGV[1] # optional
 
-brpm_installer = BrpmInstaller.new
-brpm_installer.install_module(module_name, module_version)
+module_installer = ModuleInstaller.new
+module_installer.install_module(module_name, module_version)

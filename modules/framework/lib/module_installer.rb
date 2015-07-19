@@ -1,4 +1,4 @@
-class BrpmInstaller
+class ModuleInstaller
   def install_module(module_name, module_version)
     BrpmAuto.log "Installing module #{module_name} #{module_version.nil? ? "" : module_version}..."
 
@@ -80,6 +80,8 @@ class BrpmInstaller
 
   def install_auto_script_wrappers(module_path, module_name)
     brpm_file = File.expand_path("~/.brpm")
+
+    config = nil
     if File.exists?(brpm_file)
       config = YAML.load_file(brpm_file)
     end
@@ -110,11 +112,18 @@ class BrpmInstaller
     resource_automation_dir = "#{module_path}/resource_automations"
     resource_automation_script_paths = Dir.glob("#{resource_automation_dir}/*.rb")
 
+    failed_scripts = []
     if resource_automation_script_paths.size > 0
       BrpmAuto.log "Installing the wrapper scripts for the resource automations..."
 
       resource_automation_script_paths.each do |auto_script_path|
-        install_auto_script_wrapper(auto_script_path, "ResourceAutomation", module_name, integration_servers, brpm_rest_client)
+        begin
+          install_auto_script_wrapper(auto_script_path, "ResourceAutomation", module_name, integration_servers, brpm_rest_client)
+        rescue Exception => e
+          failed_scripts << auto_script_path
+          BrpmAuto.log_error(e)
+          BrpmAuto.log e.backtrace.join("\n\t")
+        end
       end
     end
 
@@ -126,8 +135,23 @@ class BrpmInstaller
       BrpmAuto.log "Installing the wrapper scripts for the automations..."
 
       automation_script_paths.each do |auto_script_path|
-        install_auto_script_wrapper(auto_script_path, "Automation", module_name, integration_servers, brpm_rest_client)
+        begin
+          install_auto_script_wrapper(auto_script_path, "Automation", module_name, integration_servers, brpm_rest_client)
+        rescue Exception => e
+          failed_scripts << auto_script_path
+          BrpmAuto.log_error(e)
+          BrpmAuto.log e.backtrace.join("\n\t")
+        end
       end
+    end
+
+    if failed_scripts.size > 0
+      BrpmAuto.log "The following wrapper scripts generated errors during the installation:"
+      failed_scripts.each do |failed_script|
+        BrpmAuto.log "  - #{failed_script}"
+      end
+    else
+      BrpmAuto.log "All wrapper scripts were installed successfully."
     end
   end
 
@@ -139,19 +163,14 @@ class BrpmInstaller
 
     auto_script_config_content = File.exists?(auto_script_config_path) ? File.read(auto_script_config_path) : ""
     match = auto_script_config_content.match(/###\n(.*)\n###/m)
-    input_params_content = match ? match[1] : ""
+    input_params_content = match ? "#{match[1]}\n" : ""
 
-    input_params_content += <<EOR
+    matches = input_params_content.scan(/^# {0,1}(.*)/) || []
+    input_params_yaml = YAML.load(matches.join("\n")) || {}
 
-# framework_version:
-#   name: Framework version
-#   required: no
-# module_version:
-#   name: Module version
-#   required: no
-EOR
+    input_params_content += get_input_params_template(input_params_yaml)
 
-    wrapper_script_content = "###\n#{input_params_content}###"
+    wrapper_script_content = "###\n#{input_params_content}###\n"
 
     auto_script_config = YAML.load(auto_script_config_content) || {}
 
@@ -162,17 +181,8 @@ EOR
         integration_server = integration_servers.find { |integration_server| integration_server["server_name_id"] == server_type_id } #TODO: support multiple integration servers of same type (user should pick one)
 
         if integration_server
-          wrapper_script_content += <<EOR
-
-#=== #{auto_script_config["integration_server_type"]} Integration Server: #{integration_server["name"]} ===#
-# [integration_id=#{integration_server["id"]}]
-#=== End ===#
-
-params["SS_integration_dns"] = SS_integration_dns
-params["SS_integration_username"] = SS_integration_username
-params["SS_integration_password_enc"] = SS_integration_password_enc
-params["SS_integration_details"] = YAML.load(SS_integration_details)
-EOR
+          wrapper_script_content += "\n"
+          wrapper_script_content += get_integration_server_template(integration_server["id"], integration_server["name"], auto_script_config["integration_server_type"])
         else
           BrpmAuto.log "WARNING - An integration server of type #{auto_script_config["integration_server_type"]} doesn't exist so not setting the integration server in the wrapper script."
         end
@@ -181,32 +191,8 @@ EOR
       end
     end
 
-    wrapper_script_content += <<EOR
-
-params["direct_execute"] = "true"
-
-params["framework_version"] = nil if params["framework_version"].empty?
-params["module_version"] = nil if params["module_version"].empty?
-
-require "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content-\#{params["framework_version"] || "latest"}/modules/framework/brpm_script_executor.rb"
-EOR
-
-    if automation_type == "Automation"
-
-      wrapper_script_content += <<EOR
-
-BrpmScriptExecutor.execute_automation_script_from_gem("#{module_name}", "#{auto_script_name}", params)
-EOR
-
-    elsif automation_type == "ResourceAutomation"
-
-      wrapper_script_content += <<EOR
-
-def execute(script_params, parent_id, offset, max_records)
-  BrpmScriptExecutor.execute_resource_automation_script_from_gem("#{module_name}", "#{auto_script_name}", script_params, parent_id, offset, max_records)
-end
-EOR
-    end
+    wrapper_script_content += "\n"
+    wrapper_script_content += get_script_executor_template(automation_type, module_name, auto_script_name)
 
     auto_script_friendly_name = auto_script_config["friendly_name"] || "#{module_name.sub("brpm_module_", "").capitalize} - #{auto_script_name.gsub("_", " ").capitalize}"
     automation_category = auto_script_config["automation_category"] || "#{module_name.sub("brpm_module_", "").capitalize}"
@@ -219,8 +205,8 @@ EOR
     script["content"] = wrapper_script_content
     script["integration_id"] = integration_server["id"] if auto_script_config["integration_server_type"] and integration_server
     if automation_type == "ResourceAutomation"
-      script["resource_id"] = auto_script_config["resource_id"] if auto_script_config["resource_id"]
-      script["render_as"] = auto_script_config["render_as"] if auto_script_config["render_as"]
+      script["resource_id"] = auto_script_config["resource_id"] || auto_script_name
+      script["render_as"] = auto_script_config["render_as"] || "List"
     end
 
     script = brpm_rest_client.create_or_update_script(script)
@@ -240,5 +226,77 @@ EOR
       script_to_update["aasm_state"] = "released"
       script = brpm_rest_client.update_script_from_hash(script_to_update)
     end
+  end
+
+  def get_input_params_template(input_params_yaml)
+    include_position_attribute = false
+    if input_params_yaml.find {|_, param| param.has_key?("position")}
+      include_position_attribute = true
+    end
+
+    template = <<EOR
+# framework_version:
+#   name: Framework version
+#   required: no
+EOR
+
+    if include_position_attribute
+      template += "#   position: A#{input_params_yaml.size + 1}:D#{input_params_yaml.size + 1}\n"
+    end
+
+    template += <<EOR
+# module_version:
+#   name: Module version
+#   required: no
+EOR
+
+    if include_position_attribute
+      template += "#   position: A#{input_params_yaml.size + 2}:D#{input_params_yaml.size + 2}\n"
+    end
+
+    template
+  end
+
+  def get_integration_server_template(integration_server_id, integration_server_name, integration_server_type)
+    <<EOR
+#=== #{integration_server_type} Integration Server: #{integration_server_name} ===#
+# [integration_id=#{integration_server_id}]
+#=== End ===#
+
+params["SS_integration_dns"] = SS_integration_dns
+params["SS_integration_username"] = SS_integration_username
+params["SS_integration_password_enc"] = SS_integration_password_enc
+params["SS_integration_details"] = YAML.load(SS_integration_details)
+EOR
+  end
+
+  def get_script_executor_template(automation_type, module_name, auto_script_name)
+    template = <<EOR
+params["direct_execute"] = "true"
+
+params["framework_version"] = nil if params["framework_version"].empty?
+params["module_version"] = nil if params["module_version"].empty?
+
+require "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content-\#{params["framework_version"] || "latest"}/modules/framework/brpm_script_executor.rb"
+EOR
+
+    if automation_type == "Automation"
+
+      template += <<EOR
+
+BrpmScriptExecutor.execute_automation_script_from_gem("#{module_name}", "#{auto_script_name}", params)
+EOR
+
+    elsif automation_type == "ResourceAutomation"
+
+      template += <<EOR
+
+def execute(script_params, parent_id, offset, max_records)
+  BrpmScriptExecutor.execute_resource_automation_script_from_gem("#{module_name}", "#{auto_script_name}", script_params, parent_id, offset, max_records)
+end
+EOR
+    end
+
+    template
   end
 end
