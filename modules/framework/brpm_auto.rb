@@ -118,7 +118,7 @@ class BrpmAuto
       if File.exists?(module_gem_path)
         BrpmAuto.log "Found the module in gem path #{module_gem_path}."
       else
-        raise GemNotFoundException, "Module #{module_name} version #{module_version} is not installed. Expected it on path #{module_gem_path}."
+        raise Gem::GemNotFoundException, "Module #{module_name} version #{module_version} is not installed. Expected it on path #{module_gem_path}."
       end
 
       gemfile_lock_path = "#{module_gem_path}/Gemfile.lock"
