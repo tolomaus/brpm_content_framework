@@ -165,12 +165,17 @@ class ModuleInstaller
     match = auto_script_config_content.match(/###\n(.*)\n###/m)
     input_params_content = match ? "#{match[1]}\n" : ""
 
-    matches = input_params_content.scan(/^# {0,1}(.*)/) || []
-    input_params_yaml = YAML.load(matches.join("\n")) || {}
+    if automation_type == "Automation"
+      matches = input_params_content.scan(/^# {0,1}(.*)/) || []
+      input_params_yaml = YAML.load(matches.join("\n")) || {}
 
-    input_params_content += get_input_params_template(input_params_yaml)
+      input_params_content += get_input_params_template(input_params_yaml)
+    end
 
-    wrapper_script_content = "###\n#{input_params_content}###\n"
+    wrapper_script_content = ""
+    unless input_params_content.empty?
+      wrapper_script_content = "###\n#{input_params_content}###\n"
+    end
 
     auto_script_config = YAML.load(auto_script_config_content) || {}
 
@@ -205,7 +210,7 @@ class ModuleInstaller
     script["content"] = wrapper_script_content
     script["integration_id"] = integration_server["id"] if auto_script_config["integration_server_type"] and integration_server
     if automation_type == "ResourceAutomation"
-      script["resource_id"] = auto_script_config["resource_id"] || auto_script_name
+      script["unique_identifier"] = auto_script_config["resource_id"] || auto_script_name
       script["render_as"] = auto_script_config["render_as"] || "List"
     end
 
