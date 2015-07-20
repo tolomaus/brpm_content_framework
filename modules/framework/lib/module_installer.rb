@@ -21,9 +21,45 @@ class ModuleInstaller
         FileUtils.cp("#{brpm_content_spec.gem_dir}/modules/framework/log.html", "#{ENV["BRPM_HOME"]}/automation_results")
       end
 
-      BrpmAuto.log "Installing the automation script wrappers in the local BRPM instance..."
-      install_auto_script_wrappers(module_spec.gem_dir, module_spec.name)
+      BrpmAuto.log "Preparing the connectivity to BRPM..."
+      if prepare_brpm_connection
+        module_friendly_name = get_module_friendly_name(module_name)
+        BrpmAuto.log "Creating an automation category for #{module_friendly_name} if one doesn't exist yet..."
+        create_automation_category_if_not_exists(module_friendly_name)
+
+        BrpmAuto.log "Installing the automation script wrappers in the local BRPM instance..."
+        install_auto_script_wrappers(module_spec.gem_dir, module_spec.name)
+      end
     end
+  end
+
+  def prepare_brpm_connection
+    brpm_file = File.expand_path("~/.brpm")
+
+    config = nil
+    if File.exists?(brpm_file)
+      config = YAML.load_file(brpm_file)
+    end
+
+    if config
+      unless config["brpm_url"] and config["brpm_api_token"]
+        BrpmAuto.log "WARNING - Properties brpm_url and/or brpm_api_token don't exist in file ~/.brpm so not installing the automation script wrappers in BRPM. If you want to install them the next time you should add brpm_url and brpm_api_token properties in yaml format in file ~/.brpm."
+        return false
+      end
+    else
+      BrpmAuto.log "WARNING - File ~/.brpm doesn't exist so not installing the automation script wrappers in BRPM. If you want to install them the next time you should create this file and add brpm_url and brpm_api_token properties in yaml format."
+      return false
+    end
+
+    begin
+      BrpmAuto.require_module_from_gem "brpm_module_brpm"
+    rescue Gem::GemNotFoundException
+      BrpmAuto.log "WARNING - Module brpm_module_brpm is not installed so not installing the automation script wrappers in BRPM."
+      return false
+    end
+
+    @brpm_rest_client = BrpmRestClient.new(config["brpm_url"], config["brpm_api_token"])
+    true
   end
 
   def install_gem(module_name, module_version)
@@ -78,35 +114,25 @@ class ModuleInstaller
     ENV["BRPM_HOME"] and !ENV["BRPM_HOME"].empty?
   end
 
+  def get_module_friendly_name(module_name)
+    "#{module_name.sub("brpm_module_", "").capitalize}"
+  end
+
+  def create_automation_category_if_not_exists(module_friendly_name)
+    list_item = @brpm_rest_client.get_list_item_by_name(module_friendly_name)
+
+    unless list_item
+      BrpmAuto.log "Automation category #{module_friendly_name} doesn't exist yet, so creating it now..."
+      list_item = {}
+      list_item["list_id"] = 24 # AutomationCategory TODO: find the id by the name of the list
+      list_item["value_text"] = module_friendly_name
+      @brpm_rest_client.create_list_item_by_hash(list_item)
+    end
+  end
+
   def install_auto_script_wrappers(module_path, module_name)
-    brpm_file = File.expand_path("~/.brpm")
-
-    config = nil
-    if File.exists?(brpm_file)
-      config = YAML.load_file(brpm_file)
-    end
-
-    if config
-      unless config["brpm_url"] and config["brpm_api_token"]
-        BrpmAuto.log "WARNING - Properties brpm_url and/or brpm_api_token don't exist in file ~/.brpm so not installing the automation script wrappers in BRPM. If you want to install them the next time you should add brpm_url and brpm_api_token properties in yaml format in file ~/.brpm."
-        return false
-      end
-    else
-      BrpmAuto.log "WARNING - File ~/.brpm doesn't exist so not installing the automation script wrappers in BRPM. If you want to install them the next time you should create this file and add brpm_url and brpm_api_token properties in yaml format."
-      return false
-    end
-
-    begin
-      BrpmAuto.require_module_from_gem "brpm_module_brpm"
-    rescue Gem::GemNotFoundException
-      BrpmAuto.log "WARNING - Module brpm_module_brpm is not installed so not installing the automation script wrappers in BRPM."
-      return false
-    end
-
-    brpm_rest_client = BrpmRestClient.new(config["brpm_url"], config["brpm_api_token"])
-
     BrpmAuto.log "Retrieving the integration servers..."
-    integration_servers = brpm_rest_client.get_project_servers
+    integration_servers = @brpm_rest_client.get_project_servers
 
     # For resource automations
     resource_automation_dir = "#{module_path}/resource_automations"
@@ -118,7 +144,7 @@ class ModuleInstaller
 
       resource_automation_script_paths.each do |auto_script_path|
         begin
-          install_auto_script_wrapper(auto_script_path, "ResourceAutomation", module_name, integration_servers, brpm_rest_client)
+          install_auto_script_wrapper(auto_script_path, "ResourceAutomation", module_name, integration_servers)
         rescue Exception => e
           failed_scripts << auto_script_path
           BrpmAuto.log_error(e)
@@ -136,7 +162,7 @@ class ModuleInstaller
 
       automation_script_paths.each do |auto_script_path|
         begin
-          install_auto_script_wrapper(auto_script_path, "Automation", module_name, integration_servers, brpm_rest_client)
+          install_auto_script_wrapper(auto_script_path, "Automation", module_name, integration_servers)
         rescue Exception => e
           failed_scripts << auto_script_path
           BrpmAuto.log_error(e)
@@ -155,7 +181,7 @@ class ModuleInstaller
     end
   end
 
-  def install_auto_script_wrapper(auto_script_path, automation_type, module_name, integration_servers, brpm_rest_client)
+  def install_auto_script_wrapper(auto_script_path, automation_type, module_name, integration_servers)
     auto_script_name = File.basename(auto_script_path, ".rb")
     BrpmAuto.log "Installing the wrapper script for resource automation #{auto_script_name}..."
 
@@ -181,7 +207,7 @@ class ModuleInstaller
 
     integration_server = nil
     if auto_script_config["integration_server_type"]
-      server_type_id = brpm_rest_client.get_id_for_project_server_type(auto_script_config["integration_server_type"])
+      server_type_id = @brpm_rest_client.get_id_for_project_server_type(auto_script_config["integration_server_type"])
       if server_type_id
         integration_server = integration_servers.find { |integration_server| integration_server["server_name_id"] == server_type_id } #TODO: support multiple integration servers of same type (user should pick one)
 
@@ -199,14 +225,18 @@ class ModuleInstaller
     wrapper_script_content += "\n"
     wrapper_script_content += get_script_executor_template(automation_type, module_name, auto_script_name)
 
-    auto_script_friendly_name = auto_script_config["friendly_name"] || "#{module_name.sub("brpm_module_", "").capitalize} - #{auto_script_name.gsub("_", " ").capitalize}"
-    automation_category = auto_script_config["automation_category"] || "#{module_name.sub("brpm_module_", "").capitalize}"
+    module_friendly_name = get_module_friendly_name(module_name)
+    auto_script_friendly_name = auto_script_config["friendly_name"] || "#{module_friendly_name} - #{auto_script_name.gsub("_", " ").capitalize}"
+    if auto_script_config["automation_category"]
+      automation_category = auto_script_config["automation_category"]
+      create_automation_category_if_not_exists(automation_category)
+    end
 
     script = {}
     script["name"] = auto_script_friendly_name
     script["description"] = auto_script_friendly_name
     script["automation_type"] = automation_type
-    script["automation_category"] = automation_category
+    script["automation_category"] = module_friendly_name
     script["content"] = wrapper_script_content
     script["integration_id"] = integration_server["id"] if auto_script_config["integration_server_type"] and integration_server
     if automation_type == "ResourceAutomation"
@@ -214,14 +244,14 @@ class ModuleInstaller
       script["render_as"] = auto_script_config["render_as"] || "List"
     end
 
-    script = brpm_rest_client.create_or_update_script(script)
+    script = @brpm_rest_client.create_or_update_script(script)
 
     if script["aasm_state"] == "draft"
       BrpmAuto.log "Updating the aasm_state of the script to 'pending'..."
       script_to_update = {}
       script_to_update["id"] = script["id"]
       script_to_update["aasm_state"] = "pending"
-      script = brpm_rest_client.update_script_from_hash(script_to_update)
+      script = @brpm_rest_client.update_script_from_hash(script_to_update)
     end
 
     if script["aasm_state"] == "pending"
@@ -229,7 +259,7 @@ class ModuleInstaller
       script_to_update = {}
       script_to_update["id"] = script["id"]
       script_to_update["aasm_state"] = "released"
-      script = brpm_rest_client.update_script_from_hash(script_to_update)
+      script = @brpm_rest_client.update_script_from_hash(script_to_update)
     end
   end
 
