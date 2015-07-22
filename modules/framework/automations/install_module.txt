@@ -1,10 +1,10 @@
-###
-# name:
-#   name: name
-#   type: in-text
-#   required: yes
-# version:
-#   name: version
-#   type: in-text
-#   required: no
-###
+params:
+  name:
+    name: name
+    type: in-text
+    required: yes
+  version:
+    name: version
+    type: in-text
+    required: no
+

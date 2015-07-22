@@ -188,28 +188,28 @@ class ModuleInstaller
     auto_script_config_path = "#{File.dirname(auto_script_path)}/#{auto_script_name}.txt"
 
     auto_script_config_content = File.exists?(auto_script_config_path) ? File.read(auto_script_config_path) : ""
-    match = auto_script_config_content.match(/###\n(.*)\n###/m)
-    input_params_content = match ? "#{match[1]}\n" : ""
+    auto_script_config = YAML.load(auto_script_config_content) || {}
+    auto_script_config["params"] = {} unless auto_script_config["params"]
 
     if automation_type == "Automation"
-      matches = input_params_content.scan(/^# {0,1}(.*)/) || []
-      input_params_yaml = YAML.load(matches.join("\n")) || {}
-
-      input_params_content += get_input_params_template(input_params_yaml)
+      add_version_params(auto_script_config["params"])
     end
 
     wrapper_script_content = ""
-    unless input_params_content.empty?
-      wrapper_script_content = "###\n#{input_params_content}###\n"
+    if auto_script_config["params"].size > 0
+      params_content = auto_script_config["params"].to_yaml
+      params_content.sub!("---\n", "") # Remove the yaml document separator line
+      params_content.gsub!("required: 'yes'", "required: yes") # yaml adding quotes to reserved keywords yes and no :-(
+      params_content.gsub!("required: 'no'", "required: no") # yaml adding quotes to reserved keywords yes and no :-(
+      params_content.gsub!(/(^)+/, "# ") # Prepend "# " to each line
+      wrapper_script_content = "###\n#{params_content}###\n"
     end
-
-    auto_script_config = YAML.load(auto_script_config_content) || {}
 
     integration_server = nil
     if auto_script_config["integration_server_type"]
       server_type_id = @brpm_rest_client.get_id_for_project_server_type(auto_script_config["integration_server_type"])
       if server_type_id
-        integration_server = integration_servers.find { |integration_server| integration_server["server_name_id"] == server_type_id } #TODO: support multiple integration servers of same type (user should pick one)
+        integration_server = integration_servers.find { |integr_server| integr_server["server_name_id"] == server_type_id } #TODO: support multiple integration servers of same type (user should pick one)
 
         if integration_server
           wrapper_script_content += "\n"
@@ -263,33 +263,23 @@ class ModuleInstaller
     end
   end
 
-  def get_input_params_template(input_params_yaml)
+  def add_version_params(auto_script_params)
     include_position_attribute = false
-    if input_params_yaml.find {|_, param| param.has_key?("position")}
+    if auto_script_params.find { |_, param| param.has_key?("position") }
       include_position_attribute = true
     end
 
-    template = <<EOR
-# framework_version:
-#   name: Framework version
-#   required: no
-EOR
+    module_version_param = {}
+    module_version_param["name"] = "module_version"
+    module_version_param["required"] = "no"
+    module_version_param["position"] = "A#{auto_script_params.size + 1}:C#{auto_script_params.size + 1}" if include_position_attribute
+    auto_script_params["module_version"] = module_version_param
 
-    if include_position_attribute
-      template += "#   position: A#{input_params_yaml.size + 1}:C#{input_params_yaml.size + 1}\n"
-    end
-
-    template += <<EOR
-# module_version:
-#   name: Module version
-#   required: no
-EOR
-
-    if include_position_attribute
-      template += "#   position: A#{input_params_yaml.size + 2}:C#{input_params_yaml.size + 2}\n"
-    end
-
-    template
+    framework_version_param = {}
+    framework_version_param["name"] = "framework_version"
+    framework_version_param["required"] = "no"
+    framework_version_param["position"] = "A#{auto_script_params.size + 1}:C#{auto_script_params.size + 1}" if include_position_attribute
+    auto_script_params["framework_version"] = framework_version_param
   end
 
   def get_integration_server_template(integration_server_id, integration_server_name, integration_server_type)
