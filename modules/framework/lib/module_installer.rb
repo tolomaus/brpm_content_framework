@@ -124,7 +124,7 @@ class ModuleInstaller
     unless list_item
       BrpmAuto.log "Automation category #{module_friendly_name} doesn't exist yet, so creating it now..."
       list_item = {}
-      list_item["list_id"] = @brpm_rest_client.get_list_by_name("AutomationCategory")
+      list_item["list_id"] = @brpm_rest_client.get_list_by_name("AutomationCategory")["id"]
       list_item["value_text"] = module_friendly_name
       @brpm_rest_client.create_list_item_from_hash(list_item)
     end
