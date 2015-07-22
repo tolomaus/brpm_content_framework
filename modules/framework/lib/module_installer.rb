@@ -119,12 +119,12 @@ class ModuleInstaller
   end
 
   def create_automation_category_if_not_exists(module_friendly_name)
-    list_item = @brpm_rest_client.get_list_item_by_name(module_friendly_name)
+    list_item = @brpm_rest_client.get_list_item_by_name("AutomationCategory", module_friendly_name)
 
     unless list_item
       BrpmAuto.log "Automation category #{module_friendly_name} doesn't exist yet, so creating it now..."
       list_item = {}
-      list_item["list_id"] = 24 # AutomationCategory TODO: find the id by the name of the list
+      list_item["list_id"] = @brpm_rest_client.get_list_by_name("AutomationCategory")
       list_item["value_text"] = module_friendly_name
       @brpm_rest_client.create_list_item_by_hash(list_item)
     end
