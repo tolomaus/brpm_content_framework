@@ -185,7 +185,7 @@ class ModuleInstaller
     auto_script_name = File.basename(auto_script_path, ".rb")
     BrpmAuto.log "Installing the wrapper script for resource automation #{auto_script_name}..."
 
-    auto_script_config_path = "#{File.dirname(auto_script_path)}/#{auto_script_name}.txt"
+    auto_script_config_path = "#{File.dirname(auto_script_path)}/#{auto_script_name}.meta"
 
     auto_script_config_content = File.exists?(auto_script_config_path) ? File.read(auto_script_config_path) : ""
     auto_script_config = YAML.load(auto_script_config_content) || {}
