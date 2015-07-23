@@ -216,8 +216,6 @@ class ModuleInstaller
     if auto_script_config["params"].size > 0
       params_content = auto_script_config["params"].to_yaml
       params_content.sub!("---\n", "") # Remove the yaml document separator line
-      params_content.gsub!("required: 'yes'", "required: yes") # yaml adding quotes to reserved keywords yes and no :-(
-      params_content.gsub!("required: 'no'", "required: no") # yaml adding quotes to reserved keywords yes and no :-(
       params_content.gsub!(/(^)+/, "# ") # Prepend "# " to each line
       wrapper_script_content = "###\n#{params_content}###\n"
     end
@@ -288,13 +286,13 @@ class ModuleInstaller
 
     module_version_param = {}
     module_version_param["name"] = "module_version"
-    module_version_param["required"] = "no"
+    module_version_param["required"] = false
     module_version_param["position"] = "A#{auto_script_params.size + 1}:C#{auto_script_params.size + 1}" if include_position_attribute
     auto_script_params["module_version"] = module_version_param
 
     framework_version_param = {}
     framework_version_param["name"] = "framework_version"
-    framework_version_param["required"] = "no"
+    framework_version_param["required"] = false
     framework_version_param["position"] = "A#{auto_script_params.size + 1}:C#{auto_script_params.size + 1}" if include_position_attribute
     auto_script_params["framework_version"] = framework_version_param
   end
