@@ -11,14 +11,16 @@ class ModuleInstaller
       BrpmAuto.log "A BRPM instance is installed locally"
 
       brpm_content_spec = specs.find { |spec| spec.name == "brpm_content" }
-      if brpm_content_spec and brpm_content_spec.version > Gem::Version.new(BrpmAuto.version)
-        BrpmAuto.log "WARNING - A newer version of brpm_content was installed."
+      if brpm_content_spec
+        if brpm_content_spec.version > Gem::Version.new(BrpmAuto.version) or ! File.exist?(get_symlink_path)
+          BrpmAuto.log "Updating the symlink to brpm_content-latest..."
+          update_symlink_to_brpm_content(brpm_content_spec)
+        end
 
-        BrpmAuto.log "Updating the symlink to brpm_content-latest..."
-        update_symlink_to_brpm_content(brpm_content_spec)
-
-        BrpmAuto.log "Copying the log.html file to te automation_results directory..."
-        FileUtils.cp("#{brpm_content_spec.gem_dir}/modules/framework/log.html", "#{ENV["BRPM_HOME"]}/automation_results")
+        if brpm_content_spec.version > Gem::Version.new(BrpmAuto.version) or ! File.exist?("#{ENV["BRPM_HOME"]}/automation_results/log.html")
+          BrpmAuto.log "Copying the log.html file to te automation_results directory..."
+          FileUtils.cp("#{brpm_content_spec.gem_dir}/modules/framework/log.html", "#{ENV["BRPM_HOME"]}/automation_results")
+        end
       end
 
       BrpmAuto.log "Preparing the connectivity to BRPM..."
@@ -102,9 +104,13 @@ class ModuleInstaller
     end
   end
 
+  def get_symlink_path
+    "#{ENV["GEM_HOME"]}/gems/brpm_content-latest"
+  end
+
   def update_symlink_to_brpm_content(brpm_content_spec)
     new_version_path = brpm_content_spec.gem_dir
-    symlink_path = "#{ENV["GEM_HOME"]}/gems/brpm_content-latest"
+    symlink_path = get_symlink_path
 
     BrpmAuto.log "Linking #{symlink_path} to #{new_version_path}..."
     result = BrpmAuto.execute_shell("ln -sfn #{new_version_path} #{symlink_path}")
