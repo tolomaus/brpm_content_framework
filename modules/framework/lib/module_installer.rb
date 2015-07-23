@@ -14,8 +14,8 @@ class ModuleInstaller
       if brpm_content_spec and brpm_content_spec.version > Gem::Version.new(BrpmAuto.version)
         BrpmAuto.log "WARNING - A newer version of brpm_content was installed."
 
-        BrpmAuto.log "Checking if the symlink to brpm_content-latest should be updated..."
-        update_symlink_to_brpm_content_if_necessary(brpm_content_spec)
+        BrpmAuto.log "Updating the symlink to brpm_content-latest..."
+        update_symlink_to_brpm_content(brpm_content_spec)
 
         BrpmAuto.log "Copying the log.html file to te automation_results directory..."
         FileUtils.cp("#{brpm_content_spec.gem_dir}/modules/framework/log.html", "#{ENV["BRPM_HOME"]}/automation_results")
@@ -24,6 +24,10 @@ class ModuleInstaller
       BrpmAuto.log "Preparing the connectivity to BRPM..."
       if prepare_brpm_connection
         module_friendly_name = get_module_friendly_name(module_name)
+
+        BrpmAuto.log "Creating an automation error for '******** ERROR ********' if one doesn't exist yet..."
+        create_automation_error_if_not_exists("******** ERROR ********")
+
         BrpmAuto.log "Creating an automation category for #{module_friendly_name} if one doesn't exist yet..."
         create_automation_category_if_not_exists(module_friendly_name)
 
@@ -98,11 +102,11 @@ class ModuleInstaller
     end
   end
 
-  def update_symlink_to_brpm_content_if_necessary(brpm_content_spec)
+  def update_symlink_to_brpm_content(brpm_content_spec)
     new_version_path = brpm_content_spec.gem_dir
     symlink_path = "#{ENV["GEM_HOME"]}/gems/brpm_content-latest"
 
-    BrpmAuto.log "A newer version of brpm_content was installed so updating symlink #{symlink_path} to #{new_version_path}..."
+    BrpmAuto.log "Linking #{symlink_path} to #{new_version_path}..."
     result = BrpmAuto.execute_shell("ln -sfn #{new_version_path} #{symlink_path}")
     BrpmAuto.log result["stdout"] if result["stdout"] and !result["stdout"].empty?
     unless result["status"] == 0
@@ -116,6 +120,19 @@ class ModuleInstaller
 
   def get_module_friendly_name(module_name)
     "#{module_name.sub("brpm_module_", "").capitalize}"
+  end
+
+  def create_automation_error_if_not_exists(automation_error)
+
+    list_item = @brpm_rest_client.get_list_item_by_name("AutomationErrors", automation_error)
+
+    unless list_item
+      BrpmAuto.log "Automation error #{automation_error} doesn't exist yet, so creating it now..."
+      list_item = {}
+      list_item["list_id"] = @brpm_rest_client.get_list_by_name("AutomationErrors")["id"]
+      list_item["value_text"] = automation_error
+      @brpm_rest_client.create_list_item_from_hash(list_item)
+    end
   end
 
   def create_automation_category_if_not_exists(module_friendly_name)
@@ -234,7 +251,7 @@ class ModuleInstaller
 
     script = {}
     script["name"] = auto_script_friendly_name
-    script["description"] = auto_script_friendly_name
+    script["description"] = auto_script_config["description"] || ""
     script["automation_type"] = automation_type
     script["automation_category"] = module_friendly_name
     script["content"] = wrapper_script_content
