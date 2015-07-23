@@ -225,15 +225,15 @@ class ModuleInstaller
       server_type_id = @brpm_rest_client.get_id_for_project_server_type(auto_script_config["integration_server_type"])
       if server_type_id
         integration_server = integration_servers.find { |integr_server| integr_server["server_name_id"] == server_type_id } #TODO: support multiple integration servers of same type (user should pick one)
-
-        if integration_server
-          wrapper_script_content += "\n"
-          wrapper_script_content += get_integration_server_template(integration_server["id"], integration_server["name"], auto_script_config["integration_server_type"])
-        else
-          BrpmAuto.log "WARNING - An integration server of type #{auto_script_config["integration_server_type"]} doesn't exist so not setting the integration server in the wrapper script."
-        end
       else
-        BrpmAuto.log "WARNING - Integration server type '#{auto_script_config["integration_server_type"]}' is not supported so not setting the integration server in the wrapper script."
+        integration_server = integration_servers.find { |integr_server| integr_server["name"].include?(auto_script_config["integration_server_type"]) } #TODO: support multiple integration servers of same type (user should pick one)
+      end
+
+      if integration_server
+        wrapper_script_content += "\n"
+        wrapper_script_content += get_integration_server_template(integration_server["id"], integration_server["name"], auto_script_config["integration_server_type"])
+      else
+        BrpmAuto.log "WARNING - An integration server of type #{auto_script_config["integration_server_type"]} doesn't exist so not setting the integration server in the wrapper script."
       end
     end
 
