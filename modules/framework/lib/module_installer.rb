@@ -3,7 +3,7 @@ class ModuleInstaller
     BrpmAuto.log "Installing module #{module_name} #{module_version.nil? ? "" : module_version}..."
 
     specs = install_gem(module_name, module_version)
-    module_spec = specs.last
+    module_spec = specs.find { |spec| spec.name == module_name}
 
     install_bundle_if_necessary(module_spec)
 
@@ -233,7 +233,7 @@ class ModuleInstaller
         wrapper_script_content += "\n"
         wrapper_script_content += get_integration_server_template(integration_server["id"], integration_server["name"], auto_script_config["integration_server_type"])
       else
-        BrpmAuto.log "WARNING - An integration server of type #{auto_script_config["integration_server_type"]} doesn't exist so not setting the integration server in the wrapper script."
+        BrpmAuto.log "WARNING - An integration server of type #{auto_script_config["integration_server_type"]} (or that has #{auto_script_config["integration_server_type"]} in its name if the integration server type is not supported) doesn't exist so not setting the integration server in the wrapper script."
       end
     end
 
