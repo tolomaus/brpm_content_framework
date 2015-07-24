@@ -57,6 +57,7 @@ class ModuleInstaller
     end
 
     begin
+      BrpmAuto.log "Loading brpm_module_brpm..."
       BrpmAuto.require_module_from_gem "brpm_module_brpm"
     rescue Gem::GemNotFoundException
       BrpmAuto.log "WARNING - Module brpm_module_brpm is not installed so not installing the automation script wrappers in BRPM."
