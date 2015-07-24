@@ -123,7 +123,7 @@ class BrpmAuto
 
       gemfile_lock_path = "#{module_gem_path}/Gemfile.lock"
       if File.exists?(gemfile_lock_path)
-        BrpmAuto.log "Found a Gemfile.lock: #{gemfile_lock_path}. Parsing the version numbers for later usage..."
+        BrpmAuto.log "Found a Gemfile.lock: #{gemfile_lock_path} so parsing the specified version numbers for later usage..."
         Dir.chdir(File.dirname(gemfile_lock_path)) do
           @gemfile_lock = Bundler::LockfileParser.new(Bundler.read_file(gemfile_lock_path))
         end

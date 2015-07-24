@@ -94,13 +94,13 @@ class ModuleInstaller
     gemfile_lock = File.join(spec.gem_dir, "Gemfile.lock")
 
     if File.exists?(gemfile) && File.exists?(gemfile_lock)
-      BrpmAuto.log "Found a Gemfile.lock so executing command 'bundle install --gemfile #{gemfile}'..."
-      # %x(bundle install --gemfile #{gemfile})
       if BrpmAuto.run_from_brpm or BrpmAuto.params.unit_test
-        result = BrpmAuto.execute_shell("cd #{spec.gem_dir}; export GEM_HOME=#{BrpmAuto.get_gems_root_path}; bundle install")
+        command = "cd #{spec.gem_dir}; export GEM_HOME=#{BrpmAuto.get_gems_root_path}; bundle install"
       else
-        result = BrpmAuto.execute_shell("cd #{spec.gem_dir}; bundle install")
+        command = "cd #{spec.gem_dir}; bundle install"
       end
+      BrpmAuto.log "Found a Gemfile.lock so executing command '#{command}'..."
+      result = BrpmAuto.execute_shell(command)
 
       BrpmAuto.log result["stdout"] if result["stdout"] and !result["stdout"].empty?
       unless result["status"] == 0
