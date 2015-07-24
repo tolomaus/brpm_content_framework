@@ -218,6 +218,18 @@ class BrpmAuto
       @integration_settings = IntegrationSettings.new(dns, username, password, details)
     end
 
+    def get_gems_root_path
+      if ENV["BRPM_CONTENT_HOME"]
+        ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
+      elsif ENV["BRPM_HOME"]
+        "#{ENV["BRPM_HOME"]}/modules" # default gemset location when BRPM is installed
+      elsif ENV["GEM_HOME"]
+        ENV["GEM_HOME"] # default gemset location when BRPM is not installed
+      else
+        raise "Unable to find out the gems root path."
+      end
+    end
+
     private
 
     def require_module_internal(module_name, module_version)
@@ -269,18 +281,6 @@ class BrpmAuto
 
     def get_config
       YAML.load_file(File.expand_path("#{File.dirname(__FILE__)}/config.yml"))
-    end
-
-    def get_gems_root_path
-      if ENV["BRPM_CONTENT_HOME"]
-        ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
-      elsif ENV["BRPM_HOME"]
-        "#{ENV["BRPM_HOME"]}/modules" # default gemset location when BRPM is installed
-      elsif ENV["GEM_HOME"]
-        ENV["GEM_HOME"] # default gemset location when BRPM is not installed
-      else
-        raise "Unable to find out the gems root path."
-      end
     end
 
     def get_module_gem_path(module_name, module_version)

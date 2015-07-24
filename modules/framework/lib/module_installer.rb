@@ -70,7 +70,7 @@ class ModuleInstaller
   def install_gem(module_name, module_version)
     if BrpmAuto.run_from_brpm or BrpmAuto.params.unit_test
       # we need to override the GEM_HOME env var, otherwise the gems will be installed in BRPM's own gemset
-      ENV["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
+      ENV["GEM_HOME"] = BrpmAuto.get_gems_root_path
       Gem.paths = ENV
     end
 
@@ -95,7 +95,12 @@ class ModuleInstaller
     if File.exists?(gemfile) && File.exists?(gemfile_lock)
       BrpmAuto.log "Found a Gemfile.lock so executing command 'bundle install --gemfile #{gemfile}'..."
       # %x(bundle install --gemfile #{gemfile})
-      result = BrpmAuto.execute_shell("bundle install --gemfile #{gemfile}") #TODO: check if we must set GEM_HOME (when run from BRPM)
+      if BrpmAuto.run_from_brpm or BrpmAuto.params.unit_test
+        result = BrpmAuto.execute_shell("cd #{spec.gem_dir}; export GEM_HOME=#{BrpmAuto.get_gems_root_path}; bundle install")
+      else
+        result = BrpmAuto.execute_shell("cd #{spec.gem_dir}; bundle install")
+      end
+
       BrpmAuto.log result["stdout"] if result["stdout"] and !result["stdout"].empty?
       unless result["status"] == 0
         raise result["stderr"]
