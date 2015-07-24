@@ -14,7 +14,7 @@ class ModuleInstaller
       if brpm_content_spec
         if brpm_content_spec.version > Gem::Version.new(BrpmAuto.version) or ! File.exist?(get_symlink_path)
           BrpmAuto.log "Updating the symlink to brpm_content-latest..."
-          update_symlink_to_brpm_content(brpm_content_spec)
+          update_symlink_to_brpm_content(brpm_content_spec.gem_dir)
         end
 
         if brpm_content_spec.version > Gem::Version.new(BrpmAuto.version) or ! File.exist?("#{ENV["BRPM_HOME"]}/automation_results/log.html")
@@ -25,11 +25,10 @@ class ModuleInstaller
 
       BrpmAuto.log "Preparing the connectivity to BRPM..."
       if prepare_brpm_connection
-        module_friendly_name = get_module_friendly_name(module_name)
-
         BrpmAuto.log "Creating an automation error for '******** ERROR ********' if one doesn't exist yet..."
         create_automation_error_if_not_exists("******** ERROR ********")
 
+        module_friendly_name = get_module_friendly_name(module_name)
         BrpmAuto.log "Creating an automation category for #{module_friendly_name} if one doesn't exist yet..."
         create_automation_category_if_not_exists(module_friendly_name)
 
@@ -108,8 +107,8 @@ class ModuleInstaller
     "#{ENV["GEM_HOME"]}/gems/brpm_content-latest"
   end
 
-  def update_symlink_to_brpm_content(brpm_content_spec)
-    new_version_path = brpm_content_spec.gem_dir
+  def update_symlink_to_brpm_content(brpm_content_path)
+    new_version_path = brpm_content_path
     symlink_path = get_symlink_path
 
     BrpmAuto.log "Linking #{symlink_path} to #{new_version_path}..."
@@ -247,11 +246,14 @@ class ModuleInstaller
     wrapper_script_content += get_script_executor_template(automation_type, module_name, auto_script_name)
 
     module_friendly_name = get_module_friendly_name(module_name)
-    auto_script_friendly_name = auto_script_config["friendly_name"] || "#{module_friendly_name} - #{auto_script_name.gsub("_", " ").capitalize}"
     if auto_script_config["automation_category"]
       automation_category = auto_script_config["automation_category"]
       create_automation_category_if_not_exists(automation_category)
+
+      module_friendly_name = automation_category
     end
+
+    auto_script_friendly_name = auto_script_config["friendly_name"] || "#{module_friendly_name} - #{auto_script_name.gsub("_", " ").capitalize}"
 
     script = {}
     script["name"] = auto_script_friendly_name
