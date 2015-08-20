@@ -122,7 +122,7 @@ class BrpmAuto
       end
 
       gemfile_lock_path = "#{module_gem_path}/Gemfile.lock"
-      if File.exists?(gemfile_lock_path)
+      if File.exists?(gemfile_lock_path) # TODO: decide how to react when multiple gems are 'required', each with a gemfile.lock
         BrpmAuto.log "Found a Gemfile.lock: #{gemfile_lock_path} so parsing the specified version numbers for later usage..."
         Dir.chdir(File.dirname(gemfile_lock_path)) do
           @gemfile_lock = Bundler::LockfileParser.new(Bundler.read_file(gemfile_lock_path))
@@ -231,6 +231,91 @@ class BrpmAuto
         raise "Unable to find out the gems root path."
       end
     end
+
+    ###############################################################################################################################
+    # Assure backward compatibility with the ssh_script_header methods when running the automation scripts in a separate process
+    def set_property_flag(prop, value = nil)
+      acceptable_fields = ["name", "value", "environment", "component", "global", "private"]
+      flag = "#------ Block to Set Property ---------------#\n"
+      if value.nil?
+        flag += set_build_flag_data("properties", prop, acceptable_fields)
+      else
+        flag += "$$SS_Set_property{#{prop}=>#{value}}$$"
+      end
+      flag += "\n#------- End Set Property ---------------#\n"
+      BrpmAuto.log flag
+      flag
+    end
+
+    def set_server_flag(servers)
+      # servers = "server_name, env\ncserver2_name, env2"
+      acceptable_fields = ["name", "environment", "group"]
+      flag = "#------ Block to Set Servers ---------------#\n"
+      flag += set_build_flag_data("servers", servers, acceptable_fields)
+      flag += "\n#------ End Set Servers ---------------#\n"
+      BrpmAuto.log flag
+      flag
+    end
+
+    def set_component_flag(components)
+      # comps = "comp_name, version\ncomp2_name, version2"
+      flag = "#------ Block to Set Components ---------------#\n"
+      acceptable_fields = ["name", "version", "environment", "application"]
+      flag += set_build_flag_data("components", components, acceptable_fields)
+      flag += "\n#------ End Set Components ---------------#\n"
+      BrpmAuto.log flag
+      flag
+    end
+
+    def set_titles_acceptable?(cur_titles, acceptable_titles)
+      cur_titles.each.reject{ |cur| acceptable_titles.include?(cur)}.count == 0
+    end
+
+    def set_build_flag_data(set_item, set_data, acceptable_titles)
+      flag = ""; msg = ""
+      lines = set_data.split("\n")
+      titles = lines[0].split(",").map{ |it| it.strip }
+      if set_titles_acceptable?(titles, acceptable_titles)
+        flag += "$$SS_Set_#{set_item}{\n"
+        flag += "#{titles.join(", ")}\n"
+        lines[1..-1].each do |line|
+          if line.split(",").count == titles.count
+            flag += "#{line}\n"
+          else
+            msg += "Skipped: #{line}"
+          end
+        end
+        flag += "}$$\n"
+      else
+        flag += "ERROR - Unable to set #{set_item} - improper format\n"
+      end
+      flag += msg
+    end
+
+    def set_application_version(prop, value)
+      # set_application_flag(app_name, version)
+      flag = "#------ Block to Set Application Version ---------------#\n"
+      flag += "$$SS_Set_application{#{prop}=>#{value}}$$"
+      flag += "\n#------ End Set Application ---------------#\n"
+      BrpmAuto.log(flag)
+      flag
+    end
+
+    def pack_response(argument_name, response)
+      flag = "#------ Block to Set Pack Response ---------------#\n"
+      unless argument_name.nil?
+        if response.is_a?(Hash)
+          # Used for out-table output parameter
+          flag += "$$SS_Pack_Response{#{argument_name}@@#{response.to_json}}$$"
+        else
+          flag += "$$SS_Pack_Response{#{argument_name}=>#{response}}$$"
+        end
+      end
+      flag += "\n#------- End Set Pack Response Block ---------------#\n"
+      BrpmAuto.log flag
+      flag
+    end
+    ###############################################################################################################################
 
     private
 
