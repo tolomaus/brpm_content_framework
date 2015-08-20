@@ -1,6 +1,6 @@
 require "yaml"
 
-config = YAML.load_file(File.expand_path("#{File.dirname(__FILE__)}/modules/framework/config.yml"))
+config = YAML.load_file(File.join(File.dirname(__FILE__), "config.yml"))
 
 Gem::Specification.new do |spec|
   spec.name          = File.basename(File.expand_path(File.dirname(__FILE__)))
