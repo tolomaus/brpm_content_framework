@@ -1,0 +1,7 @@
+version: 0.1.42
+
+author: Niek Bartholomeus
+email: niek.bartholomeus@gmail.com
+homepage: https://github.com/BMC-RLM/brpm_content
+summary: BRPM Content Framework
+description: The BRPM Content Framework is a lightweight framework that allows to run automation logic on top of BRPM in a modular, re-usable, testable and developer-friendly way
