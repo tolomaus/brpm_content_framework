@@ -2,10 +2,15 @@ class ModuleInstaller
   def install_module(module_name, module_version)
     BrpmAuto.log "Installing module #{module_name} #{module_version.nil? ? "" : module_version}..."
 
-    specs = install_gem(module_name, module_version)
-    module_spec = specs.find { |spec| spec.name == module_name}
+    if true #TODO: support non-gem-install mode
+      specs = install_gem(module_name, module_version)
+      module_spec = specs.find { |spec| spec.name == module_name}
 
-    install_bundle_if_necessary(module_spec)
+      install_bundle_if_necessary(module_spec)
+    else
+      specs = [ Gem::Specification.find_by_name(module_name) ]
+      module_spec = specs.find { |spec| spec.name == module_name}
+    end
 
     if brpm_installed_locally?
       BrpmAuto.log "A BRPM instance is installed locally"
@@ -28,12 +33,12 @@ class ModuleInstaller
         BrpmAuto.log "Creating an automation error for '******** ERROR ********' if one doesn't exist yet..."
         create_automation_error_if_not_exists("******** ERROR ********")
 
-        module_friendly_name = get_module_friendly_name(module_name)
+        module_friendly_name = get_module_friendly_name(module_spec)
         BrpmAuto.log "Creating an automation category for #{module_friendly_name} if one doesn't exist yet..."
         create_automation_category_if_not_exists(module_friendly_name)
 
         BrpmAuto.log "Installing the automation script wrappers in the local BRPM instance..."
-        install_auto_script_wrappers(module_spec.gem_dir, module_spec.name)
+        install_auto_script_wrappers(module_spec.gem_dir, module_spec.name, module_friendly_name)
       end
     end
   end
@@ -41,13 +46,13 @@ class ModuleInstaller
   def prepare_brpm_connection
     brpm_file = File.expand_path("~/.brpm")
 
-    config = nil
+    brpm_config = nil
     if File.exists?(brpm_file)
-      config = YAML.load_file(brpm_file)
+      brpm_config = YAML.load_file(brpm_file)
     end
 
-    if config
-      unless config["brpm_url"] and config["brpm_api_token"]
+    if brpm_config
+      unless brpm_config["brpm_url"] and brpm_config["brpm_api_token"]
         BrpmAuto.log "WARNING - Properties brpm_url and/or brpm_api_token don't exist in file ~/.brpm so not installing the automation script wrappers in BRPM. If you want to install them the next time you should add brpm_url and brpm_api_token properties in yaml format in file ~/.brpm."
         return false
       end
@@ -64,7 +69,7 @@ class ModuleInstaller
       return false
     end
 
-    @brpm_rest_client = BrpmRestClient.new(config["brpm_url"], config["brpm_api_token"])
+    @brpm_rest_client = BrpmRestClient.new(brpm_config["brpm_url"], brpm_config["brpm_api_token"])
     true
   end
 
@@ -129,8 +134,10 @@ class ModuleInstaller
     ENV["BRPM_HOME"] and !ENV["BRPM_HOME"].empty?
   end
 
-  def get_module_friendly_name(module_name)
-    "#{module_name.sub("brpm_module_", "").capitalize}"
+  def get_module_friendly_name(module_spec)
+    module_config = YAML.load_file("#{module_spec.gem_dir}/config.yml")
+
+    module_config["name"] || "#{module_spec.name.sub("brpm_module_", "").capitalize}"
   end
 
   def create_automation_error_if_not_exists(automation_error)
@@ -158,7 +165,7 @@ class ModuleInstaller
     end
   end
 
-  def install_auto_script_wrappers(module_path, module_name)
+  def install_auto_script_wrappers(module_path, module_name, module_friendly_name)
     BrpmAuto.log "Retrieving the integration servers..."
     integration_servers = @brpm_rest_client.get_project_servers
 
@@ -172,7 +179,7 @@ class ModuleInstaller
 
       resource_automation_script_paths.each do |auto_script_path|
         begin
-          install_auto_script_wrapper(auto_script_path, "ResourceAutomation", module_name, integration_servers)
+          install_auto_script_wrapper(auto_script_path, "ResourceAutomation", module_name, module_friendly_name, integration_servers)
         rescue Exception => e
           failed_scripts << auto_script_path
           BrpmAuto.log_error(e)
@@ -190,7 +197,7 @@ class ModuleInstaller
 
       automation_script_paths.each do |auto_script_path|
         begin
-          install_auto_script_wrapper(auto_script_path, "Automation", module_name, integration_servers)
+          install_auto_script_wrapper(auto_script_path, "Automation", module_name, module_friendly_name, integration_servers)
         rescue Exception => e
           failed_scripts << auto_script_path
           BrpmAuto.log_error(e)
@@ -209,7 +216,7 @@ class ModuleInstaller
     end
   end
 
-  def install_auto_script_wrapper(auto_script_path, automation_type, module_name, integration_servers)
+  def install_auto_script_wrapper(auto_script_path, automation_type, module_name, module_friendly_name, integration_servers)
     auto_script_name = File.basename(auto_script_path, ".rb")
     BrpmAuto.log "Installing the wrapper script for resource automation #{auto_script_name}..."
 
@@ -251,7 +258,6 @@ class ModuleInstaller
     wrapper_script_content += "\n"
     wrapper_script_content += get_script_executor_template(automation_type, module_name, auto_script_name)
 
-    module_friendly_name = get_module_friendly_name(module_name)
     if auto_script_config["automation_category"]
       automation_category = auto_script_config["automation_category"]
       create_automation_category_if_not_exists(automation_category)
@@ -298,16 +304,21 @@ class ModuleInstaller
       include_position_attribute = true
     end
 
+    input_params = auto_script_params.select do |_, param|
+      type = param["type"] || "in"
+      ! type.start_with?("out")
+    end
+
     module_version_param = {}
     module_version_param["name"] = "module_version"
     module_version_param["required"] = false
-    module_version_param["position"] = "A#{auto_script_params.size + 1}:C#{auto_script_params.size + 1}" if include_position_attribute
+    module_version_param["position"] = "A#{auto_script_params.size + 1}:C#{input_params.size + 1}" if include_position_attribute
     auto_script_params["module_version"] = module_version_param
 
     framework_version_param = {}
     framework_version_param["name"] = "framework_version"
     framework_version_param["required"] = false
-    framework_version_param["position"] = "A#{auto_script_params.size + 1}:C#{auto_script_params.size + 1}" if include_position_attribute
+    framework_version_param["position"] = "A#{auto_script_params.size + 1}:C#{input_params.size + 1}" if include_position_attribute
     auto_script_params["framework_version"] = framework_version_param
   end
 
