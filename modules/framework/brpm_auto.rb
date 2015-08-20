@@ -367,7 +367,7 @@ class BrpmAuto
     end
 
     def get_config
-      YAML.load_file(File.expand_path("#{File.dirname(__FILE__)}/config.yml"))
+      YAML.load_file(File.expand_path("#{File.dirname(__FILE__)}/../../config.yml"))
     end
 
     def get_module_gem_path(module_name, module_version)

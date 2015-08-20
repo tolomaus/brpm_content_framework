@@ -318,7 +318,7 @@ class ModuleInstaller
     framework_version_param = {}
     framework_version_param["name"] = "framework_version"
     framework_version_param["required"] = false
-    framework_version_param["position"] = "A#{input_params.size + 1}:C#{input_params.size + 1}" if include_position_attribute
+    framework_version_param["position"] = "A#{input_params.size + 2}:C#{input_params.size + 2}" if include_position_attribute
     auto_script_params["framework_version"] = framework_version_param
   end
 
