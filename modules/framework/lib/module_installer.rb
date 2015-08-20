@@ -312,13 +312,13 @@ class ModuleInstaller
     module_version_param = {}
     module_version_param["name"] = "module_version"
     module_version_param["required"] = false
-    module_version_param["position"] = "A#{auto_script_params.size + 1}:C#{input_params.size + 1}" if include_position_attribute
+    module_version_param["position"] = "A#{input_params.size + 1}:C#{input_params.size + 1}" if include_position_attribute
     auto_script_params["module_version"] = module_version_param
 
     framework_version_param = {}
     framework_version_param["name"] = "framework_version"
     framework_version_param["required"] = false
-    framework_version_param["position"] = "A#{auto_script_params.size + 1}:C#{input_params.size + 1}" if include_position_attribute
+    framework_version_param["position"] = "A#{input_params.size + 1}:C#{input_params.size + 1}" if include_position_attribute
     auto_script_params["framework_version"] = framework_version_param
   end
 
