@@ -49,14 +49,16 @@ def decrypt_string_with_prefix(input) # mocked method
 end
 
 def create_brpm_file
-  unless File.exists?("~/.brpm")
-    params = get_default_params
-    brpm_params = {}
-    brpm_params["brpm_url"] = params["brpm_url"]
-    brpm_params["brpm_api_token"] = params["brpm_api_token"]
+  if File.exists?("~/.brpm")
+    FileUtils.rm("~/.brpm")
+  end
 
-    File.open(File.expand_path("~/.brpm"), "w") do |file|
-      file.puts(brpm_params.to_yaml)
-    end
+  params = get_default_params
+  brpm_params = {}
+  brpm_params["brpm_url"] = params["brpm_url"]
+  brpm_params["brpm_api_token"] = params["brpm_api_token"]
+
+  File.open(File.expand_path("~/.brpm"), "w") do |file|
+    file.puts(brpm_params.to_yaml)
   end
 end

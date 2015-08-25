@@ -2,6 +2,7 @@ require_relative "spec_helper"
 
 describe 'Module installer' do
   before(:all) do
+    BrpmAuto.log "Creating ~/.brpm file..."
     create_brpm_file
     setup_brpm_auto
   end
