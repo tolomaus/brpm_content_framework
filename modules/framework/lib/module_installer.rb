@@ -89,18 +89,14 @@ class ModuleInstaller
       end
     end
 
-    unless ENV["TRAVIS"] == "true" #TODO: make this work on the travisci server
-      BrpmAuto.log "Uninstalling module #{module_name}#{module_version.nil? ? "" : " " + module_version}..."
-      BrpmAuto.log `gem uninstall #{module_name}#{module_version.nil? ? "" : " -v " + module_version}`
-    end
+    BrpmAuto.log "Uninstalling gem #{module_name} #{module_version}..."
+    BrpmAuto.log `gem uninstall #{module_name} -v #{module_version} -q`
 
     return true
   end
 
-  def module_installed?(module_name)
-    set_gem_home
-
-    Gem::Specification.find_all_by_name(module_name).size > 0
+  def module_installed?(module_name, module_version = nil)
+    Gem::Specification.find_by_name(module_name).size > 0
   end
 
   private
