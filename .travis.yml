@@ -5,8 +5,6 @@ rvm:
 before_install:
   - gem update --system 2.1.9
 
-install: gem install brpm_module_brpm #needed for module installation tests
-
 script:
   - rspec modules/framework/tests --format documentation --color
 
