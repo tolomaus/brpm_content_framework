@@ -42,7 +42,7 @@ class MessagingProcessor < TorqueBox::Messaging::MessageProcessor
 
     rescue Exception => e
       BrpmAuto.log_error(e)
-      BrpmAuto.log e.backtrace.join("\n\t")
+      BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
     end
   end
 end
@@ -56,7 +56,7 @@ begin
 
 rescue Exception => e
   BrpmAuto.log_error(e)
-  BrpmAuto.log e.backtrace.join("\n\t")
+  BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
 
   raise e
 end

@@ -21,7 +21,7 @@ class BrpmScriptExecutor
 
       rescue Exception => e
         BrpmAuto.log_error "#{e}"
-        BrpmAuto.log e.backtrace.join("\n\t")
+        BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
 
         raise e
       ensure
@@ -58,7 +58,7 @@ class BrpmScriptExecutor
 
       rescue Exception => e
         BrpmAuto.log_error "#{e}"
-        BrpmAuto.log e.backtrace.join("\n\t")
+        BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
 
         raise e
       ensure
@@ -91,7 +91,7 @@ class BrpmScriptExecutor
 
       rescue Exception => e
         BrpmAuto.log_error "#{e}"
-        BrpmAuto.log e.backtrace.join("\n\t")
+        BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
 
         raise e
       ensure
@@ -128,7 +128,7 @@ class BrpmScriptExecutor
 
       rescue Exception => e
         BrpmAuto.log_error "#{e}"
-        BrpmAuto.log e.backtrace.join("\n\t")
+        BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
 
         raise e
       ensure

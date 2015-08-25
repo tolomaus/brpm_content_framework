@@ -1,21 +1,30 @@
-class ModuleInstaller
-  def install_module(module_name, module_version)
-    BrpmAuto.log "Installing module #{module_name} #{module_version.nil? ? "" : module_version}..."
+require "rubygems"
+require 'rubygems/package'
+require 'rubygems/installer'
+require "bundler"
 
-    if true #TODO: support non-gem-install mode
-      specs = install_gem(module_name, module_version)
-      module_spec = specs.find { |spec| spec.name == module_name}
+class ModuleInstaller
+  def initialize
+    set_gem_home
+  end
+
+  def install_module(module_name_or_path, module_version = nil)
+    brpm_content_spec = nil
+
+    if true #TODO: support no-gem-install mode
+      module_spec, specs = install_gem(module_name_or_path, module_version)
+
+      brpm_content_spec = specs.find { |spec| spec.name == "brpm_content" } if specs
 
       install_bundle_if_necessary(module_spec)
     else
-      specs = [ Gem::Specification.find_by_name(module_name) ]
-      module_spec = specs.find { |spec| spec.name == module_name}
+      module_name = module_name_or_path
+      module_spec = Gem::Specification.find_by_name(module_name)
     end
 
     if brpm_installed_locally?
       BrpmAuto.log "A BRPM instance is installed locally"
 
-      brpm_content_spec = specs.find { |spec| spec.name == "brpm_content" }
       if brpm_content_spec
         if brpm_content_spec.version > Gem::Version.new(BrpmAuto.version) or ! File.exist?(get_symlink_path)
           BrpmAuto.log "Updating the symlink to brpm_content-latest..."
@@ -37,11 +46,62 @@ class ModuleInstaller
         BrpmAuto.log "Creating an automation category for #{module_friendly_name} if one doesn't exist yet..."
         create_automation_category_if_not_exists(module_friendly_name)
 
+        BrpmAuto.log "Retrieving the integration servers..."
+        integration_servers = @brpm_rest_client.get_project_servers
+
         BrpmAuto.log "Installing the automation script wrappers in the local BRPM instance..."
-        install_auto_script_wrappers(module_spec.gem_dir, module_spec.name, module_friendly_name)
+        failed_scripts = each_auto_script_wrapper(module_spec.gem_dir) do |auto_script_path, automation_type|
+          BrpmAuto.log "Installing automation script wrapper for script #{auto_script_path}..."
+          install_auto_script_wrapper(auto_script_path, automation_type, module_spec.name, module_friendly_name, integration_servers)
+        end
+
+        if failed_scripts.size > 0
+          return false
+        end
       end
     end
   end
+
+  def uninstall_module(module_name, module_version)
+    if brpm_installed_locally?
+      BrpmAuto.log "A BRPM instance is installed locally"
+
+      BrpmAuto.log "Preparing the connectivity to BRPM..."
+      if prepare_brpm_connection
+        version_req = Gem::Requirement.create(Gem::Version.new(module_version))
+        module_spec = Gem::Specification.find_by_name(module_name, version_req)
+
+        module_friendly_name = get_module_friendly_name(module_spec)
+
+        BrpmAuto.log "Uninstalling the automation script wrappers in the local BRPM instance..."
+        failed_scripts = each_auto_script_wrapper(module_spec.gem_dir) do |auto_script_path, automation_type|
+          BrpmAuto.log "Uninstalling automation script wrapper for script #{auto_script_path}..."
+          uninstall_auto_script_wrapper(auto_script_path, automation_type, module_friendly_name)
+        end
+
+        if failed_scripts.size > 0
+          BrpmAuto.log "Aborting the uninstall."
+          return false
+        end
+
+        BrpmAuto.log "Deleting the automation category for #{module_friendly_name}..."
+        delete_automation_category(module_friendly_name)
+      end
+    end
+
+    BrpmAuto.log "Uninstalling module #{module_name}#{module_version.nil? ? "" : " " + module_version}..."
+    `gem uninstall #{module_name}#{module_version.nil? ? "" : " -v " + module_version}`
+
+    return true
+  end
+
+  def module_installed?(module_name)
+    set_gem_home
+
+    Gem::Specification.find_all_by_name(module_name).size > 0
+  end
+
+  private
 
   def prepare_brpm_connection
     brpm_file = File.expand_path("~/.brpm")
@@ -73,25 +133,39 @@ class ModuleInstaller
     true
   end
 
-  def install_gem(module_name, module_version)
+  def install_gem(module_name_or_path, module_version)
+    if module_name_or_path =~ /\.gem$/ and File.file? module_name_or_path
+      BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " " + module_version} from file..."
+      source = Gem::Source::SpecificFile.new module_name_or_path
+      module_spec = source.spec
+
+      gem = source.download module_spec
+
+      inst = Gem::Installer.new gem
+      inst.install
+      BrpmAuto.log "Done."
+    else
+      BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " " + module_version}..."
+      version_req = module_version ? Gem::Requirement.create(Gem::Version.new(module_version)) : Gem::Requirement.default
+      specs = Gem.install(module_name_or_path, version_req)
+
+      BrpmAuto.log "Installed gems:"
+      specs.each do |spec|
+        BrpmAuto.log "  - #{spec.name} #{spec.version}"
+      end
+
+      module_spec = specs.find { |spec| spec.name == module_name_or_path}
+    end
+
+    return module_spec, specs
+  end
+
+  def set_gem_home
     if BrpmAuto.run_from_brpm or BrpmAuto.params.unit_test
       # we need to override the GEM_HOME env var, otherwise the gems will be installed in BRPM's own gemset
       ENV["GEM_HOME"] = BrpmAuto.get_gems_root_path
       Gem.paths = ENV
     end
-
-    if module_version
-      BrpmAuto.log "Executing command 'gem install #{module_name} -v #{module_version}'..."
-      specs = Gem.install(module_name, module_version)
-    else
-      BrpmAuto.log "Executing command 'gem install #{module_name}'..."
-      specs = Gem.install(module_name)
-    end
-    BrpmAuto.log "Installed gems:"
-    specs.each do |spec|
-      BrpmAuto.log "  - #{spec.name} #{spec.version}"
-    end
-    specs
   end
 
   def install_bundle_if_necessary(spec)
@@ -141,7 +215,6 @@ class ModuleInstaller
   end
 
   def create_automation_error_if_not_exists(automation_error)
-
     list_item = @brpm_rest_client.get_list_item_by_name("AutomationErrors", automation_error)
 
     unless list_item
@@ -165,25 +238,30 @@ class ModuleInstaller
     end
   end
 
-  def install_auto_script_wrappers(module_path, module_name, module_friendly_name)
-    BrpmAuto.log "Retrieving the integration servers..."
-    integration_servers = @brpm_rest_client.get_project_servers
+  def delete_automation_category(module_friendly_name)
+    #TODO: first check if there are any manually created automation scripts added to this automation category. If yes then dont delete it
+    list_item = @brpm_rest_client.get_list_item_by_name("AutomationCategory", module_friendly_name)
 
+    if list_item
+      @brpm_rest_client.archive_list_item(list_item["id"])
+      @brpm_rest_client.delete_list_item(list_item["id"])
+    end
+  end
+
+  def each_auto_script_wrapper(module_path)
     # For resource automations
     resource_automation_dir = "#{module_path}/resource_automations"
     resource_automation_script_paths = Dir.glob("#{resource_automation_dir}/*.rb")
 
     failed_scripts = []
     if resource_automation_script_paths.size > 0
-      BrpmAuto.log "Installing the wrapper scripts for the resource automations..."
-
       resource_automation_script_paths.each do |auto_script_path|
         begin
-          install_auto_script_wrapper(auto_script_path, "ResourceAutomation", module_name, module_friendly_name, integration_servers)
+          yield auto_script_path, "ResourceAutomation"
         rescue Exception => e
           failed_scripts << auto_script_path
           BrpmAuto.log_error(e)
-          BrpmAuto.log e.backtrace.join("\n\t")
+          BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
         end
       end
     end
@@ -193,38 +271,31 @@ class ModuleInstaller
     automation_script_paths = Dir.glob("#{automation_dir}/*.rb")
 
     if automation_script_paths.size > 0
-      BrpmAuto.log "Installing the wrapper scripts for the automations..."
-
       automation_script_paths.each do |auto_script_path|
         begin
-          install_auto_script_wrapper(auto_script_path, "Automation", module_name, module_friendly_name, integration_servers)
+          yield auto_script_path, "Automation"
         rescue Exception => e
           failed_scripts << auto_script_path
           BrpmAuto.log_error(e)
-          BrpmAuto.log e.backtrace.join("\n\t")
+          BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
         end
       end
     end
 
     if failed_scripts.size > 0
-      BrpmAuto.log "The following wrapper scripts generated errors during the installation:"
+      BrpmAuto.log "The following wrapper scripts generated errors:"
       failed_scripts.each do |failed_script|
         BrpmAuto.log "  - #{failed_script}"
       end
-    else
-      BrpmAuto.log "All wrapper scripts were installed successfully."
     end
+
+    failed_scripts
   end
 
   def install_auto_script_wrapper(auto_script_path, automation_type, module_name, module_friendly_name, integration_servers)
-    auto_script_name = File.basename(auto_script_path, ".rb")
-    BrpmAuto.log "Installing the wrapper script for resource automation #{auto_script_name}..."
+    auto_script_config = get_auto_script_config(auto_script_path, module_friendly_name)
 
-    auto_script_config_path = "#{File.dirname(auto_script_path)}/#{auto_script_name}.meta"
-
-    auto_script_config_content = File.exists?(auto_script_config_path) ? File.read(auto_script_config_path) : ""
-    auto_script_config = YAML.load(auto_script_config_content) || {}
-    auto_script_config["params"] = {} unless auto_script_config["params"]
+    BrpmAuto.log "Installing the wrapper script for automation script #{auto_script_config["name"]} (friendly name: #{auto_script_config["friendly_name"]}, automation type: #{automation_type})..."
 
     if automation_type == "Automation"
       add_version_params(auto_script_config["params"])
@@ -256,33 +327,24 @@ class ModuleInstaller
     end
 
     wrapper_script_content += "\n"
-    wrapper_script_content += get_script_executor_template(automation_type, module_name, auto_script_name)
-
-    if auto_script_config["automation_category"]
-      automation_category = auto_script_config["automation_category"]
-      create_automation_category_if_not_exists(automation_category)
-
-      module_friendly_name = automation_category
-    end
-
-    auto_script_friendly_name = auto_script_config["friendly_name"] || "#{module_friendly_name} - #{auto_script_name.gsub("_", " ").capitalize}"
+    wrapper_script_content += get_script_executor_template(automation_type, module_name, auto_script_config["name"])
 
     script = {}
-    script["name"] = auto_script_friendly_name
+    script["name"] = auto_script_config["friendly_name"]
     script["description"] = auto_script_config["description"] || ""
     script["automation_type"] = automation_type
     script["automation_category"] = module_friendly_name
     script["content"] = wrapper_script_content
     script["integration_id"] = integration_server["id"] if auto_script_config["integration_server_type"] and integration_server
     if automation_type == "ResourceAutomation"
-      script["unique_identifier"] = auto_script_config["resource_id"] || auto_script_name
+      script["unique_identifier"] = auto_script_config["resource_id"] || auto_script_config["name"]
       script["render_as"] = auto_script_config["render_as"] || "List"
     end
 
     script = @brpm_rest_client.create_or_update_script(script)
 
     if script["aasm_state"] == "draft"
-      BrpmAuto.log "Updating the aasm_state of the script to 'pending'..."
+      BrpmAuto.log "Updating the aasm_state of the wrapper script to 'pending'..."
       script_to_update = {}
       script_to_update["id"] = script["id"]
       script_to_update["aasm_state"] = "pending"
@@ -290,12 +352,59 @@ class ModuleInstaller
     end
 
     if script["aasm_state"] == "pending"
-      BrpmAuto.log "Updating the aasm_state of the script to 'released'..."
+      BrpmAuto.log "Updating the aasm_state of the wrapper script to 'released'..."
       script_to_update = {}
       script_to_update["id"] = script["id"]
       script_to_update["aasm_state"] = "released"
       script = @brpm_rest_client.update_script_from_hash(script_to_update)
     end
+  end
+
+  def uninstall_auto_script_wrapper(auto_script_path, automation_type, module_friendly_name)
+    auto_script_config = get_auto_script_config(auto_script_path, module_friendly_name)
+
+    script = @brpm_rest_client.get_script_by_name(auto_script_config["friendly_name"])
+
+    unless script
+      BrpmAuto.log "Script #{auto_script_config["friendly_name"]} was not found, probably already deleted. Continuing."
+      return
+    end
+
+    if script["aasm_state"] == "released"
+      BrpmAuto.log "Updating the aasm_state of the wrapper script to 'retired'..."
+      script_to_update = {}
+      script_to_update["id"] = script["id"]
+      script_to_update["aasm_state"] = "retired"
+      script = @brpm_rest_client.update_script_from_hash(script_to_update)
+    end
+
+    if script["aasm_state"] == "retired"
+      BrpmAuto.log "Updating the aasm_state of the wrapper script to 'archived'..."
+      script_to_update = {}
+      script_to_update["id"] = script["id"]
+      script_to_update["aasm_state"] = "archived"
+      script = @brpm_rest_client.update_script_from_hash(script_to_update)
+    end
+
+    if script["aasm_state"] == "archived_state"
+      BrpmAuto.log "Deleting the wrapper script..."
+      @brpm_rest_client.delete_script(script["id"])
+    else
+      raise "Script #{auto_script_config["friendly_name"]} is not in aasm_state 'archived' so unable to delete it."
+    end
+  end
+
+  def get_auto_script_config(auto_script_path, module_friendly_name)
+    auto_script_name = File.basename(auto_script_path, ".rb")
+    auto_script_config_path = "#{File.dirname(auto_script_path)}/#{auto_script_name}.meta"
+
+    auto_script_config_content = File.exists?(auto_script_config_path) ? File.read(auto_script_config_path) : ""
+    auto_script_config = YAML.load(auto_script_config_content) || {}
+    auto_script_config["params"] = auto_script_config["params"] || {}
+    auto_script_config["name"] = File.basename(auto_script_path, ".rb")
+    auto_script_config["friendly_name"] = auto_script_config["friendly_name"] || "#{module_friendly_name} - #{auto_script_config["name"].gsub("_", " ").capitalize}"
+
+    auto_script_config
   end
 
   def add_version_params(auto_script_params)

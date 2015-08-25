@@ -220,7 +220,7 @@ class BrpmAuto
       @integration_settings = IntegrationSettings.new(dns, username, password, details)
     end
 
-    def get_gems_root_path
+    def  get_gems_root_path
       if ENV["BRPM_CONTENT_HOME"]
         ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
       elsif ENV["BRPM_HOME"]
