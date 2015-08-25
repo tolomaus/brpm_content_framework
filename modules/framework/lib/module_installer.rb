@@ -360,6 +360,22 @@ class ModuleInstaller
       script_to_update["aasm_state"] = "released"
       script = @brpm_rest_client.update_script_from_hash(script_to_update)
     end
+
+    if script["aasm_state"] == "archived_state"
+      BrpmAuto.log "Updating the aasm_state of the wrapper script to 'released'..."
+      script_to_update = {}
+      script_to_update["id"] = script["id"]
+      script_to_update["aasm_state"] = "retired"
+      script = @brpm_rest_client.update_script_from_hash(script_to_update)
+    end
+
+    if script["aasm_state"] == "retired"
+      BrpmAuto.log "Updating the aasm_state of the wrapper script to 'released'..."
+      script_to_update = {}
+      script_to_update["id"] = script["id"]
+      script_to_update["aasm_state"] = "released"
+      script = @brpm_rest_client.update_script_from_hash(script_to_update)
+    end
   end
 
   def uninstall_auto_script_wrapper(auto_script_path, automation_type, module_friendly_name)
