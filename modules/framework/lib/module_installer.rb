@@ -134,6 +134,7 @@ class ModuleInstaller
   def install_gem(module_name_or_path, module_version)
     if module_name_or_path =~ /\.gem$/ and File.file? module_name_or_path
       BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " " + module_version} from file..."
+      require 'rubygems/name_tuple'
       source = Gem::Source::SpecificFile.new module_name_or_path
       module_spec = source.spec
 
