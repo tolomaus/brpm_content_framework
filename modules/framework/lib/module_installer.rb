@@ -90,7 +90,7 @@ class ModuleInstaller
     end
 
     BrpmAuto.log "Uninstalling module #{module_name}#{module_version.nil? ? "" : " " + module_version}..."
-    `gem uninstall #{module_name}#{module_version.nil? ? "" : " -v " + module_version}`
+    BrpmAuto.log `gem uninstall #{module_name}#{module_version.nil? ? "" : " -v " + module_version}`
 
     return true
   end
