@@ -89,8 +89,10 @@ class ModuleInstaller
       end
     end
 
-    BrpmAuto.log "Uninstalling module #{module_name}#{module_version.nil? ? "" : " " + module_version}..."
-    BrpmAuto.log `gem uninstall #{module_name}#{module_version.nil? ? "" : " -v " + module_version}`
+    unless ENV["TRAVIS"] == "true" #TODO: make this work on the travisci server
+      BrpmAuto.log "Uninstalling module #{module_name}#{module_version.nil? ? "" : " " + module_version}..."
+      BrpmAuto.log `gem uninstall #{module_name}#{module_version.nil? ? "" : " -v " + module_version}`
+    end
 
     return true
   end

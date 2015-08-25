@@ -61,6 +61,4 @@ def create_brpm_file
   File.open(File.expand_path("~/.brpm"), "w") do |file|
     file.puts(brpm_params.to_yaml)
   end
-
-  BrpmAuto.log `cat ~/.brpm`
 end
