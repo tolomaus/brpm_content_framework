@@ -12,6 +12,7 @@ begin
   if ARGV.size < 2
     BrpmAuto.log "Missing arguments."
     BrpmAuto.log "Usage: \n  brpm_uninstall <module name> <module version>"
+    abort("Missing arguments")
   end
 
   module_name = ARGV[0]
