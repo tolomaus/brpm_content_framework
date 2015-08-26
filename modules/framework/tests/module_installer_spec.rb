@@ -2,7 +2,7 @@ require_relative "spec_helper"
 
 describe 'Module installer' do
   before(:all) do
-    raise "Module installation tests don't work under Bundler." if ENV["RUBYOPT"].include?("-rbundler/setup")
+    raise "Module installation tests don't work under Bundler." if ENV["RUBYOPT"] and ENV["RUBYOPT"].include?("-rbundler/setup")
 
     setup_brpm_auto
 
