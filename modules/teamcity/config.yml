@@ -1,7 +1,0 @@
-dependencies:
- - brpm
-
-integration_servers:
- - TeamCity
-
-version: 1.0.0

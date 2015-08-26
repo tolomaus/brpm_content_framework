@@ -1,6 +1,0 @@
-dependencies:
-
-integration_servers:
- - WindowsFileShare
-
-version: 1.0.0

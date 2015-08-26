@@ -1,8 +1,9 @@
 Following code is deprecated and any missing logic should be migrated to other places:
 
-modules/framework/brpm_framework.rb
-modules/framework/customer_include_default.rb
-modules/framework/lib/resource_framework.rb
-modules/framework/tests/local_jirb.rb - contains env specific logic
-modules/framework/transport/* - decide where these functionalities should end up (preferrably in BRPM itself)
-modules/brpm/lib/brpm_rest_client.rb and modules/brpm/lib/brpm_rest.rb - should be merged
+lib/to_be_migrated/brpm_framework.rb
+lib/to_be_migrated/customer_include_default.rb
+lib/to_be_migrated/resource_framework.rb
+lib/to_be_migrated/local_jirb.rb - contains env specific logic
+transport/* - decide where these functionalities should end up (preferrably in BRPM itself)
+
+[brpm_module_brpm]/lib/brpm_rest_client.rb and [brpm_module_brpm]/lib/brpm_rest.rb - should be merged

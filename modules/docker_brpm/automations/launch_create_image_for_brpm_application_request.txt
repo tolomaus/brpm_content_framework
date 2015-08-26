@@ -1,3 +1,0 @@
-require "#{params["SS_script_support_path"]}/git_repos/brpm_content/modules/framework/brpm_script_executor.rb"
-
-BrpmScriptExecutor.execute_automation_script("docker_brpm", "launch_create_image_for_brpm_application_request", params)

@@ -1,7 +1,0 @@
-dependencies:
- - BRPM
-
-integration_servers:
- - AtriumOrchestrator
-
-version: 1.0.0

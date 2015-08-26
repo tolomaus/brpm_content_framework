@@ -1,8 +1,0 @@
-dependencies:
-  - brpm
-
-version: latest
-
-integration_servers:
-
-version: 1.0.0

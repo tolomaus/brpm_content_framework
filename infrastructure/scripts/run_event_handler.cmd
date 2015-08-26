@@ -1,0 +1,19 @@
+rem mandatory settings
+set EVENT_HANDLER_BRPM_HOST=localhost
+
+set EVENT_HANDLER_MESSAGING_PORT=5445
+set EVENT_HANDLER_MESSAGING_USERNAME=msguser
+set EVENT_HANDLER_MESSAGING_PASSWORD=???
+set EVENT_HANDLER_LOG_FILE=c:/tmp/event_handler.log
+set EVENT_HANDLER_PROCESS_EVENT_SCRIPT=integrations/brpm/process_event_handler_event.rb
+
+# custom settings
+set EVENT_HANDLER_BRPM_PORT=8088
+set EVENT_HANDLER_BRPM_TOKEN= ???
+
+set EVENT_HANDLER_JIRA_URL=http://jira-server:9090
+set EVENT_HANDLER_JIRA_USERNAME=???
+set EVENT_HANDLER_JIRA_PASSWORD=???
+set EVENT_HANDLER_JIRA_RELEASE_FIELD_ID=???
+
+event_handler

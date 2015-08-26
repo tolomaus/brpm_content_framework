@@ -1,6 +1,0 @@
-dependencies:
-
-integration_servers:
-  - E-mail
-
-version: 1.0.0
