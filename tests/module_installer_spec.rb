@@ -4,43 +4,50 @@ describe 'Module installer' do
   before(:all) do
     raise "Module installation tests don't work under Bundler." if ENV["RUBYOPT"] and ENV["RUBYOPT"].include?("-rbundler/setup")
 
+    FileUtils.mkdir_p "#{ENV["BRPM_HOME"]}/modules"
+
     setup_brpm_auto
 
     BrpmAuto.log "Creating ~/.brpm file..."
     create_brpm_file
+
+    @module_name = "brpm_module_bladelogic"
+    @module_version = "0.1.22"
   end
 
   before(:each) do
     module_installer = ModuleInstaller.new
 
-    brpm_specs = Gem::Specification.find_all_by_name("brpm_module_bladelogic")
+    module_specs = Gem::Specification.find_all_by_name(@module_name)
 
-    brpm_specs.each do |brpm_spec|
-      BrpmAuto.log "Module brpm_module_bladelogic (#{brpm_spec.version.to_s}) is already installed, uninstalling it..."
-      module_installer.uninstall_module("brpm_module_bladelogic", brpm_spec.version.to_s)
+    module_specs.each do |module_spec|
+      if module_spec.loaded_from.start_with?(ENV["BRPM_HOME"])
+        BrpmAuto.log "Module #{@module_name} (#{module_spec.version.to_s}) is already installed, uninstalling it..."
+        module_installer.uninstall_module(@module_name, module_spec.version.to_s)
+      end
     end
   end
 
-  it 'should install the Bladelogic module from rubygems.org' do
+  it "should install #{@module_name} from rubygems.org" do
     module_installer = ModuleInstaller.new
-    module_installer.install_module("brpm_module_bladelogic")
+    module_installer.install_module(@module_name)
 
-    expect{Gem::Specification.find_by_name("brpm_module_bladelogic")}.not_to raise_error #(Gem::LoadError)
+    expect{Gem::Specification.find_by_name(@module_name)}.not_to raise_error #(Gem::LoadError)
   end
 
-  it 'should install a specific version of the Bladelogic module from rubygems.org' do
+  it "should install a specific version of #{@module_name} from rubygems.org" do
     module_installer = ModuleInstaller.new
-    module_installer.install_module("brpm_module_bladelogic", "0.1.21")
+    module_installer.install_module(@module_name, @module_version)
 
-    expect{Gem::Specification.find_by_name("brpm_module_bladelogic", Gem::Requirement.create(Gem::Version.new("0.1.21")))}.not_to raise_error #(Gem::LoadError)
+    expect{Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))}.not_to raise_error #(Gem::LoadError)
   end
 
-  it 'should install a Bladelogic module from a local gem file' do
-    `wget https://rubygems.org/downloads/brpm_module_bladelogic-0.1.21.gem` unless File.exists?("./brpm_module_bladelogic-0.1.21.gem")
+  it "should install #{@module_name} from a local gem file" do
+    `mkdir -p temp && cd temp && wget https://rubygems.org/downloads/#{@module_name}-#{@module_version}.gem` unless File.exists?("temp/#{@module_name}-#{@module_version}.gem")
 
     module_installer = ModuleInstaller.new
-    module_installer.install_module("./brpm_module_bladelogic-0.1.21.gem")
+    module_installer.install_module("temp/#{@module_name}-#{@module_version}.gem")
 
-    expect{Gem::Specification.find_by_name("brpm_module_bladelogic", Gem::Requirement.create(Gem::Version.new("0.1.21")))}.not_to raise_error #(Gem::LoadError)
+    expect{Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))}.not_to raise_error #(Gem::LoadError)
   end
 end

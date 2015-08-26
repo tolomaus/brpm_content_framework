@@ -2,7 +2,6 @@ require 'fileutils'
 require 'yaml'
 require_relative "../lib/brpm_auto"
 
-FileUtils.mkdir_p "#{ENV["BRPM_HOME"]}/modules" if ENV["BRPM_HOME"]
 FileUtils.mkdir_p "/tmp/brpm_content"
 
 def setup_brpm_auto
