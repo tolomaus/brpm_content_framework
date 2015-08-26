@@ -1,4 +1,10 @@
 #!/usr/bin/env ruby
+if ARGV.size < 1
+  puts "Missing arguments."
+  puts "Usage: \n  brpm_install <module name> [<module version>]\n  brpm_install <path to module>"
+  exit("Missing arguments")
+end
+
 require "yaml"
 require "brpm_auto"
 
@@ -8,12 +14,6 @@ params["also_log_to_console"] = "true"
 
 begin
   BrpmAuto.setup(params)
-
-  if ARGV.size < 1
-    BrpmAuto.log "Missing arguments."
-    BrpmAuto.log "Usage: \n  brpm_install <module name> [<module version>]\n  brpm_install <path to module>"
-    abort("Missing arguments")
-  end
 
   module_name_or_path = ARGV[0]
   module_version = ARGV[1] # optional
