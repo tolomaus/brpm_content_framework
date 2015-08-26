@@ -2,7 +2,7 @@
 if ARGV.size < 2
   puts "Missing arguments."
   puts "Usage: \n  brpm_uninstall <module name> <module version>"
-  exit("Missing arguments")
+  exit
 end
 
 require "yaml"

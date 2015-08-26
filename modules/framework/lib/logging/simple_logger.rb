@@ -14,7 +14,7 @@ class SimpleLogger < LoggerBase
     log_message = ""
 
     prefix = "#{timestamp}|"
-    message.gsub!("\n", "\n" + (" " * prefix.length))
+    message = message.gsub("\n", "\n" + (" " * prefix.length))
 
     log_message = "#{prefix}#{message}\n"
 
