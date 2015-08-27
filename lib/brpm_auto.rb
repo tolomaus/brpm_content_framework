@@ -97,6 +97,10 @@ class BrpmAuto
 
     def require_libs(module_path, log = true)
       lib_path = "#{module_path}/lib/**/*.rb"
+
+      log_message = "Loading all files from #{lib_path}..."
+      log ? (BrpmAuto.log log_message) : (print "#{log_message}\n")
+
       require_files(Dir[lib_path], log)
     end
 
@@ -105,8 +109,6 @@ class BrpmAuto
       error_messages = []
       files.each do |file|
         if File.file?(file)
-          log ? (BrpmAuto.log "Loading #{file}...") : (print "Loading #{file}...\n")
-
           begin
             require file
           rescue NameError => ne # when we require a set of files with inter-dependencies, the order is important, therefore we will retry the failed files later

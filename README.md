@@ -1,10 +1,10 @@
 # BRPM Content framework
 
-[![Build Status](https://travis-ci.org/BMC-RLM/brpm_content.svg?branch=master)](https://travis-ci.org/BMC-RLM/brpm_content)
+[![Build Status](https://travis-ci.org/BMC-RLM/brpm_content_framework.svg?branch=master)](https://travis-ci.org/BMC-RLM/brpm_content_framework)
 
-[![Gem Version](https://badge.fury.io/rb/brpm_content.png)](http://badge.fury.io/rb/brpm_content)
+[![Gem Version](https://badge.fury.io/rb/brpm_content_framework.png)](http://badge.fury.io/rb/brpm_content_framework)
 
-The BRPM Content framework is intended to make the creation and usage of content (for the moment limited to automation scripts) on top of BRPM as easy as possible.
+The BRPM Content framework is intended to make the creation and usage of content on top of BRPM as easy as possible. For the moment this content is limited to automation scripts, but in the future this could easily be extended to include sample applications, request templates, etc. 
 
 It is designed around a number of core concepts like modularity, re-usability, testability that are further explained below.
 
@@ -12,50 +12,67 @@ It is designed around a number of core concepts like modularity, re-usability, t
 
 ### Installation
 
-First of all, make sure that the environment variable BRPM_HOME is set to the location where BRPM is installed, e.g.:
+First of all, make sure that the necessary environment variables are set on the BRPM instance, e.g. for a default BRPM installation:
 ```shell
 export BRPM_HOME=/opt/bmc/RLM
+export JAVA_HOME="$BRPM_HOME/lib/jre"
+export JRUBY_HOME="$BRPM_HOME/lib/jruby"
+export GEM_HOME="$BRPM_HOME/modules"
+
+export PATH="$GEM_HOME/bin:$JRUBY_HOME/bin:$PATH"
 ```
 
-Then copy the [BRPM Content framework's installation script](https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh) to the instance on which BRPM is installed and execute it.
+If BRPM is installed on a custom location you can modify the first line accordingly. The PATH variable is modified to make sure the ruby scripts that come with the modules are in the PATH.  
 
-See here the commands to get you started:
+Then create a file .brpm with the following contents in the root directory of the user account that runs BRPM:
 ```shell
-wget https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh
-chmod +x install_content_repo.sh
-./install_content_repo.sh
+brpm_url: http://your-brpm-server:8088/brpm
+brpm_api_token: ...
 ```
 
-The script will ask for the location of a zip file that contains the files. If the BRPM instance has access to the internet you can leave it empty in which case it will directly grab the files from this github.com repo.
-If you need the zip file of this repo you can find it on [https://github.com/BMC-RLM/brpm_content/archive/master.zip](https://github.com/BMC-RLM/brpm_content/archive/master.zip)
+Note that he brpm_api_token should be the token of a user that is defined in BRPM and that has administrative rights.
 
-Alternatively, if the BRPM instance has internet access and wget is installed the framework can be installed by simply executing the following command on the BRPM instance as root:
+Finally you can install the framework and the BRPM module (needed to configure the automation script wrappers of the modules) as following:
 ```shell
-wget -qO- https://raw.githubusercontent.com/BMC-RLM/brpm_content/master/infrastructure/shell_scripts/install_content_repo.sh | INSTALL=ONLINE sh
+gem install brpm_content_framework
+brpm_install brpm_module_brpm
 ```
 
-### Configuration
-
-At this early stage it is still necessary to manually configure the automation scripts that come with this content repository in BRPM before you can start using them in the request steps. 
-
-This can be done as following:
- - go to Environment > Automation and create an automation script
- - choose the type and category of the automation script
- - paste the content of the automation script's wrapper file (the file with the same name as the automation script but with the .txt extension) into the script body
+If the BRPM instance has no access to the internet you can also download the modules (which are basically ruby gems) to your workstation and upload them from there onto the BRPM instance.
  
-The above remark applies to both automation scripts as well as resource automation scripts
+In that case the installation can be done as following:
+```shell
+gem install /path/to/brpm_content_framework-x.x.x.gem --local
+brpm_install /path/to/brpm_module_brpm-x.x.x.gem
+```
+
+Note that brpm_module_brpm is a module that contains a REST API client for BRPM and is needed to set up the automation scripts of the modules that will be installed later on.
  
-Finally, make sure that the following item is added to Metadata > Lists > AutomationErrors: 
+Both gem files can be downloaded from the public gem repository rubygems.org. Just look up the name and on the gem's home page you will find a "Download" button that has a link to the latest version of the gem.
+
+### Usage
+
+OK now that the framework is installed the next thing to do is to install a couple of existing modules (see further), or even build your own!
+
+A module can be installed as following:
+```shell
+brpm_install your-module-name
 ```
-******** ERROR ********
+
+Or if the BRPM instance has no access to the internet:
+```shell
+brpm_install /path/to/your-module-name.gem
 ```
-This will allow non caught exceptions from the automation scripts to cause the step to go in problem mode.
+
+The gem file of the module can be found on rubygems.org. 
+
+Once the module is installed you can immediately start using its contained automation scripts by linking the requests' steps to them.  
 
 ## Architecture
 
 The BRPM Content framework is an automation platform that is built on top of BRPM. It allows to create, install and run what are called modules that contain automation logic that naturally belongs together. The framework itself provides a number of general purpose features like an automation script executor, dependency management, parameter handling, logging, etc.
  
-![alt text](https://github.com/BMC-RLM/brpm_content/blob/master/architecture.png "architecture")
+![alt text](https://github.com/BMC-RLM/brpm_content_framework/blob/master/architecture.png "architecture")
 
 The BRPM Content framework was built with the following design principles in mind, all further explained in the remainder of this document: 
 - **modularity**
@@ -67,16 +84,7 @@ The BRPM Content framework was built with the following design principles in min
 
 ### Using existing modules
 
-One of the core design principles of the framework is its modularity. The framework itself is deliberately chosen to be very lightweight. The purpose is that all custom automation logic is added by means of modules. Modules will typically group multiple automation scripts, resource automation scripts and libraries of one specific domain.
-
-Modules can be installed by executing the [module installation](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/shell_scripts/install_content_module.sh) script on the BRPM instance: 
-```shell
-~/shell_scripts/install_content_module.sh
-```
-
-The script will ask for the location of a zip file or the url of a github.com repository that contains the module's files. For the Selenium module this url would be [https://github.com/BMC-RLM/brpm_module_selenium](https://github.com/BMC-RLM/brpm_module_selenium).
-
-Note that the BRPM Content framework contains a number of core [modules](https://github.com/BMC-RLM/brpm_content/tree/master/modules) that will be installed by default. The purpose is to gradually move these built-in modules into their own dedicated github repositories.  
+One of the core design principles of the framework is its modularity. The framework itself is deliberately chosen to be very lightweight. The purpose is to add all custom automation logic through modules. Modules will typically group multiple automation scripts, resource automation scripts and libraries of one specific domain or topic.
 
 ### Creating your own modules
 
@@ -96,15 +104,25 @@ Just make sure to stick with the following file structure:
 |   +-- my_automation_script_spec.rb
 |   +-- spec_helper.rb
 +-- config.yml
++-- your-module-name.gemspec
++-- Rakefile
 ```
 
-The config.yml file contains the integration server and all other modules it depends on. Both settings are optional. In the future it will also be possible to version modules.
+The config.yml file contains the integration server and all other modules it depends on. Both settings are optional.
 
-If you use a github.com repository to host the source code of the module you can directly install it from there. Otherwise you can create a zip file of the module and install it as such.
-
-It is also possible to execute (and debug if your ruby IDE supports it, e.g. RubyMine) the scripts on your development machine. See further the section on Testability. 
+It is also possible to execute (and debug if your ruby IDE supports it, e.g. RubyMine) the scripts on your development machine. See further the section on Testability.
  
-For an example see the [Selenium](https://github.com/BMC-RLM/brpm_module_selenium) module.
+In order to publish your module, two more files are needed: a .gemspec file and a Rakefile. After you have committed your changes and bumped the version number from the config.yml file you can publish the new version of your module with a simple command:
+```shell
+rake release
+```
+ 
+For an example see the [Bladelogic](https://github.com/BMC-RLM/brpm_module_bladelogic) module. You can take the .gemspec and Rakefile file from there and copy it without modification into the root directory of your module.
+
+By default the module will be published to the public rubygems.org repository. It is also possible however to publish your module to a [private repository](http://guides.rubygems.org/run-your-own-gem-server/) like [geminabox](https://github.com/geminabox/geminabox). See the [Demo] module (more specifically its Rakefile) for an example of this alternative. In this case you should not forget to add your private sem server as a source on the gem environment of the BRPM instance:
+```shell
+gem sources -a http://your-private-gem-server:9292/
+```
 
 ## Re-usability
 
@@ -115,23 +133,32 @@ Although the initial purpose of the BRPM Content framework is to exist on top of
 As an example, see here how the create_package automation script from the bladelogic module can be executed in stand-alone mode:                                                                                                                                                                                                                                                                                                                                                                                               
 
 ```ruby
+#!/usr/bin/env ruby
 # Load the BRPM Content framework's script executor
-require "modules/framework/brpm_script_executor"
+require "brpm_script_executor"
 
 # Supply the input parameters for the automation script, if any
 params = {}
-params["application"] = "E-Finance"
-params["component"] = "EF - Java calculation engine"
-params["component_version"] = "1.2.3"
+params["application"] = ENV["APPLICATION"]
+params["component"] = ENV["COMPONENT"]
+params["component_version"] = ENV["COMPONENT_VERSION"]
 
-params["SS_integration_dns"] = "bladelogic"
-params["SS_integration_username"] = "brpm"
-params["SS_integration_password"] = "password"
+params["brpm_url"] = "http://#{ENV["BRPM_HOST"]}:#{ENV["BRPM_PORT"]}/brpm"
+params["brpm_api_token"] = ENV["BRPM_TOKEN"]
+
+params["SS_integration_dns"] = ENV["SS_INTEGRATION_DNS"]
+params["SS_integration_username"] = ENV["SS_INTEGRATION_USERNAME"]
+params["SS_integration_password"] = ENV["SS_INTEGRATION_PASSWORD"]
+params["SS_integration_details"] = {}
+params["SS_integration_details"]["role"] = ENV["SS_INTEGRATION_DETAILS_ROLE"]
+
+params["log_file"] = ENV["LOG_FILE"]
+params["also_log_to_console"] = "true"
 
 # Execute the automation script
-BrpmScriptExecutor.execute_automation_script("bladelogic", "create_package", params)
+BrpmScriptExecutor.execute_automation_script("brpm_module_bladelogic", "create_package", params)
 ```
-[source](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/shell_scripts/create_bl_package.sh)
+[source](https://github.com/BMC-RLM/brpm_module_bladelogic/blob/master/bin/create_bl_package)
 
 ### Libraries
 
@@ -139,11 +166,11 @@ It is also possible to re-use the module's libraries in stand-alone mode:
 
 ```ruby
 # Load the BRPM Content framework 
-require "framework/brpm_auto"
+require "brpm_auto"
 
 # Set up the framework and load the brpm module
 BrpmAuto.setup()
-BrpmAuto.require_module "brpm"
+BrpmAuto.require_module "brpm_module_brpm"
 
 # Create a BRPM REST client and find all requests for application E-Finance
 @brpm_rest_client = BrpmRestClient.new("http://my-brpm-server/brpm', "<api token>")
@@ -154,7 +181,7 @@ requests = @brpm_rest_client.get_requests_by({ "app_id" => app["id"]})
 
 ## Testability
 
-Thanks to the decoupling between the BRPM Content framework and BRPM itself, it is very easy to write automated tests for the automation logic that runs on top of the framework.
+Thanks to the decoupling between the BRPM Content framework and BRPM itself, it is very straightforward to write automated tests for the automation logic that runs on top of the framework.
  
 As an example, see here a unit test written in RSpec that will create a plan and a request in that plan:
 
@@ -171,7 +198,7 @@ describe 'create release request' do
       params["release_plan_template_name"] = 'E-Finance Release Plan'
 
       # Execute the automation script
-      BrpmScriptExecutor.execute_automation_script("brpm", "create_release_request", params)
+      BrpmScriptExecutor.execute_automation_script("brpm_module_brpm", "create_release_request", params)
 
       # Verify that the request was created and linked to the plan
       @brpm_rest_client = BrpmRestClient.new("http://my-brpm-server/brpm', "<api token>")
@@ -185,29 +212,23 @@ describe 'create release request' do
   ...
 end
 ```
-[source](https://github.com/BMC-RLM/brpm_content/blob/master/modules/brpm/tests/create_release_request_spec.rb)
+[source](https://github.com/BMC-RLM/brpm_module_brpm/blob/master/tests/create_release_request_spec.rb#L28)
 
-The framework itself comes with a set of RSpec tests that are executed automatically by [Travis CI](https://travis-ci.org/) after each commit. The status can be consulted on top of this page.
-
-When setting up an automated testing platform for your modules, make sure that the framework is installed before executing the tests. 
-
-### Mac OS X
-
-Clone this repository to a location that is side by side with your module's location. Then 'require' the brpm_script_executor in your spec_helper.rb:
-```ruby
-require_relative "../../../brpm_content/modules/framework/brpm_script_executor"
-```
-
-Make sure that you are running on ruby 1.9.3 and that all gem dependencies as specified in the Gemfile are installed.
- 
-### Travis CI
-
-See the [.travis.yml](https://github.com/BMC-RLM/brpm_module_selenium/blob/master/.travis.yml) file in the Selenium module for more information on how to do this.
+The framework itself comes with a set of [RSpec tests](https://github.com/BMC-RLM/brpm_content_framework/tree/master/tests) that are executed automatically by [Travis CI](https://travis-ci.org/) after each commit of code changes. The status can be consulted on top of this page.
 
 ## Framework
 ### Dependency management
 
-If you want to use a library or automation script from a different module you can indicate a dependency to that module in your own module's config.yml file. This will automatically make all libraries and automation modules available to all of the scripts in your own module. No need to add 'require' statements yourself.
+If you want to use a library or automation script from a different module you can indicate a dependency to that module in your own module's config.yml file. This will automatically install all directly and indirectly depending modules during the installation as well as make their libraries available to the scripts in your own module. No need to manage the 'require' statements for these libraries yourself.
+
+You can also pin the dependency to a specific version of a module. This can be useful in situations where multiple people of teams share the same modules and one team wants to upgrade to a new version of the depending module but the other teams don't want to risk breaking their own automations due to backward compatibilities that may have crept into the new version. 
+
+When multiple versions of a module are needed they can simply be installed side-by-side. This will happen automatically when the modules are installed as dependencies of other modules, but you can also indicate the version number when you install a module explicitly:
+```shell
+brpm_install brpm_module_brpm 1.2.3
+```
+
+When you link a request's step to an automation script can can optionally indicate the version number of the module (and even the framework). If no version number is specified then automatically the latest installed version will be used.
 
 ### Parameters
 
@@ -224,7 +245,7 @@ application = BrpmAuto.params.application
 my_custom_param = BrpmAuto.params["my_custom_param"]
 ```
 
-Check out the [automated tests](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/tests/params_spec.rb) for more complex use cases.
+Check out the [automated tests](https://github.com/BMC-RLM/brpm_content_framework/blob/master/tests/params_spec.rb) for more complex use cases.
 
 #### request params
 
@@ -240,7 +261,7 @@ BrpmAuto.request_params["created_issue_id"] = 123
 BrpmAuto.log "The id of the issue that was created by step 1 is #{BrpmAuto.request_params["created_issue_id"]}"
 ```
 
-Check out the [automated tests](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/tests/request_params_spec.rb) for more complex use cases.
+Check out the [automated tests](https://github.com/BMC-RLM/brpm_content_framework/blob/master/tests/request_params_spec.rb) for more complex use cases.
 
 #### integration settings
 
@@ -248,7 +269,7 @@ The integration settings are the connection parameters that are needed to connec
 
 ### Logging
 
-You can use the built-in logging feature for any logging needs. The logs will be visible on the 'Notes' tab of the associated BRPM step after the automation is finished. You can also consult the logs in real-time by navigating to my_brpm_server/brpm/automation_results/log.html?request=request id
+You can use the built-in logging feature for any logging needs. The logs will be visible on the 'Notes' tab of the associated BRPM step after the automation is finished. You can also consult the logs in real-time by navigating to http://my_brpm_server/brpm/automation_results/log.html?request=request id
 
 Example:
 ```ruby
@@ -263,11 +284,11 @@ Any ruby exception that is not trapped inside the automation scripts will cause 
 
 #### server yaml file
 
-The framework allows you to define your own parameters that will automatically be made available to all automation scripts. You can do this by creating a file server.yml in $BRPM_HOME/config and adding your parameters into it, in YAML format. See [here](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/config/server.yml) for an example. 
+The framework allows you to define your own parameters that will automatically be made available to all automation scripts. You can do this by creating a file server.yml in $BRPM_HOME/config and adding your parameters into it, in YAML format. See [here](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/config/server.yml) for an example. 
 
 #### customer include file
 
-The framework allows you to create your own ruby methods that you will automatically be able to use in all automation scripts. You can do this by creating a file customer_include.rb in $BRPM_HOME/config and adding your custom methods into it. See [here](https://github.com/BMC-RLM/brpm_content/blob/master/modules/framework/config/customer_include.rb) for an example.
+The framework allows you to create your own ruby methods that you will automatically be able to use in all automation scripts. You can do this by creating a file customer_include.rb in $BRPM_HOME/config and adding your custom methods into it. See [here](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/config/customer_include.rb) for an example.
 
 Note
 If a get_customer_include_params method exists, the framework will automatically execute it and add the resulting hash into the parameters hash.
@@ -284,25 +305,24 @@ The BRPM Content framework makes it easy to integrate with other tools using web
 
 ### Web hook receivers
 
-The framework contains a generic [web hook receiver script](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/integrations/webhook_receiver.rb) with an associated [bash wrapper script](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/shell_scripts/run_webhook_receiver.sh) that can be run as a daemon. You can pass it a custom script that can take care of processing the received events. Typically this event processing script will then execute the appropriate automation scripts.
+The framework contains a generic [web hook receiver script](https://github.com/BMC-RLM/brpm_content_framework/blob/master/bin/webhook_receiver) with an associated [bash wrapper script](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/scripts/run_webhook_receiver.sh) that can be run as a daemon. You can pass it a custom script that can take care of processing the received events. Typically this event processing script will then execute the appropriate automation scripts.
  
 A web hook receiver solution can be used for synchronizing data that is owned by another system (assuming it supports web hooks) with BRPM.
 
-For an example of how to synchronize JIRA issues with BRPM tickets see the [event handler script](https://github.com/BMC-RLM/brpm_content/blob/master/customers/demo/integrations/jira/process_webhook_event.rb) that could be used for this purpose. As soon as the script is run in daemon mode (and JIRA is configured to send event notifications to a web hook) it will start receiving events when issues are created or updated. 
+For an example of how to synchronize JIRA issues with BRPM tickets see the [web hook receiver script](https://github.com/BMC-RLM/brp_module_demo/lib/integrations/jira/process_webhook_event.rb) that could be used for this purpose. As soon as the script is run in daemon mode (and JIRA is configured to send event notifications to a web hook) it will start receiving events when issues are created or updated. 
 
 ### Messaging engine
 
-BRPM comes with a messaging engine that can send a notification for many events like the creation or update or requests, plans etc. The framework contains an [event handler script](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/integrations/event_handler.rb) with an associated [bash wrapper script](https://github.com/BMC-RLM/brpm_content/blob/master/infrastructure/shell_scripts/run_event_handler.sh) that can be set up to listen to these incoming events. You can pass it a custom script that can take care of processing the received events. Typically this event processing script will then execute the appropriate automation scripts.
+BRPM comes with a messaging engine that can send a notification for many events like the creation or update or requests, plans etc. The framework contains an [event handler script](https://github.com/BMC-RLM/brpm_content_framework/blob/master/bin/event_handler) with an associated [bash wrapper script](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/scripts/run_event_handler.sh) that can be set up to listen to these incoming events. You can pass it a custom script that can take care of processing the received events. Typically this event processing script will then execute the appropriate automation scripts.
 
 A messaging solution can be used for extending the out-of-the-box BRPM feature set or for synchronizing BRPM owned data with other systems. 
 
-For an example of how to update the status of the associated JIRA tickets after a deployment request finished successfully see the [event handler script](https://github.com/BMC-RLM/brpm_content/blob/master/customers/demo/integrations/brpm/process_event_handler_event.rb) (search for update_tickets_in_jira_by_request) that could be used for this purpose. As soon as the script is run in daemon mode it will start receiving events when requests change status. 
+For an example of how to update the status of the associated JIRA tickets after a deployment request finished successfully see the [event handler script](https://github.com/BMC-RLM/brpm_module_demo/integrations/brpm/process_event_handler_event.rb) (search for update_tickets_in_jira_by_request) that could be used for this purpose. As soon as the script is run in daemon mode it will start receiving events when requests change status. 
 
-## Modules
-### BRPM   
-### BladeLogic
-### JIRA
-### Jenkins
-
-### [Selenium](https://github.com/BMC-RLM/brpm_module_selenium) (in progress)
+## Publicly available modules:
+### [BRPM](https://github.com/BMC-RLM/brpm_module_brpm)   
+### [BladeLogic](https://github.com/BMC-RLM/brpm_module_bladelogic)
+### [JIRA](https://github.com/BMC-RLM/brpm_module_jira)
+### [Jenkins](https://github.com/BMC-RLM/brpm_module_jenkins)
+### [Demo](https://github.com/BMC-RLM/brpm_module_demo)
 
