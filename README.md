@@ -12,6 +12,7 @@ It is designed around a number of core concepts like modularity, re-usability, t
 
 ### Installation
 
+#### environment variables
 First of all, make sure that the necessary environment variables are set on the BRPM instance, e.g. for a default BRPM installation:
 ```shell
 export BRPM_HOME=/opt/bmc/RLM
@@ -24,6 +25,7 @@ export PATH="$GEM_HOME/bin:$JRUBY_HOME/bin:$PATH"
 
 If BRPM is installed on a custom location you can modify the first line accordingly. The PATH variable is modified to make sure the ruby scripts that come with the modules are in the PATH.  
 
+#### .brpm
 Then create a file .brpm with the following contents in the root directory of the user account that runs BRPM:
 ```shell
 brpm_url: http://your-brpm-server:8088/brpm
@@ -32,6 +34,7 @@ brpm_api_token: ...
 
 Note that he brpm_api_token should be the token of a user that is defined in BRPM and that has administrative rights.
 
+#### framework
 Finally you can install the framework and the BRPM module (needed to configure the automation script wrappers of the modules) as following:
 ```shell
 gem install brpm_content_framework
@@ -50,8 +53,7 @@ Note that brpm_module_brpm is a module that contains a REST API client for BRPM 
  
 Both gem files can be downloaded from the public gem repository rubygems.org. Just look up the name and on the gem's home page you will find a "Download" button that has a link to the latest version of the gem.
 
-### Usage
-
+#### modules
 OK now that the framework is installed the next thing to do is to install a couple of existing modules (or even build your own!). There is a list of available modules at the end of this page.
 
 A module can be installed as following:
@@ -66,6 +68,7 @@ brpm_install /path/to/module-name-x.x.x.gem
 
 The gem file of the module can be found on rubygems.org. 
 
+### Usage
 Once the module is installed you can immediately start using its contained automation scripts by linking the requests' steps to them.  
 
 ## Architecture
