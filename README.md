@@ -121,7 +121,7 @@ During the development life cycle, after you have committed the changes to your 
 rake release
 ```
  
-By default the module will be published to the public rubygems.org repository. It is also possible however to publish your module to a [private repository](http://guides.rubygems.org/run-your-own-gem-server/) like [geminabox](https://github.com/geminabox/geminabox). See the [Demo] module (more specifically its Rakefile) for an example of this alternative. In this case you should not forget to add your private sem server as a source on the gem environment of the BRPM instance:
+By default the module will be published to the public rubygems.org repository. It is also possible however to publish your module to a [private repository](http://guides.rubygems.org/run-your-own-gem-server/) like [geminabox](https://github.com/geminabox/geminabox). See this [Rakefile](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/module_template/Rakefile_for_private_gem_repo) for an example of this alternative. In this case you should not forget to add your private sem server as a source on the gem environment of the BRPM instance:
 ```shell
 gem sources -a http://your-private-gem-server:9292/
 ```
@@ -327,8 +327,8 @@ For an example of how to update the status of the associated JIRA tickets after 
 
 ## Publicly available modules:
 ### [BRPM](https://github.com/BMC-RLM/brpm_module_brpm)   
-### [BladeLogic](https://github.com/BMC-RLM/brpm_module_bladelogic)
+### [Bladelogic](https://github.com/BMC-RLM/brpm_module_bladelogic)
 ### [JIRA](https://github.com/BMC-RLM/brpm_module_jira)
 ### [Jenkins](https://github.com/BMC-RLM/brpm_module_jenkins)
-### [Demo](https://github.com/BMC-RLM/brpm_module_demo)
+### [Demo customer](https://github.com/BMC-RLM/brpm_module_demo)
 
