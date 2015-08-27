@@ -38,7 +38,7 @@ gem install brpm_content_framework
 brpm_install brpm_module_brpm
 ```
 
-If the BRPM instance has no access to the internet you can also download the modules (which are basically ruby gems) to your workstation and upload them from there onto the BRPM instance.
+If the BRPM instance has no direct access to the internet you can also download the modules (which are basically ruby gems) to your workstation and upload them from there onto the BRPM instance.
  
 In that case the installation can be done as following:
 ```shell
@@ -52,16 +52,16 @@ Both gem files can be downloaded from the public gem repository rubygems.org. Ju
 
 ### Usage
 
-OK now that the framework is installed the next thing to do is to install a couple of existing modules (see further), or even build your own!
+OK now that the framework is installed the next thing to do is to install a couple of existing modules (or even build your own!). There is a list of available modules at the end of this page.
 
 A module can be installed as following:
 ```shell
-brpm_install your-module-name
+brpm_install module-name
 ```
 
-Or if the BRPM instance has no access to the internet:
+Or if the BRPM instance has no direct access to the internet (assuming the gem file was manually uploaded onto the instance):
 ```shell
-brpm_install /path/to/your-module-name.gem
+brpm_install /path/to/module-name-x.x.x.gem
 ```
 
 The gem file of the module can be found on rubygems.org. 
@@ -94,36 +94,36 @@ Just make sure to stick with the following file structure:
 ```
 +-- automations
 |   +-- my_automation_script.rb
-|   +-- my_automation_script.txt
+|   +-- my_automation_script.meta
 +-- resource_automations
 |   +-- my_resource_automation_script.rb
-|   +-- my_resource_automation_script.txt
+|   +-- my_resource_automation_script.meta
 +-- lib
 |   +-- my_library.rb
 +-- tests
 |   +-- my_automation_script_spec.rb
 |   +-- spec_helper.rb
 +-- config.yml
-+-- your-module-name.gemspec
++-- module.gemspec
 +-- Rakefile
 ```
 
-The config.yml file contains the integration server and all other modules it depends on. Both settings are optional.
+The [config.yml](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/module_template/config.yml) file contains the meta data of the module as well as a list of the other modules it depends on. In order to publish your module, two more files are needed: a [module.gemspec](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/module_template/module.gemspec) file and a [Rakefile](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/module_template/Rakefile). Simply copy all three the files into the root directory of your module. 
 
-It is also possible to execute (and debug if your ruby IDE supports it, e.g. RubyMine) the scripts on your development machine. See further the section on Testability.
- 
-In order to publish your module, two more files are needed: a .gemspec file and a Rakefile. After you have committed your changes and bumped the version number from the config.yml file you can publish the new version of your module with a simple command:
+After you have committed your changes and bumped the version number from the config.yml file you can publish the new version of your module with a simple command:
 ```shell
 rake release
 ```
  
-For an example see the [Bladelogic](https://github.com/BMC-RLM/brpm_module_bladelogic) module. You can take the .gemspec and Rakefile file from there and copy it without modification into the root directory of your module.
+For an example see the [Bladelogic](https://github.com/BMC-RLM/brpm_module_bladelogic) module.
 
 By default the module will be published to the public rubygems.org repository. It is also possible however to publish your module to a [private repository](http://guides.rubygems.org/run-your-own-gem-server/) like [geminabox](https://github.com/geminabox/geminabox). See the [Demo] module (more specifically its Rakefile) for an example of this alternative. In this case you should not forget to add your private sem server as a source on the gem environment of the BRPM instance:
 ```shell
 gem sources -a http://your-private-gem-server:9292/
 ```
 
+You can simply execute (or debug if your ruby IDE supports it, e.g. RubyMine) the scripts on your development machine. See further the section on Testability.
+ 
 ## Re-usability
 
 ### Automation scripts
