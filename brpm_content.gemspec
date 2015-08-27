@@ -26,6 +26,6 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files`.split("\n")
   spec.require_path  = 'lib'
 
-  spec.executables   = spec.files.grep(%r{^modules/framework/bin/}).map{ |f| File.basename(f) }
+  spec.executables   = spec.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   spec.bindir        = "bin"
 end
