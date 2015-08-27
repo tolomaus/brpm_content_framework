@@ -1,0 +1,13 @@
+#list all dependencies
+dependencies:
+ - <module name> { version: x.x.x } # version is optional
+
+version: x.x.x
+
+name: <module friendly name> #this value will be used to create an automation category in BRPM for the module, if not specified the name of the repository (minus "brpm_module_") will be used
+author: Niek Bartholomeus
+email: niek.bartholomeus@gmail.com
+homepage: https://github.com/BMC-RLM/brpm_module_bladelogic
+license: MIT
+summary: BladeLogic automation scripts and libraries to run on top of the BRPM Content framework
+description: BladeLogic automation scripts and libraries to run on top of the BRPM Content framework. See https://github.com/BMC-RLM/brpm_content for more information about the BRPM Content framework
