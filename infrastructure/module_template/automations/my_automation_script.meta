@@ -1,0 +1,21 @@
+# list all input and output params
+params:
+  my_parameter:
+    name: My parameter
+    position: A1:C1
+
+friendly_name: <script friendly name> # this value will be used as the name of the automation script BRPM, if not specified the file name of the file will be used
+description: creates a BlPackage from a component
+
+# if your automation script depends on an integration server, you can specify here the type of the integration server it needs
+# during the installation the applicable integration server of the BRPM instance will then be linked to the automation script
+
+# supported integration server types:
+# Jira
+# Hudson/Jenkins, Jenkins
+# Remedy via AO, AO, "AtriumOrchestrator
+# BMC Application Automation, Bladelogic
+# RLM Deployment Engine, BRPD
+
+integration_server_type: <integration server type>
+

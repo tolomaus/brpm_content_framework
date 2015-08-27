@@ -210,7 +210,7 @@ class ModuleInstaller
   def get_module_friendly_name(module_spec)
     module_config = YAML.load_file("#{module_spec.gem_dir}/config.yml")
 
-    module_config["name"] || "#{module_spec.name.sub("brpm_module_", "").capitalize}"
+    module_config["friendly_name"] || "#{module_spec.name.sub("brpm_module_", "").capitalize}"
   end
 
   def create_automation_error_if_not_exists(automation_error)

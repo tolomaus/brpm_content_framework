@@ -90,7 +90,7 @@ One of the core design principles of the framework is its modularity. The framew
 
 It is very simple to create your own module. 
 
-Just make sure to stick with the following file structure: 
+Just make sure to stick with the following [file structure](https://github.com/BMC-RLM/brpm_content_framework/tree/master/infrastructure/module_template): 
 ```
 +-- automations
 |   +-- my_automation_script.rb
@@ -108,21 +108,27 @@ Just make sure to stick with the following file structure:
 +-- Rakefile
 ```
 
-The [config.yml](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/module_template/config.yml) file contains the meta data of the module as well as a list of the other modules it depends on. In order to publish your module, two more files are needed: a [module.gemspec](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/module_template/module.gemspec) file and a [Rakefile](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/module_template/Rakefile). Simply copy all three the files into the root directory of your module. 
+The config.yml file contains the meta data of the module as well as a list of the other modules it depends on. 
 
-After you have committed your changes and bumped the version number from the config.yml file you can publish the new version of your module with a simple command:
+The automations directory contains the actual automation scripts and the resource_automations directory contains the resource automation scripts. For each of these scripts a meta file must exist that contains (you guessed it right) the meta data of the automation script.
+
+See the example files from the module_template directory for more information on the mandatory and optional fields.
+
+In order to publish your module, two more files are needed: a module.gemspec file and a Rakefile. These two files can be copied from the module_template directory unmodified.
+
+During the development life cycle, after you have committed the changes to your automation scripts and bumped the version number from the config.yml file, you can now publish the new version of your module with a simple command:
 ```shell
 rake release
 ```
  
-For an example see the [Bladelogic](https://github.com/BMC-RLM/brpm_module_bladelogic) module.
-
 By default the module will be published to the public rubygems.org repository. It is also possible however to publish your module to a [private repository](http://guides.rubygems.org/run-your-own-gem-server/) like [geminabox](https://github.com/geminabox/geminabox). See the [Demo] module (more specifically its Rakefile) for an example of this alternative. In this case you should not forget to add your private sem server as a source on the gem environment of the BRPM instance:
 ```shell
 gem sources -a http://your-private-gem-server:9292/
 ```
 
 You can simply execute (or debug if your ruby IDE supports it, e.g. RubyMine) the scripts on your development machine. See further the section on Testability.
+
+For an example see the [Bladelogic](https://github.com/BMC-RLM/brpm_module_bladelogic) module.
  
 ## Re-usability
 
