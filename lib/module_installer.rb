@@ -76,7 +76,7 @@ class ModuleInstaller
         BrpmAuto.log "Uninstalling the automation script wrappers in the local BRPM instance..."
         failed_scripts = each_auto_script_wrapper(module_spec.gem_dir) do |auto_script_path, automation_type|
           BrpmAuto.log "Uninstalling automation script wrapper for script #{auto_script_path}..."
-          uninstall_auto_script_wrapper(auto_script_path, automation_type, module_friendly_name)
+          uninstall_auto_script_wrapper(auto_script_path, module_friendly_name)
         end
 
         if failed_scripts.size > 0
@@ -281,6 +281,42 @@ class ModuleInstaller
       end
     end
 
+    if Gem::Version.new(BrpmAuto.brpm_version) >= Gem::Version.new("4.8")
+      # For Local Shell
+      automation_dir = "#{module_path}/automations"
+      automation_script_paths = Dir.glob("#{automation_dir}/*.sh")
+
+      if automation_script_paths.size > 0
+        automation_script_paths.each do |auto_script_path|
+          begin
+            yield auto_script_path, "Local Shell"
+          rescue Exception => e
+            failed_scripts << auto_script_path
+            BrpmAuto.log_error(e)
+            BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
+          end
+        end
+      end
+    end
+
+    if Gem::Version.new(BrpmAuto.brpm_version) >= Gem::Version.new("4.8")
+      # For Remote Shell
+      automation_dir = "#{module_path}/remote_automations"
+      automation_script_paths = Dir.glob("#{automation_dir}/*.sh")
+
+      if automation_script_paths.size > 0
+        automation_script_paths.each do |auto_script_path|
+          begin
+            yield auto_script_path, "RemoteAutomation"
+          rescue Exception => e
+            failed_scripts << auto_script_path
+            BrpmAuto.log_error(e)
+            BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
+          end
+        end
+      end
+    end
+
     if failed_scripts.size > 0
       BrpmAuto.log "The following wrapper scripts generated errors:"
       failed_scripts.each do |failed_script|
@@ -294,11 +330,18 @@ class ModuleInstaller
   def install_auto_script_wrapper(auto_script_path, automation_type, module_name, module_friendly_name, integration_servers)
     auto_script_config = get_auto_script_config(auto_script_path, module_friendly_name)
 
+    if automation_type == "RemoteAutomation"
+      automation_type = auto_script_config["automation_type"] || "Remote Shell"
+    end
+    automation_type == "ResourceAutomation" if automation_type == "Data Retriever"
+
     BrpmAuto.log "Installing the wrapper script for automation script #{auto_script_config["name"]} (friendly name: #{auto_script_config["friendly_name"]}, automation type: #{automation_type})..."
 
-    if automation_type == "Automation"
+    if automation_type != "ResourceAutomation"
       add_version_params(auto_script_config["params"])
     end
+
+    automation_language = get_automation_language(automation_type)
 
     wrapper_script_content = ""
     if auto_script_config["params"].size > 0
@@ -308,31 +351,45 @@ class ModuleInstaller
       wrapper_script_content = "###\n#{params_content}###\n"
     end
 
-    integration_server = nil
-    if auto_script_config["integration_server_type"]
-      server_type_id = @brpm_rest_client.get_id_for_project_server_type(auto_script_config["integration_server_type"])
-      if server_type_id
-        integration_server = integration_servers.find { |integr_server| integr_server["server_name_id"] == server_type_id } #TODO: support multiple integration servers of same type (user should pick one)
-      else
-        integration_server = integration_servers.find { |integr_server| integr_server["name"].include?(auto_script_config["integration_server_type"]) } #TODO: support multiple integration servers of same type (user should pick one)
-      end
+    if is_local_automation(automation_type)
+      integration_server = nil
+      if auto_script_config["integration_server_type"]
+        server_type_id = @brpm_rest_client.get_id_for_project_server_type(auto_script_config["integration_server_type"])
+        if server_type_id
+          integration_server = integration_servers.find { |integr_server| integr_server["server_name_id"] == server_type_id } #TODO: support multiple integration servers of same type (user should pick one)
+        else
+          integration_server = integration_servers.find { |integr_server| integr_server["name"].include?(auto_script_config["integration_server_type"]) } #TODO: support multiple integration servers of same type (user should pick one)
+        end
 
-      if integration_server
-        wrapper_script_content += "\n"
-        wrapper_script_content += get_integration_server_template(integration_server["id"], integration_server["name"], auto_script_config["integration_server_type"])
-      else
-        BrpmAuto.log "WARNING - An integration server of type #{auto_script_config["integration_server_type"]} (or that has #{auto_script_config["integration_server_type"]} in its name if the integration server type is not supported) doesn't exist so not setting the integration server in the wrapper script."
+        if integration_server
+          wrapper_script_content += "\n"
+          wrapper_script_content += get_integration_server_template(integration_server["id"], integration_server["name"], auto_script_config["integration_server_type"], automation_language)
+        else
+          BrpmAuto.log "WARNING - An integration server of type #{auto_script_config["integration_server_type"]} (or that has #{auto_script_config["integration_server_type"]} in its name if the integration server type is not supported) doesn't exist so not setting the integration server in the wrapper script."
+        end
       end
     end
 
     wrapper_script_content += "\n"
-    wrapper_script_content += get_script_executor_template(automation_type, module_name, auto_script_config["name"])
+    case automation_type
+    when "Automation", "ResourceAutomation"
+      wrapper_script_content += get_script_executor_template(automation_type, module_name, auto_script_config["name"])
+
+    when "Local Shell"
+      wrapper_script_content += "#{auto_script_path}\n"
+
+    when "Remote Shell", "Remote Dispatcher"
+      wrapper_script_content += File.read(auto_script_path)
+
+    end
 
     script = {}
     script["name"] = auto_script_config["friendly_name"]
     script["description"] = auto_script_config["description"] || ""
     script["automation_type"] = automation_type
     script["automation_category"] = module_friendly_name
+    script["agent_type"] = auto_script_config["agent_type"] if automation_type == "Remote Dispatcher" and auto_script_config["agent_type"]
+    script["os_type_ids"] = get_os_type_ids(auto_script_config["os_types"]) if automation_type == "Remote Shell" and auto_script_config["os_types"]
     script["content"] = wrapper_script_content
     script["integration_id"] = integration_server["id"] if auto_script_config["integration_server_type"] and integration_server
     if automation_type == "ResourceAutomation"
@@ -367,7 +424,7 @@ class ModuleInstaller
     end
   end
 
-  def uninstall_auto_script_wrapper(auto_script_path, automation_type, module_friendly_name)
+  def uninstall_auto_script_wrapper(auto_script_path, module_friendly_name)
     auto_script_config = get_auto_script_config(auto_script_path, module_friendly_name)
 
     script = @brpm_rest_client.get_script_by_name(auto_script_config["friendly_name"])
@@ -402,16 +459,47 @@ class ModuleInstaller
   end
 
   def get_auto_script_config(auto_script_path, module_friendly_name)
-    auto_script_name = File.basename(auto_script_path, ".rb")
+    auto_script_name = File.basename(auto_script_path, ".*")
     auto_script_config_path = "#{File.dirname(auto_script_path)}/#{auto_script_name}.meta"
 
     auto_script_config_content = File.exists?(auto_script_config_path) ? File.read(auto_script_config_path) : ""
     auto_script_config = YAML.load(auto_script_config_content) || {}
+    auto_script_config["name"] = auto_script_name
     auto_script_config["params"] = auto_script_config["params"] || {}
-    auto_script_config["name"] = File.basename(auto_script_path, ".rb")
     auto_script_config["friendly_name"] = auto_script_config["friendly_name"] || "#{module_friendly_name} - #{auto_script_config["name"].gsub("_", " ").capitalize}"
 
     auto_script_config
+  end
+
+  def get_os_type_ids(os_types)
+    @os_type_map ||= { "200" => "Any", "201" => "Linux", "202" => "Windows" }
+    os_type_ids = []
+
+    os_types ||= ["Any"]
+
+    os_types.each do |os_type|
+        os_type_ids << @os_type_map.key(os_type)
+    end
+
+    os_type_ids
+  end
+
+  def is_local_automation(automation_type)
+    case automation_type
+    when "Automation", "Local Shell", "ResourceAutomation"
+      true
+    else
+      false
+    end
+  end
+
+  def get_automation_language(automation_type)
+    case automation_type
+    when "Automation", "ResourceAutomation"
+      "ruby"
+    else
+      "shell"
+    end
   end
 
   def add_version_params(auto_script_params)
@@ -438,8 +526,10 @@ class ModuleInstaller
     auto_script_params["framework_version"] = framework_version_param
   end
 
-  def get_integration_server_template(integration_server_id, integration_server_name, integration_server_type)
-    <<EOR
+  def get_integration_server_template(integration_server_id, integration_server_name, integration_server_type, automation_language)
+    case automation_language
+    when "ruby"
+      <<EOR
 #=== #{integration_server_type} Integration Server: #{integration_server_name} ===#
 # [integration_id=#{integration_server_id}]
 #=== End ===#
@@ -449,6 +539,16 @@ params["SS_integration_username"] = SS_integration_username
 params["SS_integration_password_enc"] = SS_integration_password_enc
 params["SS_integration_details"] = YAML.load(SS_integration_details)
 EOR
+    when "shell"
+      <<EOR
+#=== #{integration_server_type} Integration Server: #{integration_server_name} ===#
+# [integration_id=#{integration_server_id}]
+#=== End ===#
+EOR
+    else
+      BrpmAuto.log "WARNING - automation language #{automation_language} is not supported"
+      ""
+    end
   end
 
   def get_script_executor_template(automation_type, module_name, auto_script_name)

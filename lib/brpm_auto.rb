@@ -7,6 +7,7 @@ class BrpmAuto
   class << self
     attr_reader :config
     attr_reader :version
+    attr_reader :brpm_version
     attr_reader :logger
     attr_reader :params
     attr_reader :request_params
@@ -29,6 +30,8 @@ class BrpmAuto
 
       @config = get_config
       @version = @config["version"]
+
+      @brpm_version = get_brpm_version if ENV["BRPM_HOME"]
 
       @gems_root_path = get_gems_root_path
     end
@@ -324,6 +327,12 @@ class BrpmAuto
 
     def get_config
       YAML.load_file("#{@framework_root_path}/config.yml")
+    end
+
+    def get_brpm_version
+      knob = YAML.load_file("#{ENV["BRPM_HOME"]}/server/jboss/standalone/deployments/RPM-knob.yml")
+      version_content = File.read("#{knob["application"]["root"]}/VERSION")
+      version_content.scan(/VERSION=([0-9\.]*)/)[0][0]
     end
 
     def get_module_gem_path(module_name, module_version)
