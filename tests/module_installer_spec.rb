@@ -1,9 +1,11 @@
 describe 'Module installer' do
   before(:all) do
     raise "Module installation tests don't work under Bundler." if ENV["RUBYOPT"] and ENV["RUBYOPT"].include?("-rbundler/setup")
-    raise "$BRPM_HOME is not set" unless ENV["BRPM_HOME"]
+    raise "$BRPM_STUB_HOME is not set" unless ENV["BRPM_STUB_HOME"]
 
     brpm_version = "4.6.00.00"
+    ENV["BRPM_HOME"] = ENV["BRPM_STUB_HOME"]
+
     FileUtils.mkdir_p "#{ENV["BRPM_HOME"]}/modules"
     FileUtils.mkdir_p "#{ENV["BRPM_HOME"]}/server/jboss/standalone/deployments"
     FileUtils.mkdir_p "#{ENV["BRPM_HOME"]}/releases/#{brpm_version}/RPM"

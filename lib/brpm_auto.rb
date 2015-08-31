@@ -31,7 +31,7 @@ class BrpmAuto
       @config = get_config
       @version = @config["version"]
 
-      @brpm_version = get_brpm_version if ENV["BRPM_HOME"]
+      @brpm_version = get_brpm_version if self.brpm_installed
 
       @gems_root_path = get_gems_root_path
     end
@@ -184,6 +184,10 @@ class BrpmAuto
       @integration_settings = IntegrationSettings.new(dns, username, password, details)
     end
 
+    def brpm_installed
+      ENV["BRPM_HOME"] != nil
+    end
+
     def  get_gems_root_path
       if ENV["BRPM_CONTENT_HOME"]
         ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
@@ -330,7 +334,16 @@ class BrpmAuto
     end
 
     def get_brpm_version
-      knob = YAML.load_file("#{ENV["BRPM_HOME"]}/server/jboss/standalone/deployments/RPM-knob.yml")
+      unless self.params.brpm_installed
+        raise "BRPM is not installed."
+      end
+
+      knob_file = "#{ENV["BRPM_HOME"]}/server/jboss/standalone/deployments/RPM-knob.yml"
+      unless File.exists?(knob_file)
+        raise "Could not find the knob file at the expected location (#{knob_file})"
+      end
+
+      knob = YAML.load_file(knob_file)
       version_content = File.read("#{knob["application"]["root"]}/VERSION")
       version_content.scan(/VERSION=([0-9\.]*)/)[0][0]
     end
