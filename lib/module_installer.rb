@@ -4,17 +4,13 @@ require 'rubygems/installer'
 require "bundler"
 
 class ModuleInstaller
-  def initialize
-    set_gem_home
-  end
-
   def install_module(module_name_or_path, module_version = nil)
     brpm_content_spec = nil
 
     if true #TODO: support no-gem-install mode
       module_spec, specs = install_gem(module_name_or_path, module_version)
 
-      brpm_content_spec = specs.find { |spec| spec.name == "brpm_content" } if specs
+      brpm_content_spec = specs.find { |spec| spec.name == "brpm_content_framework" } if specs
 
       install_bundle_if_necessary(module_spec)
     else
@@ -27,7 +23,7 @@ class ModuleInstaller
 
       if brpm_content_spec
         if brpm_content_spec.version > Gem::Version.new(BrpmAuto.version) or ! File.exist?(get_symlink_path)
-          BrpmAuto.log "Updating the symlink to brpm_content-latest..."
+          BrpmAuto.log "Updating the symlink to brpm_content_framework-latest..."
           update_symlink_to_brpm_content(brpm_content_spec.gem_dir)
         end
 
@@ -74,7 +70,7 @@ class ModuleInstaller
         module_friendly_name = get_module_friendly_name(module_spec)
 
         BrpmAuto.log "Uninstalling the automation script wrappers in the local BRPM instance..."
-        failed_scripts = each_auto_script_wrapper(module_spec.gem_dir) do |auto_script_path, automation_type|
+        failed_scripts = each_auto_script_wrapper(module_spec.gem_dir) do |auto_script_path, _|
           BrpmAuto.log "Uninstalling automation script wrapper for script #{auto_script_path}..."
           uninstall_auto_script_wrapper(auto_script_path, module_friendly_name)
         end
@@ -92,11 +88,7 @@ class ModuleInstaller
     BrpmAuto.log "Uninstalling gem #{module_name} #{module_version}..."
     BrpmAuto.log `gem uninstall #{module_name} -v #{module_version} -x`
 
-    return true
-  end
-
-  def module_installed?(module_name, module_version = nil)
-    Gem::Specification.find_by_name(module_name).size > 0
+    true
   end
 
   private
@@ -137,6 +129,7 @@ class ModuleInstaller
       require 'rubygems/name_tuple'
       source = Gem::Source::SpecificFile.new module_name_or_path
       module_spec = source.spec
+      specs = [module_spec]
 
       gem = source.download module_spec
 
@@ -159,25 +152,12 @@ class ModuleInstaller
     return module_spec, specs
   end
 
-  def set_gem_home
-    if BrpmAuto.run_from_brpm or BrpmAuto.params.unit_test
-      # we need to override the GEM_HOME env var, otherwise the gems will be installed in BRPM's own gemset
-      ENV["GEM_HOME"] = BrpmAuto.get_gems_root_path
-      Gem.paths = ENV
-    end
-  end
-
   def install_bundle_if_necessary(spec)
     gemfile = File.join(spec.gem_dir, "Gemfile")
-    gemfile_lock = File.join(spec.gem_dir, "Gemfile.lock")
 
-    if File.exists?(gemfile) && File.exists?(gemfile_lock)
-      if BrpmAuto.run_from_brpm or BrpmAuto.params.unit_test
-        command = "cd #{spec.gem_dir}; export GEM_HOME=#{BrpmAuto.get_gems_root_path}; bundle install"
-      else
-        command = "cd #{spec.gem_dir}; bundle install"
-      end
-      BrpmAuto.log "Found a Gemfile.lock so executing command '#{command}'..."
+    if File.exists?(gemfile)
+      command = "cd #{spec.gem_dir}; bundle install"
+      BrpmAuto.log "Found a Gemfile so executing command '#{command}'..."
       result = BrpmAuto.execute_shell(command)
 
       BrpmAuto.log result["stdout"] if result["stdout"] and !result["stdout"].empty?
@@ -188,7 +168,7 @@ class ModuleInstaller
   end
 
   def get_symlink_path
-    "#{ENV["GEM_HOME"]}/gems/brpm_content-latest"
+    "#{ENV["GEM_HOME"]}/gems/brpm_content_framework-latest"
   end
 
   def update_symlink_to_brpm_content(brpm_content_path)
@@ -351,8 +331,8 @@ class ModuleInstaller
       wrapper_script_content = "###\n#{params_content}###\n"
     end
 
+    integration_server = nil
     if is_local_automation(automation_type)
-      integration_server = nil
       if auto_script_config["integration_server_type"]
         server_type_id = @brpm_rest_client.get_id_for_project_server_type(auto_script_config["integration_server_type"])
         if server_type_id
@@ -374,13 +354,12 @@ class ModuleInstaller
     case automation_type
     when "Automation", "ResourceAutomation"
       wrapper_script_content += get_script_executor_template(automation_type, module_name, auto_script_config["name"])
-
     when "Local Shell"
       wrapper_script_content += "#{auto_script_path}\n"
-
     when "Remote Shell", "Remote Dispatcher"
       wrapper_script_content += File.read(auto_script_path)
-
+    else
+      raise "Unsupported automation type: #{automation_type}"
     end
 
     script = {}
@@ -558,14 +537,14 @@ params["direct_execute"] = "true"
 params["framework_version"] = nil if params["framework_version"].empty?
 params["module_version"] = nil if params["module_version"].empty?
 
-require "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content-\#{params["framework_version"] || "latest"}/modules/framework/brpm_script_executor.rb"
+require "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content_framework-\#{params["framework_version"] || "latest"}/lib/brpm_script_executor.rb"
 EOR
 
     if automation_type == "Automation"
 
       template += <<EOR
 
-BrpmScriptExecutor.execute_automation_script("#{module_name}", "#{auto_script_name}", params)
+BrpmScriptExecutor.execute_automation_script_in_separate_process("#{module_name}", "#{auto_script_name}", params)
 EOR
 
     elsif automation_type == "ResourceAutomation"
@@ -573,7 +552,7 @@ EOR
       template += <<EOR
 
 def execute(script_params, parent_id, offset, max_records)
-  BrpmScriptExecutor.execute_resource_automation_script("#{module_name}", "#{auto_script_name}", script_params, parent_id, offset, max_records)
+  BrpmScriptExecutor.execute_resource_automation_script_in_separate_process("#{module_name}", "#{auto_script_name}", script_params, parent_id, offset, max_records)
 end
 EOR
     end

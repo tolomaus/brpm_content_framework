@@ -5,6 +5,7 @@ describe 'Module installer' do
 
     brpm_version = "4.6.00.00"
     ENV["BRPM_HOME"] = ENV["BRPM_STUB_HOME"]
+    ENV["GEM_HOME"] = "#{ENV["BRPM_HOME"]}/modules"
 
     FileUtils.mkdir_p "#{ENV["BRPM_HOME"]}/modules"
     FileUtils.mkdir_p "#{ENV["BRPM_HOME"]}/server/jboss/standalone/deployments"

@@ -67,7 +67,7 @@ else
   end  
   @request_params = {} if not defined?(@request_params)
   SS_output_file = @params["SS_output_file"]
-  BrpmAuto.require_module("brpm")
+  BrpmAuto.require_module("brpm_module_brpm")
   @p = BrpmAuto.all_params
   @request_params = BrpmAuto.request_params
   ARG_PREFIX = "ARG_" unless defined?(ARG_PREFIX)
