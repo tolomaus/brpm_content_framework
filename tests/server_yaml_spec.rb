@@ -1,4 +1,5 @@
 require_relative "spec_helper"
+require "brpm_auto"
 
 describe 'Server yaml' do
   before(:each) do

@@ -30,7 +30,7 @@ class BrpmAuto
       @config = get_config
       @version = @config["version"]
 
-      @brpm_version = get_brpm_version if self.brpm_installed
+      @brpm_version = get_brpm_version if self.brpm_installed?
     end
 
     def setup(params = {})
@@ -125,8 +125,8 @@ class BrpmAuto
       @integration_settings = IntegrationSettings.new(dns, username, password, details)
     end
 
-    def brpm_installed
-      ENV["BRPM_HOME"] != nil
+    def brpm_installed?
+      ENV["BRPM_HOME"] and !ENV["BRPM_HOME"].empty?
     end
 
     def require_module(module_name, module_version = nil)
@@ -172,6 +172,25 @@ class BrpmAuto
       module_path
     end
 
+    def get_module_gem_path(module_name, module_version)
+      "#{ENV["GEM_HOME"]}/gems/#{module_name}-#{module_version}"
+    end
+
+    def get_latest_installed_version(module_name)
+      latest_version_path = get_module_gem_path(module_name, "latest")
+      return "latest" if File.exists?(latest_version_path)
+
+      # TODO: use Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))
+      all_version_search = get_module_gem_path(module_name, "*")
+      version_paths = Dir.glob(all_version_search)
+
+      raise Gem::GemNotFoundException, "Could not find any installed version of module #{module_name}. Expected them in #{get_module_gem_path(module_name, "*")}" if version_paths.empty?
+
+      versions = version_paths.map { |path| File.basename(path).sub("#{module_name}-", "") }
+
+      versions.sort{ |a, b| Gem::Version.new(a) <=> Gem::Version.new(b) }.last
+    end
+
     private
 
     def require_libs_no_file_logging(module_path)
@@ -214,7 +233,7 @@ class BrpmAuto
     end
 
     def get_brpm_version
-      unless self.params.brpm_installed
+      unless self.brpm_installed?
         raise "BRPM is not installed."
       end
 
@@ -227,32 +246,7 @@ class BrpmAuto
       version_content = File.read("#{knob["application"]["root"]}/VERSION")
       version_content.scan(/VERSION=([0-9\.]*)/)[0][0]
     end
-
-    def get_module_gem_path(module_name, module_version)
-      "#{ENV["GEM_HOME"]}/gems/#{module_name}-#{module_version}"
-    end
-
-    def get_latest_installed_version(module_name)
-      latest_version_path = get_module_gem_path(module_name, "latest")
-      return "latest" if File.exists?(latest_version_path)
-
-      # TODO: use Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))
-      all_version_search = get_module_gem_path(module_name, "*")
-      version_paths = Dir.glob(all_version_search)
-
-      raise GemNoVersionsInstalledError, "Could not find any installed version of module #{module_name}. Expected them in #{get_module_gem_path(module_name, "*")}" if version_paths.empty?
-
-      versions = version_paths.map { |path| File.basename(path).sub("#{module_name}-", "") }
-
-      versions.sort{ |a, b| Gem::Version.new(a) <=> Gem::Version.new(b) }.last
-    end
   end
 
   self.init
-end
-
-class GemNoVersionsInstalledError < Gem::GemNotFoundException
-end
-
-class GemNotInstalledError < Gem::GemNotFoundException
 end

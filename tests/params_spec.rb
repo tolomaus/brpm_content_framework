@@ -1,4 +1,5 @@
 require_relative "spec_helper"
+require "brpm_auto"
 
 describe 'Params' do
   before(:each) do

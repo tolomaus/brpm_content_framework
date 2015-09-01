@@ -6,7 +6,8 @@ before_install:
   - gem update --system 2.1.9
 
 script:
-  - rspec tests --format documentation --color
+  - bundle exec rspec tests --format documentation --color
+  - rspec tests_no_bundler --format documentation --color
 
 notifications:
   email:

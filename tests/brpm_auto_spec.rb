@@ -5,6 +5,7 @@ describe 'BRPM automation framework' do
     setup_brpm_auto
   end
 
+
   describe 'privatize' do
     it 'should hide a sensitive string' do
       result = BrpmAuto.privatize("The password should be replaced here: MySecret, and also here:MySecret! ", "MySecret")

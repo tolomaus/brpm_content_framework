@@ -1,10 +1,17 @@
 require 'fileutils'
 require 'yaml'
-require_relative "../lib/brpm_auto"
+require 'json'
 
 FileUtils.mkdir_p "/tmp/brpm_content"
 
+def setup_brpm_env
+  raise "$BRPM_STUB_HOME is not set" unless ENV["BRPM_STUB_HOME"]
+  ENV["BRPM_HOME"] = ENV["BRPM_STUB_HOME"]
+end
+
 def setup_brpm_auto
+  require "brpm_script_executor"
+  require "brpm_auto"
   BrpmAuto.setup(get_default_params)
 end
 

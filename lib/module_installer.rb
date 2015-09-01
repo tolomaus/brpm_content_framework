@@ -18,7 +18,7 @@ class ModuleInstaller
       module_spec = Gem::Specification.find_by_name(module_name)
     end
 
-    if brpm_installed_locally?
+    if BrpmAuto.brpm_installed?
       BrpmAuto.log "A BRPM instance is installed locally"
 
       if brpm_content_spec
@@ -59,7 +59,7 @@ class ModuleInstaller
   end
 
   def uninstall_module(module_name, module_version)
-    if brpm_installed_locally?
+    if BrpmAuto.brpm_installed?
       BrpmAuto.log "A BRPM instance is installed locally"
 
       BrpmAuto.log "Preparing the connectivity to BRPM..."
@@ -181,10 +181,6 @@ class ModuleInstaller
     unless result["status"] == 0
       raise result["stderr"]
     end
-  end
-
-  def brpm_installed_locally?
-    ENV["BRPM_HOME"] and !ENV["BRPM_HOME"].empty?
   end
 
   def get_module_friendly_name(module_spec)
