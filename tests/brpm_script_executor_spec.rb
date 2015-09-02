@@ -31,9 +31,7 @@ describe 'BRPM Script Executor' do
   end
 
   it "should execute an automation script in-process" do
-    result = BrpmScriptExecutor.execute_automation_script("brpm_module_test", "test_ruby", get_default_params)
-
-    expect(result).to be_truthy
+    expect{BrpmScriptExecutor.execute_automation_script("brpm_module_test", "test_ruby", get_default_params)}.not_to raise_exception
   end
 
   it "should return false when executing an non-existing automation script in-process" do
