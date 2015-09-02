@@ -61,8 +61,15 @@ class BrpmScriptExecutor
       env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
 
       BrpmAuto.log "Finding the module path..."
-      module_version = params["module_version"] || BrpmAuto.get_latest_installed_version(modul)
-      module_path = BrpmAuto.get_module_gem_path(modul, module_version)
+      case automation_type
+      when "automation"
+        module_version = params["module_version"] || get_latest_installed_version(modul)
+      when "resource_automation"
+        module_version = get_latest_installed_version(modul) #TODO: get the module version of the calling script
+      else
+        raise "Automation type #{automation_type} is not supported."
+      end
+      module_path = get_module_gem_path(modul, module_version)
 
       if File.exists?(module_path)
         BrpmAuto.log "Found module #{modul} #{module_version || ""} in path #{module_path}."
@@ -77,7 +84,7 @@ class BrpmScriptExecutor
         return
       end
 
-      BrpmAuto.log "Found a Gemfile (#{gemfile_path}) so the automation script will have to run inside bundler."
+      BrpmAuto.log "Using Gemfile #{gemfile_path}."
       env_vars["BUNDLE_GEMFILE"] = gemfile_path
       require_statements += "require 'bundler/setup'; "
       # TODO Bundler.require
@@ -101,27 +108,17 @@ class BrpmScriptExecutor
         BrpmAuto.log ">>>>>>>>>>>>>> START #{automation_type} #{name}"
         start_time = Time.now
 
-        case automation_type
-        when "automation"
-          module_version = params["module_version"] || BrpmAuto.get_latest_installed_version(modul)
-        when "resource_automation"
-          module_version = BrpmAuto.get_latest_installed_version(modul) #TODO: get the module version of the calling script
-        else
-          raise "Automation type #{automation_type} is not supported."
-        end
-        module_path = BrpmAuto.get_module_gem_path(modul, module_version)
+        module_spec = Gem::Specification.find_by_name(modul) # will raise an error when the module is not installed
+        module_path = module_spec.gem_dir
 
-        if File.exists?(module_path)
-          BrpmAuto.log "Found module #{modul} #{module_version || ""} in gem path #{module_path}."
-        else
-          raise Gem::GemNotFoundException, "Module #{modul} version #{module_version} is not installed. Expected it on path #{module_path}."
-        end
-
-        BrpmAuto.require_module(modul, module_version)
+        BrpmAuto.require_module(modul)
 
         automation_script_path = "#{module_path}/#{automation_type}s/#{name}.rb"
+        unless File.exists?(automation_script_path)
+          raise "Could not find automation #{name} in module #{modul}. Expected it on path #{automation_script_path}."
+        end
 
-        BrpmAuto.log "Executing the #{automation_type} script #{automation_script_path}..."
+        BrpmAuto.log "Executing the #{automation_type} script #{name} from #{automation_script_path}..."
         load automation_script_path
 
         if automation_type == "resource_automation"
@@ -142,6 +139,36 @@ class BrpmScriptExecutor
         BrpmAuto.log ""
 
         #load "#{File.dirname(__FILE__)}/write_to.rb" if BrpmAuto.params.run_from_brpm
+      end
+    end
+    def get_module_gem_path(module_name, module_version)
+      "#{get_gems_root_path}/gems/#{module_name}-#{module_version}"
+    end
+
+    def get_latest_installed_version(module_name)
+      latest_version_path = get_module_gem_path(module_name, "latest")
+      return "latest" if File.exists?(latest_version_path)
+
+      # TODO: use Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))
+      all_version_search = get_module_gem_path(module_name, "*")
+      version_paths = Dir.glob(all_version_search)
+
+      raise Gem::GemNotFoundException, "Could not find any installed version of module #{module_name}. Expected them in #{get_module_gem_path(module_name, "*")}" if version_paths.empty?
+
+      versions = version_paths.map { |path| File.basename(path).sub("#{module_name}-", "") }
+
+      versions.sort{ |a, b| Gem::Version.new(a) <=> Gem::Version.new(b) }.last
+    end
+
+    def get_gems_root_path
+      if ENV["BRPM_CONTENT_HOME"]
+        ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
+      elsif ENV["BRPM_HOME"]
+        "#{ENV["BRPM_HOME"]}/modules" # default gemset location when BRPM is installed
+      elsif ENV["GEM_HOME"]
+        ENV["GEM_HOME"] # default gemset location when BRPM is not installed
+      else
+        raise "Unable to find out the gems root path."
       end
     end
   end

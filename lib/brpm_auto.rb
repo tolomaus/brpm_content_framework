@@ -15,9 +15,6 @@ class BrpmAuto
 
     attr_reader :framework_root_path
 
-    attr_reader :gems_root_path
-    attr_reader :gemfile_lock
-
     def init
       @framework_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
 
@@ -31,7 +28,6 @@ class BrpmAuto
       @version = @config["version"]
 
       @brpm_version = get_brpm_version if self.brpm_installed?
-      @gems_root_path = get_gems_root_path
     end
 
     def setup(params = {})
@@ -130,9 +126,9 @@ class BrpmAuto
       ENV["BRPM_HOME"] and ! ENV["BRPM_HOME"].empty?
     end
 
-    def require_module(module_name, module_version = nil)
-      module_version ||= get_latest_installed_version(module_name)
-      module_path = get_module_gem_path(module_name, module_version)
+    def require_module(module_name)
+      module_spec = Gem::Specification.find_by_name(module_name) # will raise an error when the module is not installed
+      module_path = module_spec.gem_dir
 
       module_config_file_path = "#{module_path}/config.yml"
 
@@ -144,23 +140,12 @@ class BrpmAuto
           module_config["dependencies"].each do |dependency|
             if dependency.is_a?(Hash)
               dep_module_name = dependency.keys[0]
-              if @gemfile_lock
-                dep_module_version = get_version_from_gemfile_lock(dep_module_name)
-              else
-                dep_module_version = dependency.values[0]["version"]
-              end
             else
               dep_module_name = dependency
-
-              if @gemfile_lock
-                dep_module_version = get_version_from_gemfile_lock(dep_module_name)
-              else
-                dep_module_version = get_latest_installed_version(dep_module_name)
-              end
             end
 
-            BrpmAuto.log "Loading module #{dep_module_name} version #{dep_module_version}..."
-            require_module(dep_module_name, dep_module_version)
+            BrpmAuto.log "Loading module #{dep_module_name}..."
+            require_module(dep_module_name)
           end
         end
       else
@@ -171,29 +156,6 @@ class BrpmAuto
       require_libs(module_path)
 
       module_path
-    end
-
-    def get_module_gem_path(module_name, module_version)
-      "#{@gems_root_path}/gems/#{module_name}-#{module_version}"
-    end
-
-    def get_latest_installed_version(module_name)
-      latest_version_path = get_module_gem_path(module_name, "latest")
-      return "latest" if File.exists?(latest_version_path)
-
-      # TODO: use Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))
-      all_version_search = get_module_gem_path(module_name, "*")
-      version_paths = Dir.glob(all_version_search)
-
-      raise Gem::GemNotFoundException, "Could not find any installed version of module #{module_name}. Expected them in #{get_module_gem_path(module_name, "*")}" if version_paths.empty?
-
-      versions = version_paths.map { |path| File.basename(path).sub("#{module_name}-", "") }
-
-      versions.sort{ |a, b| Gem::Version.new(a) <=> Gem::Version.new(b) }.last
-    end
-
-    def refresh_gems_root_path
-      @gems_root_path = get_gems_root_path
     end
 
     private
@@ -230,18 +192,6 @@ class BrpmAuto
         else
           require_files(failed_files, log)
         end
-      end
-    end
-
-    def get_gems_root_path
-      if ENV["BRPM_CONTENT_HOME"]
-        ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
-      elsif ENV["BRPM_HOME"]
-        "#{ENV["BRPM_HOME"]}/modules" # default gemset location when BRPM is installed
-      elsif ENV["GEM_HOME"]
-        ENV["GEM_HOME"] # default gemset location when BRPM is not installed
-      else
-        raise "Unable to find out the gems root path."
       end
     end
 

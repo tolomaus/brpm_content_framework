@@ -3,7 +3,7 @@ require "yaml"
 config = YAML.load_file(File.join(File.dirname(__FILE__), "config.yml"))
 
 Gem::Specification.new do |spec|
-  spec.name          = File.basename(File.expand_path(File.dirname(__FILE__)))
+  spec.name          = File.basename(File.expand_path(File.dirname(__FILE__))).sub("-#{config["version"]}", "")
   spec.version       = config["version"]
   spec.platform      = Gem::Platform::RUBY
   spec.license       = config["license"]

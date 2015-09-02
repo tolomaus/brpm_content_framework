@@ -107,6 +107,7 @@ Just make sure to stick with the following [file structure](https://github.com/B
 |   +-- my_automation_script_spec.rb
 |   +-- spec_helper.rb
 +-- config.yml
++-- Gemfile
 +-- module.gemspec
 +-- Rakefile
 ```
@@ -117,7 +118,7 @@ The automations directory contains the actual automation scripts and the resourc
 
 See the example files from the module_template directory for more information on the mandatory and optional fields.
 
-In order to publish your module, two more files are needed: a module.gemspec file and a Rakefile. These two files can be copied from the module_template directory unmodified.
+In order to publish your module, three more files are needed: a Gemfile, a module.gemspec file and a Rakefile. These files can be copied from the module_template directory unmodified.
 
 During the development life cycle, after you have committed the changes to your automation scripts and bumped the version number from the config.yml file, you can now publish the new version of your module with a simple command:
 ```shell
