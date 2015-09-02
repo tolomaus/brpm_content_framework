@@ -16,11 +16,45 @@ class BrpmScriptExecutor
         file.puts(params.to_yaml)
       end
 
-      BrpmAuto.log "Executing '#{modul}' '#{name}' in a separate process..."
-      Bundler.clean_system({"GEM_HOME" => ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"}, get_ruby_cmd, "-r", __FILE__, "-e", "BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_file}\")")
+      env_vars = {}
+      env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
+
+      BrpmAuto.log "Finding the module path..."
+      module_version = params["module_version"] || BrpmAuto.get_latest_installed_version(modul)
+      module_path = BrpmAuto.get_module_gem_path(modul, module_version)
+
+      if File.exists?(module_path)
+        BrpmAuto.log "Found module #{modul} #{module_version || ""} in path #{module_path}."
+      else
+        raise Gem::GemNotFoundException, "Module #{modul} version #{module_version} is not installed. Expected it on path #{module_path}."
+      end
+
+      require_statements = ""
+      gemfile_path = "#{module_path}/Gemfile"
+      unless File.exists?(gemfile_path)
+        BrpmAuto.log_error("This module doesn't have a Gemfile. Expected it at #{gemfile_path}.")
+        return
+      end
+
+      BrpmAuto.log "Found a Gemfile (#{gemfile_path}) so the automation script will have to run inside bundler."
+      env_vars["BUNDLE_GEMFILE"] = gemfile_path
+      require_statements += "require 'bundler/setup'; "
+      # TODO Bundler.require
+
+      BrpmAuto.log "Executing automation script '#{name}' from module '#{modul}' in a separate process..."
+      result = Bundler.clean_system(env_vars, RbConfig.ruby, "-e", "#{require_statements}; require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_file}\")")
+      if result.nil?
+        BrpmAuto.log_error("The process that executed the automation script returned with 'Command execution failed'.")
+      elsif result == false
+        BrpmAuto.log_error("The process that executed the automation script  returned with non-zero exit code: #{$?.exitstatus}")
+      end
+
+      result
     end
 
     def execute_automation_script_from_other_process(modul, name, params_file)
+      raise "Params file #{params_file} doesn't exist." unless File.exists?(params_file)
+
       puts "Loading params file #{params_file}..."
       params = YAML.load_file(params_file)
 
@@ -49,20 +83,20 @@ class BrpmScriptExecutor
         BrpmAuto.log ">>>>>>>>>>>>>> START automation #{name}"
         start_time = Time.now
 
-        original_brpm_version = BrpmAuto.version
-
-        BrpmAuto.log "Initializing module #{modul}#{params["module_version"] ? " #{params["module_version"]}" : ""} and its dependencies..."
         module_version = params["module_version"] || BrpmAuto.get_latest_installed_version(modul)
-        module_path = initialize_module(modul, module_version)
-        BrpmAuto.log "Finished loading the module."
+        module_path = BrpmAuto.get_module_gem_path(modul, module_version)
 
-        BrpmAuto.log "Note: running on a different version of the BRPM Content framework now: #{BrpmAuto.version} (was #{original_brpm_version})" if original_brpm_version != BrpmAuto.version
+        if File.exists?(module_path)
+          BrpmAuto.log "Found module #{modul} #{module_version || ""} in gem path #{module_path}."
+        else
+          raise Gem::GemNotFoundException, "Module #{modul} version #{module_version} is not installed. Expected it on path #{module_path}."
+        end
 
         BrpmAuto.require_module(modul, module_version)
 
         automation_script_path = "#{module_path}/automations/#{name}.rb"
 
-        BrpmAuto.log "Loading the automation script #{automation_script_path}..."
+        BrpmAuto.log "Executing the automation script #{automation_script_path}..."
         load automation_script_path
 
       rescue Exception => e
@@ -98,7 +132,7 @@ class BrpmScriptExecutor
 
         automation_script_path = "#{module_path}/resource_automations/#{name}.rb"
 
-        BrpmAuto.log "Loading the resource automation script #{automation_script_path}..."
+        BrpmAuto.log "Executing the resource automation script #{automation_script_path}..."
         load automation_script_path
 
         BrpmAuto.log "Calling execute_resource_automation_script(params, parent_id, offset, max_records)..."
@@ -121,37 +155,6 @@ class BrpmScriptExecutor
     end
 
     alias_method :execute_resource_automation_script_from_gem, :execute_resource_automation_script
-
-    def get_ruby_cmd
-      @ruby ||= File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
-    end
-
-    # this method is used BEFORE BrpmAuto is activated so make sure not to use any logic from BrpmAuto in here
-    def initialize_module(module_name, module_version)
-      module_gem_path = BrpmAuto.get_module_gem_path(module_name, module_version)
-
-      if File.exists?(module_gem_path)
-        BrpmAuto.log "Found module #{module_name} #{module_version || ""} in gem path #{module_gem_path}."
-      else
-        raise Gem::GemNotFoundException, "Module #{module_name} version #{module_version} is not installed. Expected it on path #{module_gem_path}."
-      end
-
-      gemfile_path = "#{module_gem_path}/Gemfile"
-      if File.exists?(gemfile_path)
-        BrpmAuto.log "Found a Gemfile (#{gemfile_path}) so activating bundler..."
-        ENV["BUNDLE_GEMFILE"] = gemfile_path
-        require "bundler/setup"
-        # TODO Bundler.require
-
-        params = BrpmAuto.params
-
-        BrpmAuto.log "Reloading brpm_auto to make sure the version that was specified by the Gemfile/Gemfile.lock of the module is active from now on..."
-        require "brpm_auto"
-        BrpmAuto.setup(params)
-      end
-
-      module_gem_path
-    end
   end
 end
 

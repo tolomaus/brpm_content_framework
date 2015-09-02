@@ -31,6 +31,7 @@ class BrpmAuto
       @version = @config["version"]
 
       @brpm_version = get_brpm_version if self.brpm_installed?
+      @gems_root_path = get_gems_root_path
     end
 
     def setup(params = {})
@@ -173,7 +174,7 @@ class BrpmAuto
     end
 
     def get_module_gem_path(module_name, module_version)
-      "#{ENV["GEM_HOME"]}/gems/#{module_name}-#{module_version}"
+      "#{@gems_root_path}/gems/#{module_name}-#{module_version}"
     end
 
     def get_latest_installed_version(module_name)
@@ -225,6 +226,18 @@ class BrpmAuto
         else
           require_files(failed_files, log)
         end
+      end
+    end
+
+    def  get_gems_root_path
+      if ENV["BRPM_CONTENT_HOME"]
+        ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
+      elsif ENV["BRPM_HOME"]
+        "#{ENV["BRPM_HOME"]}/modules" # default gemset location when BRPM is installed
+      elsif ENV["GEM_HOME"]
+        ENV["GEM_HOME"] # default gemset location when BRPM is not installed
+      else
+        raise "Unable to find out the gems root path."
       end
     end
 

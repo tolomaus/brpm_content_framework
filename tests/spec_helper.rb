@@ -3,10 +3,10 @@ require 'yaml'
 require 'json'
 
 FileUtils.mkdir_p "/tmp/brpm_content"
+raise "$BRPM_STUB_HOME is not set" unless ENV["BRPM_STUB_HOME"]
+ENV["BRPM_HOME"] = ENV["BRPM_STUB_HOME"]
 
 def setup_brpm_env
-  raise "$BRPM_STUB_HOME is not set" unless ENV["BRPM_STUB_HOME"]
-  ENV["BRPM_HOME"] = ENV["BRPM_STUB_HOME"]
 end
 
 def setup_brpm_auto
@@ -52,19 +52,4 @@ def decrypt_string_with_prefix(input) # mocked method
   return nil if input.nil? || !input.kind_of?(String)
 
   input.gsub("_encrypted", "")
-end
-
-def create_brpm_file
-  if File.exists?("~/.brpm")
-    FileUtils.rm("~/.brpm")
-  end
-
-  params = get_default_params
-  brpm_params = {}
-  brpm_params["brpm_url"] = params["brpm_url"]
-  brpm_params["brpm_api_token"] = params["brpm_api_token"]
-
-  File.open(File.expand_path("~/.brpm"), "w") do |file|
-    file.puts(brpm_params.to_yaml)
-  end
 end

@@ -8,19 +8,50 @@ describe 'BRPM Script Executor' do
     require_relative "../lib/brpm_auto"
     BrpmAuto.setup(get_default_params)
 
-    BrpmAuto.log "Creating ~/.brpm file..."
-    create_brpm_file
+    test_gems = Dir.glob("#{ENV["BRPM_HOME"]}/modules/gems/brpm_module_test*")
 
-    gem_installed = `gem list -i brpm_module_test`.chomp
-    if gem_installed != "true" # we are running inside bundler here so simplest to install the gem using a separate process
+    if test_gems.empty?
+      # watch out we are running inside bundler, known for messing up the gem configs
+      ENV["GEM_HOME"] = "#{ENV["BRPM_HOME"]}/modules"
+      Gem.paths = ENV
+
       BrpmAuto.log "Installing brpm_module_test..."
-      # `gem install brpm_module_test`
+      specs = Gem.install("brpm_module_test")
+      spec = specs.find { |spec| spec.name == "brpm_module_test"}
+      BrpmAuto.log "Bundle install..."
+      `export GEM_HOME=#{ENV["GEM_HOME"]}; export BUNDLE_GEMFILE=#{spec.gem_dir}/Gemfile; bundle install`
     end
+  end
+
+  it "should execute an automation script in-process" do
+    result = BrpmScriptExecutor.execute_automation_script("brpm_module_test", "test_ruby", get_default_params)
+
+    expect(result).to be_truthy
+  end
+
+  it "should return false when executing an non-existing automation script in-process" do
+    expect{BrpmScriptExecutor.execute_automation_script("brpm_module_test", "xxx", get_default_params)}.to raise_exception
+  end
+
+  it "should return false when executing an erroneous automation script in-process" do
+    expect{BrpmScriptExecutor.execute_automation_script("brpm_module_test", "test_ruby_raises_error", get_default_params)}.to raise_exception
   end
 
   it "should execute an automation script in a separate process" do
     result = BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "test_ruby", get_default_params)
 
     expect(result).to be_truthy
+  end
+
+  it "should return false when executing an non-existing automation script in a separate process" do
+    result = BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "xxx", get_default_params)
+
+    expect(result).to be_falsey
+  end
+
+  it "should return false when executing an erroneous automation script in a separate process" do
+    result = BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "test_ruby_raises_error", get_default_params)
+
+    expect(result).to be_falsey
   end
 end
