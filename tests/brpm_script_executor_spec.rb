@@ -6,6 +6,7 @@ describe 'BRPM Script Executor' do
 
     require_relative "../lib/brpm_script_executor"
     require_relative "../lib/brpm_auto"
+    BrpmAuto.refresh_gems_root_path # TODO: find a better way to make sur ethe newly set BRPM_HOME is taken into account in cases where BrpmAuto was already loaded during earlier tests without the BRPM_HOME set
     BrpmAuto.setup(get_default_params)
 
     test_gems = Dir.glob("#{ENV["BRPM_HOME"]}/modules/gems/brpm_module_test*")

@@ -127,7 +127,7 @@ class BrpmAuto
     end
 
     def brpm_installed?
-      ENV["BRPM_HOME"] and !ENV["BRPM_HOME"].empty?
+      ENV["BRPM_HOME"] and ! ENV["BRPM_HOME"].empty?
     end
 
     def require_module(module_name, module_version = nil)
@@ -192,6 +192,10 @@ class BrpmAuto
       versions.sort{ |a, b| Gem::Version.new(a) <=> Gem::Version.new(b) }.last
     end
 
+    def refresh_gems_root_path
+      @gems_root_path = get_gems_root_path
+    end
+
     private
 
     def require_libs_no_file_logging(module_path)
@@ -229,7 +233,7 @@ class BrpmAuto
       end
     end
 
-    def  get_gems_root_path
+    def get_gems_root_path
       if ENV["BRPM_CONTENT_HOME"]
         ENV["BRPM_CONTENT_HOME"] # gemset location is overridden
       elsif ENV["BRPM_HOME"]

@@ -1,12 +1,11 @@
 require 'fileutils'
 require 'yaml'
 require 'json'
-
 FileUtils.mkdir_p "/tmp/brpm_content"
-raise "$BRPM_STUB_HOME is not set" unless ENV["BRPM_STUB_HOME"]
-ENV["BRPM_HOME"] = ENV["BRPM_STUB_HOME"]
 
 def setup_brpm_env
+  raise "$BRPM_STUB_HOME is not set" unless ENV["BRPM_STUB_HOME"]
+  ENV["BRPM_HOME"] = ENV["BRPM_STUB_HOME"]
 end
 
 def setup_brpm_auto
