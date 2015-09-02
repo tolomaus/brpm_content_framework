@@ -16,11 +16,16 @@ describe 'BRPM Script Executor' do
       ENV["GEM_HOME"] = "#{ENV["BRPM_HOME"]}/modules"
       Gem.paths = ENV
 
+      # TODO: get this to work to avoid race conditions waiting for the new gem version to be 'rake release'ed to rubygems
+      # BrpmAuto.log "Doing a 'rake install' to install brpm_content_framework as a gem..."
+      # result = Bundler.clean_system("export GEM_HOME=#{ENV["GEM_HOME"]} && cd .. && rake install")
+      # raise "rake install failed" unless result
+
       BrpmAuto.log "Installing brpm_module_test..."
       specs = Gem.install("brpm_module_test")
       spec = specs.find { |spec| spec.name == "brpm_module_test"}
       BrpmAuto.log "Bundle install..."
-      result = Bundler.clean_system("export GEM_HOME=#{ENV["GEM_HOME"]}; export BUNDLE_GEMFILE=#{spec.gem_dir}/Gemfile; bundle install")
+      result = Bundler.clean_system("export GEM_HOME=#{ENV["GEM_HOME"]} && export BUNDLE_GEMFILE=#{spec.gem_dir}/Gemfile && bundle install")
       raise "bundle install failed" unless result
     end
   end
