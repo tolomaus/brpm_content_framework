@@ -20,7 +20,8 @@ describe 'BRPM Script Executor' do
       specs = Gem.install("brpm_module_test")
       spec = specs.find { |spec| spec.name == "brpm_module_test"}
       BrpmAuto.log "Bundle install..."
-      `export GEM_HOME=#{ENV["GEM_HOME"]}; export BUNDLE_GEMFILE=#{spec.gem_dir}/Gemfile; bundle install`
+      result = Bundler.clean_system("export GEM_HOME=#{ENV["GEM_HOME"]}; export BUNDLE_GEMFILE=#{spec.gem_dir}/Gemfile; bundle install")
+      raise "bundle install failed" unless result
     end
   end
 

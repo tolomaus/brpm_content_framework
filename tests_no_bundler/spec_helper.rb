@@ -1,3 +1,5 @@
+require "fileutils"
+
 def setup_gem_env
   raise "$BRPM_STUB_HOME is not set" unless ENV["BRPM_STUB_HOME"]
 
