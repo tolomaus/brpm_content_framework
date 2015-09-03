@@ -35,7 +35,10 @@ class BrpmScriptExecutor
       BrpmAuto.log "Deleting params file #{params_file}..."
       FileUtils.rm(params_file)
 
-      load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/create_output_file.rb")
+      if BrpmAuto.params["SS_run_key"] and BrpmAuto.params["SS_script_support_path"]
+        puts "Loading the BRPM core framework's libraries..."
+        load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/create_output_file.rb")
+      end
 
       execute_automation_script_internal(modul, name, params, automation_type, parent_id, offset, max_records)
     end
