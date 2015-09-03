@@ -36,14 +36,10 @@ describe 'BRPM Script Executor' do
   end
 
   it "should return false when executing an non-existing automation script in a separate process" do
-    result = BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "xxx", get_default_params)
-
-    expect(result).to be_falsey
+    expect{BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "xxx", get_default_params)}.to raise_exception
   end
 
   it "should return false when executing an erroneous automation script in a separate process" do
-    result = BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "test_ruby_raises_error", get_default_params)
-
-    expect(result).to be_falsey
+    expect{BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "test_ruby_raises_error", get_default_params)}.to raise_exception
   end
 end
