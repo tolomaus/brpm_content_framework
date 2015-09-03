@@ -71,3 +71,12 @@ def create_brpm_file
   end
 end
 
+def setup_brpm_connectivity
+  BrpmAuto.log "Creating ~/.brpm file..."
+  create_brpm_file
+
+  brpm_specs = Gem::Specification.find_all_by_name("brpm_module_brpm")
+  if brpm_specs.empty?
+    Gem.install("brpm_module_brpm")
+  end
+end

@@ -4,11 +4,8 @@ describe 'Module installer' do
   before(:all) do
     setup_gem_env
     setup_modules_env
-
     setup_brpm_auto
-
-    BrpmAuto.log "Creating ~/.brpm file..."
-    create_brpm_file
+    setup_brpm_connectivity
 
     @module_name = "brpm_module_test"
     @module_version = "0.1.3"
@@ -18,7 +15,6 @@ describe 'Module installer' do
     module_installer = ModuleInstaller.new
 
     module_specs = Gem::Specification.find_all_by_name(@module_name)
-
     module_specs.each do |module_spec|
       if module_spec.loaded_from.start_with?(ENV["BRPM_HOME"])
         BrpmAuto.log "Module #{@module_name} (#{module_spec.version.to_s}) is already installed, uninstalling it..."

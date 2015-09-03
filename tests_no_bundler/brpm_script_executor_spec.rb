@@ -3,10 +3,10 @@ require_relative "spec_helper"
 describe 'BRPM Script Executor' do
   before(:all) do
     setup_gem_env
+    setup_modules_env
+    setup_brpm_auto
 
     require_relative "../lib/brpm_script_executor"
-    require_relative "../lib/brpm_auto"
-    BrpmAuto.setup(get_default_params)
 
     ENV["GEM_HOME"] = "#{ENV["BRPM_HOME"]}/modules"
     Gem.paths = ENV
