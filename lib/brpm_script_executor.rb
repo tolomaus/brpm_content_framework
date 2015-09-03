@@ -35,12 +35,7 @@ class BrpmScriptExecutor
       BrpmAuto.log "Deleting params file #{params_file}..."
       FileUtils.rm(params_file)
 
-      if params["SS_run_key"] and params["SS_script_support_path"]
-        BrpmAuto.log "Loading script_support libraries..."
-        require "#{params["SS_script_support_path"]}/ssh_script_header.rb"
-        require "#{params["SS_script_support_path"]}/script_helper.rb"
-        require "#{params["SS_script_support_path"]}/file_in_utf.rb"
-      end
+      load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/create_output_file.rb")
 
       execute_automation_script_internal(modul, name, params, automation_type, parent_id, offset, max_records)
     end
@@ -94,7 +89,7 @@ class BrpmScriptExecutor
       if result.nil?
         BrpmAuto.log_error("The process that executed the automation script returned with 'Command execution failed'.")
       elsif result == false
-        BrpmAuto.log_error("The process that executed the automation script  returned with non-zero exit code: #{$?.exitstatus}")
+        BrpmAuto.log_error("The process that executed the automation script returned with non-zero exit code: #{$?.exitstatus}")
       end
 
       result
@@ -138,7 +133,7 @@ class BrpmScriptExecutor
         BrpmAuto.log ">>>>>>>>>>>>>> STOP #{automation_type} #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
 
-        #load "#{File.dirname(__FILE__)}/write_to.rb" if BrpmAuto.params.run_from_brpm
+        #load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/write_to.rb") if BrpmAuto.params.run_from_brpm
       end
     end
     def get_module_gem_path(module_name, module_version)
