@@ -42,4 +42,10 @@ describe 'BRPM Script Executor' do
   it "should return false when executing an erroneous automation script in a separate process" do
     expect{BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "test_ruby_raises_error", get_default_params)}.to raise_exception
   end
+
+  it "should execute a resource automation script in a separate process" do
+    result = BrpmScriptExecutor.execute_resource_automation_script_in_separate_process("brpm_module_test", "test_resource", get_default_params, nil, 0, 10)
+
+    expect(result.count).to eql(3)
+  end
 end
