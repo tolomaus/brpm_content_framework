@@ -14,6 +14,7 @@ describe 'Module installer' do
   before(:each) do
     module_installer = ModuleInstaller.new
 
+    Gem::Specification.reset # Mske sure that modules that were installed by other unit tests are taken into account
     module_specs = Gem::Specification.find_all_by_name(@module_name)
     module_specs.each do |module_spec|
       if module_spec.loaded_from.start_with?(ENV["BRPM_HOME"])
@@ -28,6 +29,9 @@ describe 'Module installer' do
     module_installer.install_module(@module_name)
 
     expect{Gem::Specification.find_by_name(@module_name)}.not_to raise_error #(Gem::LoadError)
+
+    spec = Gem::Specification.find_by_name(@module_name)
+    expect(spec.loaded_from.start_with?(ENV["BRPM_HOME"]))
   end
 
   it "should install a specific version of a module from rubygems.org" do
@@ -35,6 +39,9 @@ describe 'Module installer' do
     module_installer.install_module(@module_name, @module_version)
 
     expect{Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))}.not_to raise_error #(Gem::LoadError)
+
+    spec = Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))
+    expect(spec.loaded_from.start_with?(ENV["BRPM_HOME"]))
   end
 
   it "should install a module from a local gem file" do
@@ -44,5 +51,8 @@ describe 'Module installer' do
     module_installer.install_module("temp/#{@module_name}-#{@module_version}.gem")
 
     expect{Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))}.not_to raise_error #(Gem::LoadError)
+
+    spec = Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))
+    expect(spec.loaded_from.start_with?(ENV["BRPM_HOME"]))
   end
 end

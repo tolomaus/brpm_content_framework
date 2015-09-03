@@ -12,7 +12,7 @@ class ModuleInstaller
 
       brpm_content_spec = specs.find { |spec| spec.name == "brpm_content_framework" } if specs
 
-      install_bundle_if_necessary(module_spec)
+      install_bundle(module_spec)
     else
       module_name = module_name_or_path
       module_spec = Gem::Specification.find_by_name(module_name)
@@ -152,18 +152,20 @@ class ModuleInstaller
     return module_spec, specs
   end
 
-  def install_bundle_if_necessary(spec)
-    gemfile = File.join(spec.gem_dir, "Gemfile")
+  def install_bundle(spec)
+    gemfile_path = File.join(spec.gem_dir, "Gemfile")
 
-    if File.exists?(gemfile)
-      command = "cd #{spec.gem_dir}; bundle install"
-      BrpmAuto.log "Found a Gemfile so executing command '#{command}'..."
-      result = BrpmAuto.execute_shell(command)
+    unless File.exists?(gemfile_path)
+      raise "This module doesn't have a Gemfile. Expected it at #{gemfile_path}."
+    end
 
-      BrpmAuto.log result["stdout"] if result["stdout"] and !result["stdout"].empty?
-      unless result["status"] == 0
-        raise result["stderr"]
-      end
+    command = "cd #{spec.gem_dir}; bundle install"
+    BrpmAuto.log "Found a Gemfile so executing command '#{command}'..."
+    result = BrpmAuto.execute_shell(command)
+
+    BrpmAuto.log result["stdout"] if result["stdout"] and !result["stdout"].empty?
+    unless result["status"] == 0
+      raise result["stderr"]
     end
   end
 

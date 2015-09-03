@@ -8,8 +8,6 @@ describe 'BRPM Script Executor' do
 
     require_relative "../lib/brpm_script_executor"
 
-    ENV["GEM_HOME"] = "#{ENV["BRPM_HOME"]}/modules"
-    Gem.paths = ENV
     test_gems = Gem::Specification.find_all_by_name("brpm_module_test")
 
     if test_gems.empty?

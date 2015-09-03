@@ -5,6 +5,7 @@ def setup_gem_env
 
   ENV["BRPM_HOME"] = ENV["BRPM_STUB_HOME"]
   ENV["GEM_HOME"] = "#{ENV["BRPM_HOME"]}/modules"
+  Gem.paths = ENV
 end
 
 def setup_modules_env
