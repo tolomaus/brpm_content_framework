@@ -35,9 +35,6 @@ class ModuleInstaller
 
       BrpmAuto.log "Preparing the connectivity to BRPM..."
       if prepare_brpm_connection
-        BrpmAuto.log "Creating an automation error for '******** ERROR ********' if one doesn't exist yet..."
-        create_automation_error_if_not_exists("******** ERROR ********")
-
         module_friendly_name = get_module_friendly_name(module_spec)
         BrpmAuto.log "Creating an automation category for #{module_friendly_name} if one doesn't exist yet..."
         create_automation_category_if_not_exists(module_friendly_name)

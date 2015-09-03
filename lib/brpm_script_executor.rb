@@ -85,14 +85,17 @@ class BrpmScriptExecutor
       BrpmAuto.log "Using Gemfile #{gemfile_path}."
       env_vars["BUNDLE_GEMFILE"] = gemfile_path
       require_statements += "require 'bundler/setup'; "
-      # TODO Bundler.require
 
       BrpmAuto.log "Executing automation script '#{name}' from module '#{modul}' in a separate process..."
       result = Bundler.clean_system(env_vars, RbConfig.ruby, "-e", "#{require_statements}; require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_file}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")")
       if result.nil?
-        BrpmAuto.log_error("The process that executed the automation script returned with 'Command execution failed'.")
+        message = "The process that executed the automation script returned with 'Command execution failed'."
+        BrpmAuto.log_error message
+        raise message
       elsif result == false
-        BrpmAuto.log_error("The process that executed the automation script returned with non-zero exit code: #{$?.exitstatus}")
+        message = "The process that executed the automation script returned with non-zero exit code: #{$?.exitstatus}"
+        BrpmAuto.log_error message
+        raise message
       end
 
       result
@@ -139,6 +142,9 @@ class BrpmScriptExecutor
         #load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/write_to.rb") if BrpmAuto.params.run_from_brpm
       end
     end
+
+    ############################################################################################################################################################
+    # These methods are used to find gems outside of the active bundle so they should not rely on any logic from the gem or bundler libraries
     def get_module_gem_path(module_name, module_version)
       "#{get_gems_root_path}/gems/#{module_name}-#{module_version}"
     end
@@ -147,7 +153,6 @@ class BrpmScriptExecutor
       latest_version_path = get_module_gem_path(module_name, "latest")
       return "latest" if File.exists?(latest_version_path)
 
-      # TODO: use Gem::Specification.find_by_name(@module_name, Gem::Requirement.create(Gem::Version.new(@module_version)))
       all_version_search = get_module_gem_path(module_name, "*")
       version_paths = Dir.glob(all_version_search)
 
@@ -169,6 +174,8 @@ class BrpmScriptExecutor
         raise "Unable to find out the gems root path."
       end
     end
+    ############################################################################################################################################################
+
   end
 end
 
