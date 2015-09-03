@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.summary       = config["summary"]
   spec.description   = config["description"]
 
-  spec.add_runtime_dependency "brpm_content_framework", ">=0.1.55"
+  spec.add_runtime_dependency "brpm_content_framework", ">=0.2.11"
 
   if config["dependencies"]
     config["dependencies"].each do |dependency|
@@ -32,8 +32,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec"
 
   spec.files         = `git ls-files`.split("\n")
-  spec.require_path  = 'lib'
-
   spec.executables   = spec.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
-  spec.bindir        = "bin"
 end
