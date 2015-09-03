@@ -18,7 +18,7 @@ class BrpmAuto
     def init
       @framework_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
 
-      require "logging/brpm_logger"
+      require_relative "logging/brpm_logger"
 
       require_libs_no_file_logging @framework_root_path
 

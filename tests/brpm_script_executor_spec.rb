@@ -29,19 +29,6 @@ describe 'BRPM Script Executor' do
     end
   end
 
-  # these tests dont work because the gem brpm_module_test is not included in the Gemfile, best to move them out to a separate project
-  # it "should execute an automation script in-process" do
-  #   expect{BrpmScriptExecutor.execute_automation_script("brpm_module_test", "test_ruby", get_default_params)}.not_to raise_exception
-  # end
-  #
-  # it "should return false when executing an non-existing automation script in-process" do
-  #   expect{BrpmScriptExecutor.execute_automation_script("brpm_module_test", "xxx", get_default_params)}.to raise_exception
-  # end
-  #
-  # it "should return false when executing an erroneous automation script in-process" do
-  #   expect{BrpmScriptExecutor.execute_automation_script("brpm_module_test", "test_ruby_raises_error", get_default_params)}.to raise_exception
-  # end
-
   it "should execute an automation script in a separate process" do
     result = BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "test_ruby", get_default_params)
 
