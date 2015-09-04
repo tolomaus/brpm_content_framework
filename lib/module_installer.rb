@@ -152,13 +152,13 @@ class ModuleInstaller
   def install_bundle(spec)
     gemfile_path = File.join(spec.gem_dir, "Gemfile")
 
-    unless File.exists?(gemfile_path)
-      raise "This module doesn't have a Gemfile. Expected it at #{gemfile_path}."
+    if File.exists?(gemfile_path)
+      command = "cd #{spec.gem_dir}; bundle install"
+      BrpmAuto.log "Found a Gemfile so executing command '#{command}'..."
+      result = BrpmAuto.execute_shell(command)
+    else
+      BrpmAuto.log "This module doesn't have a Gemfile."
     end
-
-    command = "cd #{spec.gem_dir}; bundle install"
-    BrpmAuto.log "Found a Gemfile so executing command '#{command}'..."
-    result = BrpmAuto.execute_shell(command)
 
     BrpmAuto.log result["stdout"] if result["stdout"] and !result["stdout"].empty?
     unless result["status"] == 0
@@ -532,12 +532,12 @@ params["direct_execute"] = "true"
 params["framework_version"] = nil if params["framework_version"].empty?
 params["module_version"] = nil if params["module_version"].empty?
 
-require "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content_framework-\#{params["framework_version"] || "latest"}/lib/brpm_script_executor.rb"
 EOR
 
     if automation_type == "Automation"
 
       template += <<EOR
+require "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content_framework-\#{params["framework_version"] || "latest"}/lib/brpm_script_executor.rb"
 
 BrpmScriptExecutor.execute_automation_script_in_separate_process("#{module_name}", "#{auto_script_name}", params)
 EOR
@@ -545,6 +545,7 @@ EOR
     elsif automation_type == "ResourceAutomation"
 
       template += <<EOR
+load "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content_framework-\#{params["framework_version"] || "latest"}/lib/brpm_script_executor.rb"
 
 def execute(script_params, parent_id, offset, max_records)
   BrpmScriptExecutor.execute_resource_automation_script_in_separate_process("#{module_name}", "#{auto_script_name}", script_params, parent_id, offset, max_records)

@@ -17,15 +17,6 @@ class BrpmScriptExecutor
     def execute_automation_script_in_separate_process_internal(modul, name, params, automation_type, parent_id = nil, offset = nil, max_records = nil)
       BrpmAuto.setup(params)
 
-      working_path = File.expand_path(params["SS_output_dir"] || params["output_dir"] || Dir.pwd)
-
-      params_file = "#{working_path}/params_#{params["SS_run_key"] || params["run_key"] || "000"}.yml"
-
-      BrpmAuto.log "Creating params file #{params_file}..."
-      File.open(params_file, "w") do |file|
-        file.puts(params.to_yaml)
-      end
-
       env_vars = {}
       env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
 
@@ -47,16 +38,25 @@ class BrpmScriptExecutor
       end
 
       gemfile_path = "#{module_path}/Gemfile"
-      unless File.exists?(gemfile_path)
-        BrpmAuto.log_error("This module doesn't have a Gemfile. Expected it at #{gemfile_path}.")
-        return
+      if File.exists?(gemfile_path)
+        BrpmAuto.log "Using Gemfile #{gemfile_path}."
+        env_vars["BUNDLE_GEMFILE"] = gemfile_path
+        require_bundler = "require 'bundler/setup';"
+      else
+        BrpmAuto.log("This module doesn't have a Gemfile.")
+        require_bundler = ""
       end
 
-      BrpmAuto.log "Using Gemfile #{gemfile_path}."
-      env_vars["BUNDLE_GEMFILE"] = gemfile_path
+      working_path = File.expand_path(params["SS_output_dir"] || params["output_dir"] || Dir.pwd)
+      params_file = "#{working_path}/params_#{params["SS_run_key"] || params["run_key"] || "000"}.yml"
+
+      BrpmAuto.log "Temporarily storing the params to #{params_file}..."
+      File.open(params_file, "w") do |file|
+        file.puts(params.to_yaml)
+      end
 
       BrpmAuto.log "Executing automation script '#{name}' from module '#{modul}' in a separate process..."
-      return_value = Bundler.clean_system(env_vars, RbConfig.ruby, "-e", "require 'bundler/setup'; require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_file}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")")
+      return_value = Bundler.clean_system(env_vars, RbConfig.ruby, "-e", "#{require_bundler}require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_file}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")")
       FileUtils.rm(params_file) if File.exists?(params_file)
       if return_value.nil?
         message = "The process that executed the automation script returned with 'Command execution failed'."
@@ -70,7 +70,7 @@ class BrpmScriptExecutor
 
       if automation_type == "resource_automation"
         result_file = "#{working_path}/result_#{$?.pid}.yml"
-        BrpmAuto.log "Returning the results from #{result_file}..."
+        BrpmAuto.log "Loading the result from #{result_file} and cleaning it up..."
         result = YAML.load_file(result_file)
         FileUtils.rm result_file
 
@@ -83,12 +83,11 @@ class BrpmScriptExecutor
     def execute_automation_script_from_other_process(modul, name, params_file, automation_type, parent_id = nil, offset = nil, max_records = nil)
       raise "Params file #{params_file} doesn't exist." unless File.exists?(params_file)
 
-      puts "Loading params file #{params_file}..."
+      puts "Loading the params from #{params_file} and cleaning it up..."
       params = YAML.load_file(params_file)
-
       FileUtils.rm(params_file)
 
-      puts "Loading the BRPM Content framework..."
+      puts "Setting up the BRPM Content framework..."
       BrpmAuto.setup(params)
 
       if BrpmAuto.params["SS_run_key"] and BrpmAuto.params["SS_script_support_path"]
@@ -99,7 +98,7 @@ class BrpmScriptExecutor
       result = execute_automation_script_internal(modul, name, params, automation_type, parent_id, offset, max_records)
       if automation_type == "resource_automation"
         result_file = "#{File.dirname(params_file)}/result_#{Process.pid}.yml"
-        BrpmAuto.log "Saving the results to #{result_file}..."
+        BrpmAuto.log "Temporarily storing the result to #{result_file}..."
         FileUtils.rm(result_file) if File.exists?(result_file)
         File.open(result_file, "w") do |file|
           file.puts(result.to_yaml)
