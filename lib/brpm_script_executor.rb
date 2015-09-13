@@ -16,8 +16,11 @@ class BrpmScriptExecutor
 
     def execute_automation_script_in_separate_process_internal(modul, name, params, automation_type, parent_id = nil, offset = nil, max_records = nil)
       BrpmAuto.setup(params)
+      BrpmAuto.log ""
+      BrpmAuto.log "Executing #{automation_type} '#{name}' from module '#{modul}' in a separate process..."
 
       env_vars = {}
+      env_vars["JRUBY_OPTS"] = "-Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF" # improve jvm startup time (see http://rexchung.com/2013/08/02/speed-up-jruby-rails-startup-time/)
       env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
 
       BrpmAuto.log "Finding the module path..."
@@ -55,7 +58,7 @@ class BrpmScriptExecutor
         file.puts(params.to_yaml)
       end
 
-      BrpmAuto.log "Executing automation script '#{name}' from module '#{modul}' in a separate process..."
+      BrpmAuto.log "Executing the script in a separate process..."
       return_value = Bundler.clean_system(env_vars, RbConfig.ruby, "-e", "#{require_bundler}require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_file}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")")
       FileUtils.rm(params_file) if File.exists?(params_file)
       if return_value.nil?
@@ -87,18 +90,19 @@ class BrpmScriptExecutor
       params = YAML.load_file(params_file)
       FileUtils.rm(params_file)
 
-      puts "Setting up the BRPM Content framework..."
+      puts "  Setting up the BRPM Content framework..."
       BrpmAuto.setup(params)
+      BrpmAuto.log "  BRPM Content framework is version #{BrpmAuto.version}."
 
       if BrpmAuto.params["SS_run_key"] and BrpmAuto.params["SS_script_support_path"]
-        puts "Loading the BRPM core framework's libraries..."
+        BrpmAuto.log "  Loading the BRPM core framework's libraries..."
         load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/create_output_file.rb")
       end
 
       result = execute_automation_script_internal(modul, name, params, automation_type, parent_id, offset, max_records)
       if automation_type == "resource_automation"
         result_file = "#{File.dirname(params_file)}/result_#{Process.pid}.yml"
-        BrpmAuto.log "Temporarily storing the result to #{result_file}..."
+        BrpmAuto.log "  Temporarily storing the result to #{result_file}..."
         FileUtils.rm(result_file) if File.exists?(result_file)
         File.open(result_file, "w") do |file|
           file.puts(result.to_yaml)
@@ -119,7 +123,7 @@ class BrpmScriptExecutor
         BrpmAuto.setup(params)
 
         BrpmAuto.log ""
-        BrpmAuto.log ">>>>>>>>>>>>>> START #{automation_type} #{name}"
+        BrpmAuto.log ">>>>>>>>>>>>>> START #{automation_type} #{modul} #{name}"
         start_time = Time.now
 
         module_spec = Gem::Specification.find_by_name(modul) # will raise an error when the module is not installed
@@ -136,7 +140,6 @@ class BrpmScriptExecutor
         load automation_script_path
 
         if automation_type == "resource_automation"
-          BrpmAuto.log "Calling execute_resource_automation_script(params, parent_id, offset, max_records)..."
           execute_script(params, parent_id, offset, max_records)
         end
       rescue Exception => e
@@ -149,7 +152,7 @@ class BrpmScriptExecutor
         duration = 0
         duration = stop_time - start_time unless start_time.nil?
 
-        BrpmAuto.log ">>>>>>>>>>>>>> STOP #{automation_type} #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
+        BrpmAuto.log ">>>>>>>>>>>>>> STOP #{automation_type} #{modul} #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
 
         #load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/write_to.rb") if BrpmAuto.params.run_from_brpm

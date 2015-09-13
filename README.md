@@ -116,9 +116,11 @@ The config.yml file contains the meta data of the module as well as a list of th
 
 The automations directory contains the actual automation scripts and the resource_automations directory contains the resource automation scripts. For each of these scripts a meta file must exist that contains (you guessed it right) the meta data of the automation script.
 
+You can optionally include a Gemfile to your module. This will make sure that the versions of the modules (and other gems) that your module depends on are pinned during the installation of your module, even if more recent versions of these dependencies are installed later on. If you include a Gemfile.lock to the module (automatically generated when you do a 'bundle install') you can even pin these versions during build time. This will make sure that your module uses the same versions of the dependencies wherever and whenever it is installed. If you don't include any of these files then the latest available version of the dependent modules is automatically used.      
+
 See the example files from the module_template directory for more information on the mandatory and optional fields.
 
-In order to publish your module, three more files are needed: a Gemfile, a module.gemspec file and a Rakefile. These files can be copied from the module_template directory unmodified.
+In order to publish your module, two more files are needed: a module.gemspec file and a Rakefile. These files can be copied from the module_template directory unmodified.
 
 During the development life cycle, after you have committed the changes to your automation scripts and bumped the version number from the config.yml file, you can now publish the new version of your module with a simple command:
 ```shell
