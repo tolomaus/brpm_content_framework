@@ -1,5 +1,18 @@
 require "yaml"
 
+print "Loading all files from #{File.dirname(__FILE__)}...\n"
+require_relative "logging/brpm_logger"
+require_relative "logging/simple_logger"
+
+require_relative "params/params"
+require_relative "params/request_params"
+require_relative "params/all_params"
+require_relative "params/integration_settings"
+
+require_relative "utilities"
+require_relative "rest_api"
+require_relative "semaphore"
+
 class BrpmAuto
   private_class_method :new
 
@@ -17,10 +30,6 @@ class BrpmAuto
 
     def init
       @framework_root_path = File.expand_path("#{File.dirname(__FILE__)}/..")
-
-      require_relative "logging/brpm_logger"
-
-      require_libs_no_file_logging @framework_root_path
 
       self.extend Utilities
 

@@ -1,3 +1,5 @@
+require_relative "params_base"
+
 class Params < ParamsBase
   attr_reader :application
   attr_reader :component

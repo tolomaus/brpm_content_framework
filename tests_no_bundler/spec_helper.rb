@@ -54,6 +54,7 @@ end
 
 def setup_brpm_auto
   require_relative "../lib/brpm_auto" #require_relative because we can't run inside bundler, we can't run inside bundler because we need the brpm_module_test which is not included in the brpm_content_framework Gemfile
+  require_relative "../lib/module_installer" #require_relative because we can't run inside bundler, we can't run inside bundler because we need the brpm_module_test which is not included in the brpm_content_framework Gemfile
   BrpmAuto.setup(get_default_params)
 end
 

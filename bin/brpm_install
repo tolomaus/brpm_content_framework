@@ -7,6 +7,7 @@ end
 
 require "yaml"
 require "brpm_auto"
+require "module_installer"
 
 params = {}
 params["log_file"] = "/tmp/brpm_install.log"

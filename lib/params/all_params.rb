@@ -1,3 +1,5 @@
+require_relative "params_base"
+
 class AllParams < ParamsBase
   def initialize(params, request_params)
     @params = params

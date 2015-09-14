@@ -1,3 +1,5 @@
+require_relative "params_base"
+
 class RequestParams < ParamsBase
   attr_reader :file_path
 
