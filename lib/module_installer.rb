@@ -492,12 +492,6 @@ class ModuleInstaller
     module_version_param["required"] = false
     module_version_param["position"] = "A#{input_params.size + 1}:C#{input_params.size + 1}" if include_position_attribute
     auto_script_params["module_version"] = module_version_param
-
-    framework_version_param = {}
-    framework_version_param["name"] = "framework_version"
-    framework_version_param["required"] = false
-    framework_version_param["position"] = "A#{input_params.size + 2}:C#{input_params.size + 2}" if include_position_attribute
-    auto_script_params["framework_version"] = framework_version_param
   end
 
   def get_integration_server_template(integration_server_id, integration_server_name, integration_server_type, automation_language)
@@ -537,7 +531,7 @@ EOR
     if automation_type == "Automation"
 
       template += <<EOR
-require "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content_framework-\#{params["framework_version"] || "latest"}/lib/brpm_script_executor.rb"
+require "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content_framework-latest/lib/brpm_script_executor.rb"
 
 BrpmScriptExecutor.execute_automation_script_in_separate_process("#{module_name}", "#{auto_script_name}", params)
 EOR
@@ -545,7 +539,7 @@ EOR
     elsif automation_type == "ResourceAutomation"
 
       template += <<EOR
-load "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content_framework-\#{params["framework_version"] || "latest"}/lib/brpm_script_executor.rb"
+load "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content_framework-latest/lib/brpm_script_executor.rb"
 
 def execute(script_params, parent_id, offset, max_records)
   BrpmScriptExecutor.execute_resource_automation_script_in_separate_process("#{module_name}", "#{auto_script_name}", script_params, parent_id, offset, max_records)
