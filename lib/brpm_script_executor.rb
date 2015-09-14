@@ -6,19 +6,28 @@ class BrpmScriptExecutor
   private_class_method :new
 
   class << self
-    def execute_automation_script_in_separate_process(modul, name, params)
-      execute_automation_script_in_separate_process_internal(modul, name, params, "automation")
+    def execute_automation_script(modul, name, params, in_separate_process = nil)
+      execute_automation_script_internal(modul, name, params, "automation", in_separate_process)
     end
 
-    def execute_resource_automation_script_in_separate_process(modul, name, params, parent_id, offset, max_records)
-      execute_automation_script_in_separate_process_internal(modul, name, params, "resource_automation", parent_id, offset, max_records)
+    def execute_resource_automation_script(modul, name, params, in_separate_process = nil, parent_id, offset, max_records)
+      execute_automation_script_internal(modul, name, params, "resource_automation", in_separate_process, parent_id, offset, max_records)
+    end
+
+    def execute_automation_script_internal(modul, name, params, automation_type, in_separate_process = nil, parent_id = nil, offset = nil, max_records = nil)
+      BrpmAuto.setup(params)
+      BrpmAuto.log ""
+
+      if in_separate_process || BrpmAuto.params["execute_automations_in_separate_process"]
+        BrpmAuto.log "Executing #{automation_type} '#{name}' from module '#{modul}' in a separate process..."
+        execute_automation_script_in_separate_process_internal(modul, name, params, automation_type, parent_id, offset, max_records)
+      else
+        BrpmAuto.log "Executing #{automation_type} '#{name}' from module '#{modul}' in-process..."
+        execute_automation_script_in_same_process_internal(modul, name, params, automation_type, parent_id, offset, max_records)
+      end
     end
 
     def execute_automation_script_in_separate_process_internal(modul, name, params, automation_type, parent_id = nil, offset = nil, max_records = nil)
-      BrpmAuto.setup(params)
-      BrpmAuto.log ""
-      BrpmAuto.log "Executing #{automation_type} '#{name}' from module '#{modul}' in a separate process..."
-
       env_vars = {}
       env_vars["JRUBY_OPTS"] = "-Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF" # improve jvm startup time (see http://rexchung.com/2013/08/02/speed-up-jruby-rails-startup-time/)
       env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
@@ -99,7 +108,7 @@ class BrpmScriptExecutor
         load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/create_output_file.rb")
       end
 
-      result = execute_automation_script_internal(modul, name, params, automation_type, parent_id, offset, max_records)
+      result = execute_automation_script_in_same_process_internal(modul, name, params, automation_type, parent_id, offset, max_records)
       if automation_type == "resource_automation"
         result_file = "#{File.dirname(params_file)}/result_#{Process.pid}.yml"
         BrpmAuto.log "  Temporarily storing the result to #{result_file}..."
@@ -110,18 +119,8 @@ class BrpmScriptExecutor
       end
     end
 
-    def execute_automation_script(modul, name, params)
-      execute_automation_script_internal(modul, name, params, "automation")
-    end
-
-    def execute_resource_automation_script(modul, name, params, parent_id, offset, max_records)
-      execute_automation_script_internal(modul, name, params, "resource_automation", parent_id, offset, max_records)
-    end
-
-    def execute_automation_script_internal(modul, name, params, automation_type, parent_id = nil, offset = nil, max_records = nil)
+    def execute_automation_script_in_same_process_internal(modul, name, params, automation_type, parent_id = nil, offset = nil, max_records = nil)
       begin
-        BrpmAuto.setup(params)
-
         BrpmAuto.log ""
         BrpmAuto.log ">>>>>>>>>>>>>> START #{automation_type} #{modul} #{name}"
         start_time = Time.now

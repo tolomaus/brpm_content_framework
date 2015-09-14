@@ -539,7 +539,7 @@ EOR
       template += <<EOR
 require "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content_framework-\#{params["framework_version"] || "latest"}/lib/brpm_script_executor.rb"
 
-BrpmScriptExecutor.execute_automation_script_in_separate_process("#{module_name}", "#{auto_script_name}", params)
+BrpmScriptExecutor.execute_automation_script("#{module_name}", "#{auto_script_name}", params)
 EOR
 
     elsif automation_type == "ResourceAutomation"
@@ -548,7 +548,7 @@ EOR
 load "\#{ENV["BRPM_CONTENT_HOME"] || "\#{ENV["BRPM_HOME"]}/modules"}/gems/brpm_content_framework-\#{params["framework_version"] || "latest"}/lib/brpm_script_executor.rb"
 
 def execute(script_params, parent_id, offset, max_records)
-  BrpmScriptExecutor.execute_resource_automation_script_in_separate_process("#{module_name}", "#{auto_script_name}", script_params, parent_id, offset, max_records)
+  BrpmScriptExecutor.execute_resource_automation_script("#{module_name}", "#{auto_script_name}", script_params, parent_id, offset, max_records)
 end
 EOR
     end

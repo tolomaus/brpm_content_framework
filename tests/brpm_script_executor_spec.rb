@@ -35,7 +35,7 @@ describe 'BRPM Script Executor' do
   # Note: the following tests will run the automation scripts in a separate process and will therefore use an already installed brpm_content_framework module,
   # either the version from their Gemfile/Gemfile.lock or the latest, but not the one from source code
   it "should execute an automation script in a separate process inside a bundler context" do
-    result = BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "test_ruby", get_default_params)
+    result = BrpmScriptExecutor.execute_automation_script("brpm_module_test", "test_ruby", get_default_params, true)
 
     expect(result).to be_truthy
   end
@@ -46,22 +46,22 @@ describe 'BRPM Script Executor' do
     gemfile_path = "#{module_gem_path}/Gemfile"
 
     FileUtils.move(gemfile_path, "#{gemfile_path}_tmp")
-    result = BrpmScriptExecutor.execute_automation_script_in_separate_process(@module_name, "test_ruby", get_default_params)
+    result = BrpmScriptExecutor.execute_automation_script(@module_name, "test_ruby", get_default_params, true)
     FileUtils.move("#{gemfile_path}_tmp", gemfile_path)
 
     expect(result).to be_truthy
   end
 
   it "should return false when executing an non-existing automation script in a separate process" do
-    expect{BrpmScriptExecutor.execute_automation_script_in_separate_process(@module_name, "xxx", get_default_params)}.to raise_exception
+    expect{BrpmScriptExecutor.execute_automation_script(@module_name, "xxx", get_default_params, true)}.to raise_exception
   end
 
   it "should return false when executing an erroneous automation script in a separate process" do
-    expect{BrpmScriptExecutor.execute_automation_script_in_separate_process(@module_name, "test_ruby_raises_error", get_default_params)}.to raise_exception
+    expect{BrpmScriptExecutor.execute_automation_script(@module_name, "test_ruby_raises_error", get_default_params, true)}.to raise_exception
   end
 
   it "should execute a resource automation script in a separate process" do
-    result = BrpmScriptExecutor.execute_resource_automation_script_in_separate_process(@module_name, "test_resource", get_default_params, nil, 0, 10)
+    result = BrpmScriptExecutor.execute_resource_automation_script(@module_name, "test_resource", get_default_params, true, nil, 0, 10)
 
     expect(result.count).to eql(3)
   end
