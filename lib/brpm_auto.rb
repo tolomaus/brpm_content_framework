@@ -1,6 +1,6 @@
 require "yaml"
 
-print "Loading all files from #{File.dirname(__FILE__)}...\n"
+print "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}|Loading all files from #{File.dirname(__FILE__)}...\n"
 require_relative "logging/brpm_logger"
 require_relative "logging/simple_logger"
 
@@ -177,7 +177,7 @@ class BrpmAuto
       lib_path = "#{module_path}/lib/**/*.rb"
 
       log_message = "Loading all files from #{lib_path}..."
-      log ? (BrpmAuto.log log_message) : (print "#{log_message}\n")
+      log ? (BrpmAuto.log log_message) : (print "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}|#{log_message}\n")
 
       require_files(Dir[lib_path], log)
     end

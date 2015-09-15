@@ -86,11 +86,11 @@ class BrpmScriptExecutor
     def execute_automation_script_from_other_process(modul, name, params_file, automation_type, parent_id = nil, offset = nil, max_records = nil)
       raise "Params file #{params_file} doesn't exist." unless File.exists?(params_file)
 
-      puts "Loading the params from #{params_file} and cleaning it up..."
+      puts "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}|  Loading the params from #{params_file} and cleaning it up..."
       params = YAML.load_file(params_file)
       FileUtils.rm(params_file)
 
-      puts "  Setting up the BRPM Content framework..."
+      puts "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}|  Setting up the BRPM Content framework..."
       BrpmAuto.setup(params)
       BrpmAuto.log "  BRPM Content framework is version #{BrpmAuto.version}."
 
