@@ -523,7 +523,6 @@ EOR
     template = <<EOR
 params["direct_execute"] = "true"
 
-params["framework_version"] = nil if params["framework_version"].empty?
 params["module_version"] = nil if params["module_version"].empty?
 
 EOR
