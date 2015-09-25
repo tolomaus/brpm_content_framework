@@ -11,5 +11,5 @@ set WEBHOOK_RECEIVER_BRPM_PORT=8080
 set WEBHOOK_RECEIVER_BRPM_TOKEN=???
 set WEBHOOK_RECEIVER_JIRA_RELEASE_FIELD_ID=???
 
-jruby -J-Djava.library.path= webhook_receiver
+webhook_receiver
 

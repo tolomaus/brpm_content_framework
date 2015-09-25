@@ -20,7 +20,6 @@ class BrpmScriptExecutor
       BrpmAuto.log "Executing #{automation_type} '#{name}' from module '#{modul}' in a separate process..."
 
       env_vars = {}
-      env_vars["JRUBY_OPTS"] = "-Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF" # improve jvm startup time (see http://rexchung.com/2013/08/02/speed-up-jruby-rails-startup-time/)
       env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
 
       BrpmAuto.log "Finding the module path..."
@@ -59,7 +58,7 @@ class BrpmScriptExecutor
       end
 
       BrpmAuto.log "Executing the script in a separate process..."
-      return_value = Bundler.clean_system(env_vars, RbConfig.ruby, "-e", "#{require_bundler}require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_file}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")")
+      return_value = Bundler.clean_system(env_vars, "ruby", "-e", "#{require_bundler}require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_file}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")")
       FileUtils.rm(params_file) if File.exists?(params_file)
       if return_value.nil?
         message = "The process that executed the automation script returned with 'Command execution failed'."

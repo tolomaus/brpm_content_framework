@@ -15,6 +15,7 @@ Gem::Specification.new do |spec|
 
   spec.required_rubygems_version = ">= 2.1.9"
 
+  spec.add_runtime_dependency "bundler"
   spec.add_runtime_dependency "rest-client"
   spec.add_runtime_dependency "json"
   spec.add_runtime_dependency "savon", '~>1.1.0'
@@ -22,6 +23,9 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"
+
+  spec.add_development_dependency "stomp"
+  spec.add_development_dependency "xml-simple"
 
   spec.files         = `git ls-files`.split("\n")
   spec.require_path  = 'lib'

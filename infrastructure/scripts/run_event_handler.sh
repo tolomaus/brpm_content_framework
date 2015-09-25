@@ -1,4 +1,11 @@
 #!/bin/bash
+# temporarily link it to the jruby platform because we depend on torquebox to receive the messages
+export JAVA_HOME="$BRPM_HOME/lib/jre"
+export JRUBY_HOME="$BRPM_HOME/lib/jruby"
+export GEM_HOME="$BRPM_HOME/modules"
+
+export PATH="$GEM_HOME/bin:$JRUBY_HOME/bin:$PATH"
+
 # mandatory settings
 export EVENT_HANDLER_BRPM_HOST=localhost
 

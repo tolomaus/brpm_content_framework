@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
-require 'rubygems'
-require 'torquebox'
-require 'torquebox-messaging'
+require 'stomp'
 require 'xmlsimple'
 require "brpm_script_executor"
 
@@ -12,47 +10,39 @@ port = ENV["EVENT_HANDLER_MESSAGING_PORT"]
 username = ENV["EVENT_HANDLER_MESSAGING_USERNAME"]
 password = ENV["EVENT_HANDLER_MESSAGING_PASSWORD"]
 process_event_script = ENV["EVENT_HANDLER_PROCESS_EVENT_SCRIPT"]
+messaging_path = "jms.topic./topics/messaging/brpm_event_queue"
 
 require process_event_script
 
-class MessagingProcessor < TorqueBox::Messaging::MessageProcessor
+def process(message)
+  begin
+    BrpmAuto.log "Processing new event..."
+    BrpmAuto.log "Message content:" if ENV["EVENT_HANDLER_LOG_EVENT"]=="1"
+    BrpmAuto.log message if ENV["EVENT_HANDLER_LOG_EVENT"]=="1"
+    xml = "<root>#{message}</root>"
 
-  MESSAGING_PATH = '/topics/messaging/brpm_event_queue'
+    event = XmlSimple.xml_in(xml)
 
-  def initialize(host, port, username, password)
-    BrpmAuto.log "Initializing the message processor..."
-    @destination = TorqueBox::Messaging::Topic.new(
-        MESSAGING_PATH,
-        :host => host,
-        :port => port,
-        :username => username,
-        :password => password
-    )
-  end
+    process_event(event)
 
-  def run
-    begin
-      xml = "<root>#{@destination.receive}</root>"
-
-      BrpmAuto.log "Processing new event..."
-      BrpmAuto.log xml if ENV["EVENT_HANDLER_LOG_EVENT"]=="1"
-
-      event = XmlSimple.xml_in(xml)
-
-      process_event(event)
-
-    rescue Exception => e
-      BrpmAuto.log_error(e)
-      BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
-    end
+  rescue Exception => e
+    BrpmAuto.log_error(e)
+    BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
   end
 end
 
 begin
-  consumer = MessagingProcessor.new(host, port, username, password)
-  BrpmAuto.log "Starting to listen for events ..."
+
+  BrpmAuto.log "Connecting to the BRPM event system ..."
+  client = Stomp::Client.new username, password, host, port, true
+
+  BrpmAuto.log "Subscribing to the BRPM event queue ..."
+  client.subscribe messaging_path do |message|
+    process(Marshal.load(message.body))
+  end
+
   loop do
-    consumer.run
+    sleep 1
   end
 
 rescue Exception => e

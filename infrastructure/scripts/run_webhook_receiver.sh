@@ -12,4 +12,4 @@ export WEBHOOK_RECEIVER_BRPM_PORT=8088
 export WEBHOOK_RECEIVER_BRPM_TOKEN=???
 export WEBHOOK_RECEIVER_JIRA_RELEASE_FIELD_ID=???
 
-jruby -J-Djava.library.path= $(which webhook_receiver)
+webhook_receiver
