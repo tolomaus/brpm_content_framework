@@ -19,10 +19,7 @@ class BrpmScriptExecutor
       BrpmAuto.log ""
       BrpmAuto.log "Executing #{automation_type} '#{name}' from module '#{modul}' in a separate process..."
 
-      env_vars = {}
-      env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
-
-      BrpmAuto.log "Finding the module path..."
+      BrpmAuto.log "Finding the module's version..."
       case automation_type
       when "automation"
         module_version = params["module_version"] || get_latest_installed_version(modul)
@@ -31,43 +28,74 @@ class BrpmScriptExecutor
       else
         raise "Automation type #{automation_type} is not supported."
       end
-      module_path = get_module_gem_path(modul, module_version)
 
-      if File.exists?(module_path)
-        BrpmAuto.log "Found module #{modul} #{module_version || ""} in path #{module_path}."
+      case params["execute_automation_scripts_in_docker"]
+      when "always"
+        use_docker = true
+      when "if_docker_image_exists"
+        output = exec("docker pull bmcrlm/#{modul}:#{module_version}")
+        use_docker = (output =~ /Image is up to date for/)
       else
-        raise Gem::GemNotFoundException, "Module #{modul} version #{module_version} is not installed. Expected it on path #{module_path}."
-      end
-
-      gemfile_path = "#{module_path}/Gemfile"
-      if File.exists?(gemfile_path)
-        BrpmAuto.log "Using Gemfile #{gemfile_path}."
-        env_vars["BUNDLE_GEMFILE"] = gemfile_path
-        require_bundler = "require 'bundler/setup';"
-      else
-        BrpmAuto.log("This module doesn't have a Gemfile.")
-        require_bundler = ""
+        use_docker = false
       end
 
       working_path = File.expand_path(params["SS_output_dir"] || params["output_dir"] || Dir.pwd)
-      params_file = "#{working_path}/params_#{params["SS_run_key"] || params["run_key"] || "000"}.yml"
+      params_file = "params_#{params["SS_run_key"] || params["run_key"] || "000"}.yml"
+      params_path = "#{working_path}/#{params_file}"
 
-      BrpmAuto.log "Temporarily storing the params to #{params_file}..."
-      File.open(params_file, "w") do |file|
+      if use_docker
+        params["SS_output_dir"] = "/workdir" if params.has_key?("SS_output_dir")
+        params["output_dir"] = "/workdir" if params.has_key?("output_dir")
+      end
+
+      BrpmAuto.log "Temporarily storing the params to #{params_path}..."
+      File.open(params_path, "w") do |file|
         file.puts(params.to_yaml)
       end
 
-      BrpmAuto.log "Executing the script in a separate process..."
-      return_value = Bundler.clean_system(env_vars, "ruby", "-e", "#{require_bundler}require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_file}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")")
-      FileUtils.rm(params_file) if File.exists?(params_file)
-      if return_value.nil?
-        message = "The process that executed the automation script returned with 'Command execution failed'."
-        BrpmAuto.log_error message
-        raise message
-      elsif return_value == false
-        message = "The process that executed the automation script returned with non-zero exit code: #{$?.exitstatus}"
-        BrpmAuto.log_error message
-        raise message
+      if use_docker
+        BrpmAuto.log "Executing the script in a docker container..."
+        command = "docker run -v #{working_path}:/workdir --rm bmcrlm/#{modul}:#{module_version} /docker_execute_automation \"#{name}\" \"#{params_file}\" \"#{automation_type}\""
+        if automation_type == "resource_automation"
+          command += " \"#{parent_id}\"" if parent_id
+          command += " \"#{offset}\"" if offset
+          command += " \"#{max_records}\"" if max_records
+        end
+        exec(command)
+      else
+        env_vars = {}
+        env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
+
+        module_path = get_module_gem_path(modul, module_version)
+
+        if File.exists?(module_path)
+          BrpmAuto.log "Found module #{modul} #{module_version || ""} in path #{module_path}."
+        else
+          raise Gem::GemNotFoundException, "Module #{modul} version #{module_version} is not installed. Expected it on path #{module_path}."
+        end
+
+        gemfile_path = "#{module_path}/Gemfile"
+        if File.exists?(gemfile_path)
+          BrpmAuto.log "Using Gemfile #{gemfile_path}."
+          env_vars["BUNDLE_GEMFILE"] = gemfile_path
+          require_bundler = "require 'bundler/setup';"
+        else
+          BrpmAuto.log("This module doesn't have a Gemfile.")
+          require_bundler = ""
+        end
+
+        BrpmAuto.log "Executing the script in a separate process..."
+        return_value = Bundler.clean_system(env_vars, "ruby", "-e", "#{require_bundler}require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_path}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")")
+        FileUtils.rm(params_path) if File.exists?(params_path)
+        if return_value.nil?
+          message = "The process that executed the automation script returned with 'Command execution failed'."
+          BrpmAuto.log_error message
+          raise message
+        elsif return_value == false
+          message = "The process that executed the automation script returned with non-zero exit code: #{$?.exitstatus}"
+          BrpmAuto.log_error message
+          raise message
+        end
       end
 
       if automation_type == "resource_automation"

@@ -1,3 +1,4 @@
 # This file should be located in BRPM_HOME/config
 # See the README for more information on how to use this file
+execute_automation_scripts_in_docker: "if_docker_image_exists" #possible values: never, if_docker_image_exists, always
 my_parameter: "abc"
