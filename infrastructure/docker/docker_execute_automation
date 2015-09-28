@@ -3,9 +3,9 @@ module_name = ENV["MODULE"]
 automation_script_name = ARGV[0]
 params_file = "/workdir/#{ARGV[1]}"
 automation_type = ARGV[2]
-parent_id = ARGV[3] if ARGV.size > 3
-offset = ARGV[4] if ARGV.size > 4
-max_records = ARGV[5] if ARGV.size > 5
+parent_id = ARGV.size > 3 ? ARGV[3] : nil
+offset = ARGV.size > 4 ? ARGV[4] : nil
+max_records = ARGV.size > 5 ? ARGV[5] : nil
 
 module_spec = Gem::Specification.find_by_name(module_name)
 module_path = module_spec.gem_dir

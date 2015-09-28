@@ -1,7 +1,7 @@
 FROM atlashealth/ruby:1.9.3
 MAINTAINER Niek Bartholomeus <niek.bartholomeus@gmail.com>
 
-ENV BRPM_CONTENT_FRAMEWORK_VERSION 0.2.28
+ENV BRPM_CONTENT_FRAMEWORK_VERSION 0.2.29
 ENV GEM_HOME /usr/lib/ruby/gems/1.9.1
 
 RUN gem install brpm_content_framework --ignore-dependencies -v "$BRPM_CONTENT_FRAMEWORK_VERSION" && \
