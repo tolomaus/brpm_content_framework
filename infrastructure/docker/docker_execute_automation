@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+module_name = ENV["MODULE"]
+automation_script_name = ARGV[0]
+params_file = "/workdir/#{ARGV[1]}"
+automation_type = ARGV[2]
+
+module_spec = Gem::Specification.find_by_name(module_name)
+module_path = module_spec.gem_dir
+
+gemfile_path = "#{module_path}/Gemfile"
+if File.exists?(gemfile_path)
+  ENV["BUNDLE_GEMFILE"] = gemfile_path
+  require_bundler = "require 'bundler/setup';"
+end
+
+require 'brpm_script_executor'
+BrpmScriptExecutor.execute_automation_script(module_name, automation_script_name, params_file, automation_type)

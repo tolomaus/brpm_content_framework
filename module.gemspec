@@ -15,6 +15,7 @@ Gem::Specification.new do |spec|
 
   spec.required_rubygems_version = ">= 2.1.9"
 
+  spec.add_runtime_dependency "net-ssh", '2.9.2' #
   spec.add_runtime_dependency "bundler"
   spec.add_runtime_dependency "rest-client"
   spec.add_runtime_dependency "json"
