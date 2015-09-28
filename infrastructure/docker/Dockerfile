@@ -1,10 +1,10 @@
 FROM atlashealth/ruby:1.9.3
 MAINTAINER Niek Bartholomeus <niek.bartholomeus@gmail.com>
 
-ENV BRPM_CONTENT_FRAMEWORK_VERSION 0.2.27
+ENV BRPM_CONTENT_FRAMEWORK_VERSION 0.2.28
 ENV GEM_HOME /usr/lib/ruby/gems/1.9.1
 
-RUN gem install brpm_content_framework --ignore-dependencies -v $BRPM_CONTENT_FRAMEWORK_VERSION && \
+RUN gem install brpm_content_framework --ignore-dependencies -v "$BRPM_CONTENT_FRAMEWORK_VERSION" && \
     cd $GEM_HOME/gems/brpm_content_framework-$BRPM_CONTENT_FRAMEWORK_VERSION && bundle install && \
     rm -rf $GEM_HOME/cache
 

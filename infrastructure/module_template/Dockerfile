@@ -4,6 +4,6 @@ MAINTAINER Niek Bartholomeus <niek.bartholomeus@gmail.com>
 ENV MODULE <module name>
 ENV VERSION <module version>
 
-RUN gem install $MODULE --ignore-dependencies -v $VERSION && \
+RUN gem install $MODULE --ignore-dependencies -v "$VERSION" && \
     cd $GEM_HOME/gems/$MODULE-$VERSION && bundle install && \
     rm -rf $GEM_HOME/cache
