@@ -74,6 +74,8 @@ class BrpmAuto
             SS_project_server_id
         )
       end
+
+      @params
     end
 
     def load_server_params

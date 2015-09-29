@@ -29,23 +29,33 @@ class BrpmScriptExecutor
         raise "Automation type #{automation_type} is not supported."
       end
 
-      case params["execute_automation_scripts_in_docker"]
+      case BrpmAuto.params["execute_automation_scripts_in_docker"]
       when "always"
         use_docker = true
       when "if_docker_image_exists"
-        output = exec("docker pull bmcrlm/#{modul}:#{module_version}")
-        use_docker = (output =~ /Image is up to date for/)
+        BrpmAuto.log "Checking if a docker image exists for bmcrlm/#{modul}:#{module_version}..."
+        output = `docker history -q bmcrlm/#{modul}:#{module_version} 2>&1 >/dev/null`
+        if output.empty?
+          use_docker = true
+        else
+          BrpmAuto.log "The image doesn't exist locally, checking if we can pull it from the Docker Hub..."
+          output = `docker pull bmcrlm/#{modul}:#{module_version}`
+          use_docker = (output =~ /Image is up to date for/)
+        end
       else
         use_docker = false
       end
 
-      working_path = File.expand_path(params["SS_output_dir"] || params["output_dir"] || Dir.pwd)
+      working_path = File.expand_path(BrpmAuto.params.output_dir)
       params_file = "params_#{params["SS_run_key"] || params["run_key"] || "000"}.yml"
       params_path = "#{working_path}/#{params_file}"
+      automation_results_path = params["SS_automation_results_dir"] || working_path
 
       if use_docker
-        params["SS_output_dir"] = "/workdir" if params.has_key?("SS_output_dir")
-        params["output_dir"] = "/workdir" if params.has_key?("output_dir")
+        params["SS_output_dir"] = "/workdir"
+        params["SS_output_file"].sub!(working_path, "/workdir")
+
+        params["SS_automation_results_dir"] = "/automation_results"
       end
 
       BrpmAuto.log "Temporarily storing the params to #{params_path}..."
@@ -55,12 +65,13 @@ class BrpmScriptExecutor
 
       if use_docker
         BrpmAuto.log "Executing the script in a docker container..."
-        command = "docker run -v #{working_path}:/workdir --rm bmcrlm/#{modul}:#{module_version} /docker_execute_automation \"#{name}\" \"#{params_file}\" \"#{automation_type}\""
+        command = "docker run -v #{working_path}:/workdir -v #{automation_results_path}:/automation_results --rm bmcrlm/#{modul}:#{module_version} /docker_execute_automation \"#{name}\" \"/workdir/#{params_file}\" \"#{automation_type}\""
         if automation_type == "resource_automation"
           command += " \"#{parent_id}\"" if parent_id
           command += " \"#{offset}\"" if offset
           command += " \"#{max_records}\"" if max_records
         end
+        BrpmAuto.log command
         exec(command)
       else
         env_vars = {}

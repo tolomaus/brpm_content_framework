@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 module_name = ENV["MODULE"]
 automation_script_name = ARGV[0]
-params_file = "/workdir/#{ARGV[1]}"
+params_path = ARGV[1]
 automation_type = ARGV[2]
 parent_id = ARGV.size > 3 ? ARGV[3] : nil
 offset = ARGV.size > 4 ? ARGV[4] : nil
@@ -17,4 +17,4 @@ if File.exists?(gemfile_path)
 end
 
 require 'brpm_script_executor'
-BrpmScriptExecutor.execute_automation_script_from_other_process(module_name, automation_script_name, params_file, automation_type, parent_id, offset, max_records)
+BrpmScriptExecutor.execute_automation_script_from_other_process(module_name, automation_script_name, params_path, automation_type, parent_id, offset, max_records)

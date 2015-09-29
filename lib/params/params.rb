@@ -94,7 +94,7 @@ class Params < ParamsBase
     @run_key = params["SS_run_key"] || params["run_key"]
 
     if params["SS_automation_results_dir"]
-      @home_dir = params["SS_automation_results_dir"].sub("automation_results", "")
+      @home_dir = params["SS_automation_results_dir"].sub("/automation_results", "")
     else
       @home_dir = params["home_dir"] || Dir.pwd
     end
