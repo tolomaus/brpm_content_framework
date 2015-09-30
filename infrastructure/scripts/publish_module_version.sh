@@ -12,7 +12,7 @@ fi
 cd $(dirname $0)/../../../$MODULE_NAME
 
 echo ""
-echo ">>> Publishing the module as a gem to rubygems.org..."
+echo ">>> Publishing module $MODULE_NAME as a gem to rubygems.org..."
 rake release
 if [ -f "docker/Dockerfile" ]; then
     MODULE_VERSION=$(eval "sed -n \"s=version: \(.*\)=\1=p\" config.yml")
@@ -27,17 +27,17 @@ if [ -f "docker/Dockerfile" ]; then
     sed -i "" s/$OLD_MODULE_VERSION/$MODULE_VERSION/ Dockerfile
 
     echo ""
-    echo ">>> Building the docker image..."
+    echo ">>> Building docker image bmcrlm/$MODULE_NAME:$MODULE_VERSION..."
     docker build -t bmcrlm/$MODULE_NAME:$MODULE_VERSION . || { echo 'Aborting' ; exit 1; }
 
     sed -i "" s/$MODULE_VERSION/$OLD_MODULE_VERSION/ Dockerfile
 
     echo ""
-    echo ">>> Publishing the docker image to the docker hub..."
+    echo ">>> Publishing docker image bmcrlm/$MODULE_NAME:$MODULE_VERSION to the docker hub..."
     docker push bmcrlm/$MODULE_NAME:$MODULE_VERSION || { echo 'Aborting' ; exit 1; }
 
     echo ""
-    echo ">>> Tagging the module version as 'latest'..."
+    echo ">>> Tagging bmcrlm/$MODULE_NAME:$MODULE_VERSION as bmcrlm/$MODULE_NAME:latest..."
     docker tag -f bmcrlm/$MODULE_NAME:$MODULE_VERSION bmcrlm/$MODULE_NAME:latest || { echo 'Aborting' ; exit 1; }
     docker push bmcrlm/$MODULE_NAME:latest || { echo 'Aborting' ; exit 1; }
 fi
