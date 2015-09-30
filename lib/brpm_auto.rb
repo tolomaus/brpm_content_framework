@@ -81,7 +81,7 @@ class BrpmAuto
     def load_server_params
       server_config_file_path = "#{self.params.config_dir}/server.yml"
       if File.exists?(server_config_file_path)
-        server_config = YAML.load_file(server_config_file_path)
+        server_config = YAML.load_file(server_config_file_path) || {}
         server_config.each do |key, value|
           @params[key] = value unless @params.has_key?(key)
         end
