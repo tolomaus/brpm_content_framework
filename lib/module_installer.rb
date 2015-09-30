@@ -173,7 +173,7 @@ class ModuleInstaller
       BrpmAuto.log "Pulling the docker image from the Docker Hub..."
       output = `docker pull bmcrlm/#{spec.name}:#{spec.version}`
       BrpmAuto.log output
-      unless output =~ /Image is up to date for/
+      unless output =~ /Image is up to date for/ or output =~ /Downloaded newer image for/
         if BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "always"
           raise "Docker image bmcrlm/#{spec.name}:#{spec.version} doesn't exist."
         elsif BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "if_docker_image_exists"
