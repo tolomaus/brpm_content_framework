@@ -45,6 +45,7 @@ class BrpmScriptExecutor
       else
         use_docker = false
       end
+      BrpmAuto.log "The automation script will be executed in a docker container." if	use_docker
 
       working_path = File.expand_path(BrpmAuto.params.output_dir)
       params_file = "params_#{params["SS_run_key"] || params["run_key"] || "000"}.yml"
@@ -53,9 +54,10 @@ class BrpmScriptExecutor
 
       if use_docker
         params["SS_output_dir"] = "/workdir"
-        params["SS_output_file"].sub!(working_path, "/workdir")
-
+        params["SS_output_file"].sub!(working_path, "/workdir") if params["SS_output_file"]
         params["SS_automation_results_dir"] = "/automation_results"
+
+        params["log_file"].sub!(working_path, "/workdir") if params["log_file"]
       end
 
       BrpmAuto.log "Temporarily storing the params to #{params_path}..."
@@ -72,7 +74,7 @@ class BrpmScriptExecutor
           command += " \"#{max_records}\"" if max_records
         end
         BrpmAuto.log command
-        exec(command)
+        return_value = system(command)
       else
         env_vars = {}
         env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
@@ -97,20 +99,21 @@ class BrpmScriptExecutor
 
         BrpmAuto.log "Executing the script in a separate process..."
         return_value = Bundler.clean_system(env_vars, "ruby", "-e", "#{require_bundler}require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_path}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")")
-        FileUtils.rm(params_path) if File.exists?(params_path)
-        if return_value.nil?
-          message = "The process that executed the automation script returned with 'Command execution failed'."
-          BrpmAuto.log_error message
-          raise message
-        elsif return_value == false
-          message = "The process that executed the automation script returned with non-zero exit code: #{$?.exitstatus}"
-          BrpmAuto.log_error message
-          raise message
-        end
+      end
+
+      FileUtils.rm(params_path) if File.exists?(params_path)
+      if return_value.nil?
+        message = "The process that executed the automation script returned with 'Command execution failed'."
+        BrpmAuto.log_error message
+        raise message
+      elsif return_value == false
+        message = "The process that executed the automation script returned with non-zero exit code: #{$?.exitstatus}"
+        BrpmAuto.log_error message
+        raise message
       end
 
       if automation_type == "resource_automation"
-        result_file = "#{working_path}/result_#{$?.pid}.yml"
+        result_file = params_file.sub!("params", "result")
         BrpmAuto.log "Loading the result from #{result_file} and cleaning it up..."
         result = YAML.load_file(result_file)
         FileUtils.rm result_file
@@ -139,7 +142,7 @@ class BrpmScriptExecutor
 
       result = execute_automation_script_internal(modul, name, params, automation_type, parent_id, offset, max_records)
       if automation_type == "resource_automation"
-        result_file = "#{File.dirname(params_file)}/result_#{Process.pid}.yml"
+        result_file = params_file.sub!("params", "result")
         BrpmAuto.log "  Temporarily storing the result to #{result_file}..."
         FileUtils.rm(result_file) if File.exists?(result_file)
         File.open(result_file, "w") do |file|

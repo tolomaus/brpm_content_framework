@@ -52,6 +52,16 @@ describe 'BRPM Script Executor' do
     expect(result).to be_truthy
   end
 
+  it "should execute an automation script in a docker container" do
+    params = get_default_params
+    params['output_dir'] = File.expand_path("~/tmp/brpm_content") # docker volume mappong only works from the current user's home directory on Mac OSX
+    params["execute_automation_scripts_in_docker"] = "always"
+
+    result = BrpmScriptExecutor.execute_automation_script_in_separate_process("brpm_module_test", "test_ruby", params)
+
+    expect(result).to be_truthy
+  end
+
   it "should return false when executing an non-existing automation script in a separate process" do
     expect{BrpmScriptExecutor.execute_automation_script_in_separate_process(@module_name, "xxx", get_default_params)}.to raise_exception
   end
@@ -62,6 +72,16 @@ describe 'BRPM Script Executor' do
 
   it "should execute a resource automation script in a separate process" do
     result = BrpmScriptExecutor.execute_resource_automation_script_in_separate_process(@module_name, "test_resource", get_default_params, nil, 0, 10)
+
+    expect(result.count).to eql(3)
+  end
+
+  it "should execute a resource automation script in a docker container" do
+    params = get_default_params
+    params['output_dir'] = File.expand_path("~/tmp/brpm_content") # docker volume mappong only works from the current user's home directory on Mac OSX
+    params["execute_automation_scripts_in_docker"] = "always"
+
+    result = BrpmScriptExecutor.execute_resource_automation_script_in_separate_process(@module_name, "test_resource", params, nil, 0, 10)
 
     expect(result.count).to eql(3)
   end

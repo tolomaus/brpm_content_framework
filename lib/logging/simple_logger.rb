@@ -11,7 +11,6 @@ class SimpleLogger < LoggerBase
   def log(message)
     message = message.to_s # in case booleans or whatever are passed
     timestamp = "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}"
-    log_message = ""
 
     prefix = "#{timestamp}|"
     message = message.gsub("\n", "\n" + (" " * prefix.length))
