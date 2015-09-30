@@ -12,7 +12,7 @@ describe 'Server yaml' do
 
     BrpmAuto.setup(input_params)
 
-    params = BrpmAuto.params
+    params = BrpmAuto.global_params
 
     expect(params).to have_key("key2")
     expect(params["key2"]).to eql("value2")

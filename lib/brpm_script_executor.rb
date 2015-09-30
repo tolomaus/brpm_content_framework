@@ -30,19 +30,13 @@ class BrpmScriptExecutor
           raise "Automation type #{automation_type} is not supported."
         end
 
-        case BrpmAuto.params["execute_automation_scripts_in_docker"]
+        case BrpmAuto.global_params["execute_automation_scripts_in_docker"] || params["execute_automation_scripts_in_docker"]
         when "always"
           use_docker = true
         when "if_docker_image_exists"
           BrpmAuto.log "Checking if a docker image exists for bmcrlm/#{modul}:#{module_version}..."
           output = `docker history -q bmcrlm/#{modul}:#{module_version} 2>&1 >/dev/null`
-          if output.empty?
-            use_docker = true
-          else
-            BrpmAuto.log "The image doesn't exist locally, checking if we can pull it from the Docker Hub..."
-            output = `docker pull bmcrlm/#{modul}:#{module_version}`
-            use_docker = (output =~ /Image is up to date for/)
-          end
+          use_docker = output.empty?
         else
           use_docker = false
         end

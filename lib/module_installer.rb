@@ -13,6 +13,7 @@ class ModuleInstaller
       brpm_content_spec = specs.find { |spec| spec.name == "brpm_content_framework" } if specs
 
       install_bundle(module_spec)
+      pull_docker_image(module_spec)
     else
       module_name = module_name_or_path
       module_spec = Gem::Specification.find_by_name(module_name)
@@ -163,6 +164,21 @@ class ModuleInstaller
     BrpmAuto.log result["stdout"] if result["stdout"] and !result["stdout"].empty?
     unless result["status"] == 0
       raise result["stderr"]
+    end
+  end
+
+  def pull_docker_image(spec)
+    case BrpmAuto.global_params["execute_automation_scripts_in_docker"]
+    when "always", "if_docker_image_exists"
+      BrpmAuto.log "Pulling the docker image from the Docker Hub..."
+      output = `docker pull bmcrlm/#{spec.name}:#{spec.version}`
+      unless output =~ /Image is up to date for/
+        if BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "always"
+          raise "Docker image bmcrlm/#{spec.name}:#{spec.version} doesn't exist."
+        elsif BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "if_docker_image_exists"
+          BrpmAuto.log "Docker image bmcrlm/#{spec.name}:#{spec.version} doesn't exist."
+        end
+      end
     end
   end
 

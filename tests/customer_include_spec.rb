@@ -12,7 +12,7 @@ describe 'Customer include' do
 
     BrpmAuto.setup(input_params)
 
-    params = BrpmAuto.params
+    params = BrpmAuto.global_params
 
     expect(params).to have_key("key1")
     expect(params["key1"]).to eql("value1")
