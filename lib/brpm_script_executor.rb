@@ -74,8 +74,7 @@ class BrpmScriptExecutor
           result = BrpmAuto.execute_shell(command)
 
         else
-          env_vars = {}
-          env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
+          env_var_gem_home = "export GEM_HOME=#{ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"};"
 
           module_path = get_module_gem_path(modul, module_version)
 
@@ -88,15 +87,21 @@ class BrpmScriptExecutor
           gemfile_path = "#{module_path}/Gemfile"
           if File.exists?(gemfile_path)
             BrpmAuto.log "Using Gemfile #{gemfile_path}."
-            env_vars["BUNDLE_GEMFILE"] = gemfile_path
+            env_var_bundler = "export BUNDLE_GEMFILE=#{gemfile_path};"
             require_bundler = "require 'bundler/setup';"
           else
             BrpmAuto.log("This module doesn't have a Gemfile.")
+            env_var_bundler = ""
             require_bundler = ""
           end
 
           BrpmAuto.log "Executing the script in a separate process..."
-          result = Bundler.with_clean_env { BrpmAuto.execute_shell(env_vars, "ruby", "-e", "#{require_bundler}require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_path}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")") }
+          command = <<EOR
+#{require_bundler}
+require \\"brpm_script_executor\\"
+BrpmScriptExecutor.execute_automation_script_from_other_process(\\"#{modul}\\", \\"#{name}\\", \\"#{params_path}\\", \\"#{automation_type}\\", \\"#{parent_id}\\", \\"#{offset}\\", \\"#{max_records}\\")
+EOR
+          result = Bundler.with_clean_env { BrpmAuto.execute_shell("#{env_var_gem_home}#{env_var_bundler}ruby -e \"#{command}\"") }
         end
 
         FileUtils.rm(params_path) if File.exists?(params_path)
@@ -113,8 +118,8 @@ class BrpmScriptExecutor
         end
 
         if automation_type == "resource_automation"
-          BrpmAuto.log "Loading the result from #{result_path} and cleaning it up..."
           result_path = params_path.sub!("params", "result")
+          BrpmAuto.log "Loading the result from #{result_path} and cleaning it up..."
           result = YAML.load_file(result_path)
           FileUtils.rm result_path
 
