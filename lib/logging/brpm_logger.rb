@@ -26,6 +26,8 @@ class BrpmLogger < LoggerBase
 
     log_message = "#{prefix}#{message}\n"
 
+    print(log_message) if BrpmAuto.params.also_log_to_console
+
     File.open(@request_log_file_path, "a") do |log_file|
       log_file.print(log_message)
     end
@@ -33,7 +35,5 @@ class BrpmLogger < LoggerBase
     File.open(@step_run_log_file_path, "a") do |log_file|
       log_file.print(log_message)
     end
-
-    print(log_message) if BrpmAuto.params.also_log_to_console
   end
 end
