@@ -14,8 +14,10 @@ cd $(dirname $0)/../../../$MODULE_NAME
 
 echo ">>> Publishing the module as a gem to rubygems.org..."
 rake release
-if [ -f "Dockerfile" ]; then
+if [ -f "docker/Dockerfile" ]; then
     MODULE_VERSION=$(eval "sed -n \"s=version: \(.*\)=\1=p\" config.yml")
+
+    cd docker
 
     OLD_MODULE_VERSION=$(eval "sed -n \"s=ENV VERSION \(.*\)=\1=p\" Dockerfile")
     sed -i "" s/$OLD_MODULE_VERSION/$MODULE_VERSION/ Dockerfile
