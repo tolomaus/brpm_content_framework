@@ -22,11 +22,11 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "savon", '~>1.1.0'
   spec.add_runtime_dependency 'capistrano', '2.15.5'
 
+  spec.add_runtime_dependency "stomp"
+  spec.add_runtime_dependency "xml-simple"
+
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"
-
-  spec.add_development_dependency "stomp"
-  spec.add_development_dependency "xml-simple"
 
   spec.files         = `git ls-files`.split("\n")
   spec.require_path  = 'lib'
