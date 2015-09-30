@@ -46,11 +46,14 @@ class BrpmScriptExecutor
         params_file = "params_#{params["SS_run_key"] || params["run_key"] || "000"}.yml"
         params_path = "#{working_path}/#{params_file}"
         automation_results_path = params["SS_automation_results_dir"] || working_path
+        script_support_path = params["SS_script_support_path"] || working_path
 
         if use_docker
+          params = params.clone # we don't want to modify the current session's params
           params["SS_output_dir"] = "/workdir"
           params["SS_output_file"].sub!(working_path, "/workdir") if params["SS_output_file"]
           params["SS_automation_results_dir"] = "/automation_results"
+          params["SS_script_support_path"] = "/script_support"
 
           params["log_file"].sub!(working_path, "/workdir") if params["log_file"]
         end
@@ -62,7 +65,7 @@ class BrpmScriptExecutor
 
         if use_docker
           BrpmAuto.log "Executing the script in a docker container..."
-          command = "docker run -v #{working_path}:/workdir -v #{automation_results_path}:/automation_results --rm bmcrlm/#{modul}:#{module_version} /docker_execute_automation \"#{name}\" \"/workdir/#{params_file}\" \"#{automation_type}\""
+          command = "docker run -v #{working_path}:/workdir -v #{automation_results_path}:/automation_results -v #{script_support_path}:/script_support --rm bmcrlm/#{modul}:#{module_version} /docker_execute_automation \"#{name}\" \"/workdir/#{params_file}\" \"#{automation_type}\""
           if automation_type == "resource_automation"
             command += " \"#{parent_id}\"" if parent_id
             command += " \"#{offset}\"" if offset
@@ -138,8 +141,8 @@ class BrpmScriptExecutor
       BrpmAuto.log "  BRPM Content framework is version #{BrpmAuto.version}."
 
       if BrpmAuto.params["SS_run_key"] and BrpmAuto.params["SS_script_support_path"]
-        BrpmAuto.log "  Loading the BRPM core framework's libraries..."
-        load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/create_output_file.rb")
+        BrpmAuto.log "  Setting up the BRPM core framework..."
+        load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/setup_brpm_core_framework.rb")
       end
 
       result = execute_automation_script_internal(modul, name, params, automation_type, parent_id, offset, max_records)

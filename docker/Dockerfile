@@ -12,3 +12,4 @@ ADD . /
 
 VOLUME [ "/workdir" ]
 VOLUME [ "/automation_results" ]
+VOLUME [ "/script_support" ]

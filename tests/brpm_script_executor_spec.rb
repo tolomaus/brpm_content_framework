@@ -52,7 +52,7 @@ describe 'BRPM Script Executor' do
     expect(result).to be_truthy
   end
 
-  xit "should execute an automation script in a docker container" do
+  it "should execute an automation script in a docker container" do
     params = get_default_params
     params['output_dir'] = File.expand_path("~/tmp/brpm_content") # docker volume mappong only works from the current user's home directory on Mac OSX
     params["execute_automation_scripts_in_docker"] = "always"
