@@ -96,7 +96,7 @@ class Params < ParamsBase
     if params["SS_automation_results_dir"]
       @home_dir = params["SS_automation_results_dir"].sub("/automation_results", "")
     else
-      @home_dir = params["home_dir"] || Dir.pwd
+      @home_dir = params["home_dir"] || ENV["BRPM_HOME"] || Dir.pwd
     end
     @automation_results_dir = params["SS_automation_results_dir"]
     @output_dir = params["SS_output_dir"] || params["output_dir"] || Dir.pwd
