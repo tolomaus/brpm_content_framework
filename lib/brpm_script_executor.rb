@@ -51,11 +51,11 @@ class BrpmScriptExecutor
         if use_docker
           params = params.clone # we don't want to modify the current session's params
           params["SS_output_dir"] = "/workdir"
-          params["SS_output_file"].sub!(working_path, "/workdir") if params["SS_output_file"]
+          params["SS_output_file"] = params["SS_output_file"].sub(working_path, "/workdir") if params["SS_output_file"]
           params["SS_automation_results_dir"] = "/automation_results"
           params["SS_script_support_path"] = "/script_support"
 
-          params["log_file"].sub!(working_path, "/workdir") if params["log_file"]
+          params["log_file"] = params["log_file"].sub(working_path, "/workdir") if params["log_file"]
         end
 
         BrpmAuto.log "Temporarily storing the params to #{params_path}..."
@@ -71,8 +71,8 @@ class BrpmScriptExecutor
             command += " \"#{offset}\"" if offset
             command += " \"#{max_records}\"" if max_records
           end
-          BrpmAuto.log command
-          return_value = system(command)
+          result = BrpmAuto.execute_shell(command)
+
         else
           env_vars = {}
           env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
@@ -96,29 +96,31 @@ class BrpmScriptExecutor
           end
 
           BrpmAuto.log "Executing the script in a separate process..."
-          return_value = Bundler.clean_system(env_vars, "ruby", "-e", "#{require_bundler}require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_path}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")")
+          result = Bundler.with_clean_env { BrpmAuto.execute_shell(env_vars, "ruby", "-e", "#{require_bundler}require 'brpm_script_executor'; BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_path}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")") }
         end
 
         FileUtils.rm(params_path) if File.exists?(params_path)
-        if return_value.nil?
-          message = "The process that executed the automation script returned with 'Command execution failed'."
-          BrpmAuto.log_error message
-          raise message
-        elsif return_value == false
-          message = "The process that executed the automation script returned with non-zero exit code: #{$?.exitstatus}"
-          BrpmAuto.log_error message
-          raise message
+
+        unless result["status"] == 0
+          if result["stdout"] and !result["stdout"].empty?
+            BrpmAuto.log "stdout of the executed process:"
+            BrpmAuto.log "-----------------------------------------------------------"
+            BrpmAuto.log result["stdout"]
+            BrpmAuto.log "-----------------------------------------------------------"
+          end
+
+          raise result["stderr"]
         end
 
         if automation_type == "resource_automation"
-          result_path = params_path.sub!("params", "result")
           BrpmAuto.log "Loading the result from #{result_path} and cleaning it up..."
+          result_path = params_path.sub!("params", "result")
           result = YAML.load_file(result_path)
           FileUtils.rm result_path
 
           result
         else
-          return_value
+          true
         end
 
       rescue Exception => e
@@ -147,7 +149,7 @@ class BrpmScriptExecutor
 
       result = execute_automation_script_internal(modul, name, params, automation_type, parent_id, offset, max_records)
       if automation_type == "resource_automation"
-        result_file = params_file.sub!("params", "result")
+        result_file = params_file.sub("params", "result")
         BrpmAuto.log "  Temporarily storing the result to #{result_file}..."
         FileUtils.rm(result_file) if File.exists?(result_file)
         File.open(result_file, "w") do |file|

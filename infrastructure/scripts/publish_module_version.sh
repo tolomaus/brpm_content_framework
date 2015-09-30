@@ -19,7 +19,11 @@ if [ -f "docker/Dockerfile" ]; then
 
     cd docker
 
-    OLD_MODULE_VERSION=$(eval "sed -n \"s=ENV VERSION \(.*\)=\1=p\" Dockerfile")
+    if [[ "$MODULE_NAME" == brpm_content_framework ]]; then
+      OLD_MODULE_VERSION=$(eval "sed -n \"s=ENV BRPM_CONTENT_FRAMEWORK_VERSION \(.*\)=\1=p\" Dockerfile")
+    else
+      OLD_MODULE_VERSION=$(eval "sed -n \"s=ENV VERSION \(.*\)=\1=p\" Dockerfile")
+    fi
     sed -i "" s/$OLD_MODULE_VERSION/$MODULE_VERSION/ Dockerfile
 
     echo ""

@@ -28,7 +28,7 @@ class LoggerBase
   def log_error(message)
     log ""
     log "******** ERROR ********"
-    log "An error has occurred"
+    log "An error has occurred:"
     log "#{message}"
     log "***********************"
     log ""
