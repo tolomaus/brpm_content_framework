@@ -179,7 +179,7 @@ class ModuleInstaller
       end
       raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
 
-      unless stdout =~ /Image is up to date for/ or output =~ /Downloaded newer image for/
+      unless stdout =~ /Image is up to date for/ or stdout =~ /Downloaded newer image for/
         if BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "always"
           raise "Docker image bmcrlm/#{spec.name}:#{spec.version} doesn't exist."
         elsif BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "if_docker_image_exists"
@@ -193,7 +193,7 @@ class ModuleInstaller
     case BrpmAuto.global_params["execute_automation_scripts_in_docker"]
     when "always", "if_docker_image_exists"
       BrpmAuto.log "Removing the docker image..."
-      _, stderr, _, status = BrpmAuto.execute_command("docker rmi $(docker images | grep bmcrlm/#{module_name}:#{module_version} | awk {'print $3'})") do |stdout_err|
+      _, stderr, _, status = BrpmAuto.execute_command("docker images | grep bmcrlm/#{module_name} | grep #{module_version} | awk {'print $3'} | xargs docker rmi") do |stdout_err|
         BrpmAuto.log "    #{stdout_err.chomp}"
       end
       raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?

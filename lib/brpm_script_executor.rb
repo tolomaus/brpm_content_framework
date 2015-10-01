@@ -73,8 +73,13 @@ class BrpmScriptExecutor
             command += " \"#{max_records}\"" if max_records
           end
 
+          _, stderr, _, status = BrpmAuto.execute_command(command) do |stdout_err|
+            BrpmAuto.log "  stdout:#{stdout_err.chomp}"
+          end
+
         else
-          env_var_gem_home = "export GEM_HOME=#{ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"};"
+          env_vars = {}
+          env_vars["GEM_HOME"] = ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"
 
           module_path = get_module_gem_path(modul, module_version)
 
@@ -87,32 +92,26 @@ class BrpmScriptExecutor
           gemfile_path = "#{module_path}/Gemfile"
           if File.exists?(gemfile_path)
             BrpmAuto.log "Using Gemfile #{gemfile_path}."
-            env_var_bundler = "export BUNDLE_GEMFILE=#{gemfile_path};"
+            env_vars["BUNDLE_GEMFILE"] = gemfile_path
             require_bundler = "require 'bundler/setup';"
           else
             BrpmAuto.log("This module doesn't have a Gemfile.")
-            env_var_bundler = ""
             require_bundler = ""
           end
 
           BrpmAuto.log "Executing the script in a separate process..."
-          ruby_command = <<EOR
-#{require_bundler}
-require \\"brpm_script_executor\\"
-BrpmScriptExecutor.execute_automation_script_from_other_process(\\"#{modul}\\", \\"#{name}\\", \\"#{params_path}\\", \\"#{automation_type}\\", \\"#{parent_id}\\", \\"#{offset}\\", \\"#{max_records}\\")
-EOR
-          command = "#{env_var_gem_home}#{env_var_bundler}ruby -e \"#{ruby_command}\""
-        end
-
-        _, stderr, _, status = Bundler.with_clean_env do
-          BrpmAuto.execute_command(command) do |stdout_err|
-            BrpmAuto.log "    #{stdout_err.chomp}"
+          _, stderr, _, status = Bundler.with_clean_env do
+            BrpmAuto.execute_command(env_vars, "ruby", "-e", "#{require_bundler};require \"brpm_script_executor\";BrpmScriptExecutor.execute_automation_script_from_other_process(\"#{modul}\", \"#{name}\", \"#{params_path}\", \"#{automation_type}\", \"#{parent_id}\", \"#{offset}\", \"#{max_records}\")") do |stdout_err|
+              BrpmAuto.log "  stdout:#{stdout_err.chomp}"
+            end
           end
         end
 
         FileUtils.rm(params_path) if File.exists?(params_path)
 
         raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
+
+        BrpmAuto.log "The process finished succesfully."
 
         if automation_type == "resource_automation"
           result_path = params_path.sub!("params", "result")

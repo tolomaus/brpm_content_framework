@@ -78,15 +78,15 @@ module Utilities
     cmd_result
   end
 
-  def execute_command(command, sensitive_data = nil)
-    Open3.popen3(command) do |stdin, stdout, stderr, thread|
+  def execute_command(*commands)
+    Open3.popen3(*commands) do |stdin, stdout, stderr, thread|
       logs = {:out => "", :err => ""}
 
       if block_given?
         { :out => stdout, :err => stderr }.each do |key, stream|
           Thread.new do
             while line = stream.gets
-              privatized_line = BrpmAuto.privatize(line, sensitive_data)
+              privatized_line = BrpmAuto.privatize(line)
               logs[key] += privatized_line
               yield privatized_line
             end
