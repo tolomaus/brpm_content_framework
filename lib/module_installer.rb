@@ -83,8 +83,13 @@ class ModuleInstaller
       end
     end
 
+    remove_docker_image(module_name, module_version)
+
     BrpmAuto.log "Uninstalling gem #{module_name} #{module_version}..."
-    BrpmAuto.log `gem uninstall #{module_name} -v #{module_version} -x`
+    _, stderr, _, status = BrpmAuto.execute_command("gem uninstall #{module_name} -v #{module_version} -x") do |stdout_err|
+      BrpmAuto.log "    #{stdout_err.chomp}"
+    end
+    raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
 
     true
   end
@@ -156,14 +161,12 @@ class ModuleInstaller
     if File.exists?(gemfile_path)
       command = "cd #{spec.gem_dir}; bundle install"
       BrpmAuto.log "Found a Gemfile so executing command '#{command}'..."
-      result = BrpmAuto.execute_shell(command)
+      _, stderr, _, status = BrpmAuto.execute_command(command) do |stdout_err|
+        BrpmAuto.log "    #{stdout_err.chomp}"
+      end
+      raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
     else
       BrpmAuto.log "This module doesn't have a Gemfile."
-    end
-
-    BrpmAuto.log result["stdout"] if result["stdout"] and !result["stdout"].empty?
-    unless result["status"] == 0
-      raise result["stderr"]
     end
   end
 
@@ -171,15 +174,29 @@ class ModuleInstaller
     case BrpmAuto.global_params["execute_automation_scripts_in_docker"]
     when "always", "if_docker_image_exists"
       BrpmAuto.log "Pulling the docker image from the Docker Hub..."
-      output = `docker pull bmcrlm/#{spec.name}:#{spec.version}`
-      BrpmAuto.log output
-      unless output =~ /Image is up to date for/ or output =~ /Downloaded newer image for/
+      stdout, stderr, _, status = BrpmAuto.execute_command("docker pull bmcrlm/#{spec.name}:#{spec.version}") do |stdout_err|
+        BrpmAuto.log "    #{stdout_err.chomp}"
+      end
+      raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
+
+      unless stdout =~ /Image is up to date for/ or output =~ /Downloaded newer image for/
         if BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "always"
           raise "Docker image bmcrlm/#{spec.name}:#{spec.version} doesn't exist."
         elsif BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "if_docker_image_exists"
           BrpmAuto.log "Docker image bmcrlm/#{spec.name}:#{spec.version} doesn't exist."
         end
       end
+    end
+  end
+
+  def remove_docker_image(module_name, module_version)
+    case BrpmAuto.global_params["execute_automation_scripts_in_docker"]
+    when "always", "if_docker_image_exists"
+      BrpmAuto.log "Removing the docker image..."
+      _, stderr, _, status = BrpmAuto.execute_command("docker rmi $(docker images | grep bmcrlm/#{module_name}:#{module_version} | awk {'print $3'})") do |stdout_err|
+        BrpmAuto.log "    #{stdout_err.chomp}"
+      end
+      raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
     end
   end
 

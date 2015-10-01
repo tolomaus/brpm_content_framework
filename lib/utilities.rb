@@ -1,5 +1,6 @@
+require 'open3'
+
 module Utilities
-  
   EXIT_CODE_FAILURE = 'Exit_Code_Failure'
   Windows = (RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/) unless defined?(Windows)
   
@@ -75,6 +76,31 @@ module Utilities
     File.delete(errfile)
 
     cmd_result
+  end
+
+  def execute_command(command, sensitive_data = nil)
+    Open3.popen3(command) do |stdin, stdout, stderr, thread|
+      logs = {:out => "", :err => ""}
+
+      if block_given?
+        { :out => stdout, :err => stderr }.each do |key, stream|
+          Thread.new do
+            while line = stream.gets
+              privatized_line = BrpmAuto.privatize(line, sensitive_data)
+              logs[key] += privatized_line
+              yield privatized_line
+            end
+          end if block_given?
+        end
+
+        thread.join
+      else
+        logs[:out] = stdout.read
+        logs[:err] = stderr.read
+      end
+
+      return logs[:out], logs[:err], thread.pid, thread.value
+    end
   end
 
   # Returns a timestamp to the thousanth of a second

@@ -71,13 +71,43 @@ describe 'BRPM automation framework' do
       result = BrpmAuto.execute_shell("echo Hello")
 
       expect(result["status"]).to eql(0)
-      expect(result["stdout"]).to eql("Hello\n")
+      expect(result["stdout"].chomp).to eql("Hello")
     end
 
     it 'should return with a non-zero status when passing a bad command' do
       result = BrpmAuto.execute_shell("xxxx")
 
       expect(result["status"]).not_to eql(0)
+    end
+  end
+
+  describe 'execute_shell_stream_logs' do
+    it 'should execute a command successfully' do
+      stdout, _, _, status = BrpmAuto.execute_command("echo Hello")
+
+      expect(status.success?).to be_truthy
+      expect(stdout.chomp).to eql("Hello")
+    end
+
+    it 'should execute a command successfully and stream the stdout' do
+      streamed_logs = ""
+      _, _, _, status = BrpmAuto.execute_command("echo Hello") do |stdout_err|
+        streamed_logs += stdout_err
+      end
+
+      expect(status.success?).to be_truthy
+      expect(streamed_logs.chomp).to eql("Hello")
+    end
+
+    it 'should return with a non-zero status when passing a command that raises an exception and stream the stderr' do
+      _, stderr, _, status = BrpmAuto.execute_command("ruby -e \"raise 'Boom'\"")
+
+      expect(status.success?).to be_falsey
+      expect(stderr.chomp).to eql("-e:1:in `<main>': Boom (RuntimeError)")
+    end
+
+    it 'should return with a non-zero status when passing a bad command' do
+      expect { BrpmAuto.execute_command("xxxx") }.to raise_exception
     end
   end
 end

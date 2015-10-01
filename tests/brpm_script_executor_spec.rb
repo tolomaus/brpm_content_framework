@@ -45,7 +45,7 @@ describe 'BRPM Script Executor' do
     module_gem_path = BrpmScriptExecutor.get_module_gem_path(@module_name, module_version)
     gemfile_path = "#{module_gem_path}/Gemfile"
 
-    FileUtils.move(gemfile_path, "#{gemfile_path}_tmp")
+    FileUtils.move(gemfile_path, "#{gemfile_path}_tmp") if File.exists?(gemfile_path)
     result = BrpmScriptExecutor.execute_automation_script_in_separate_process(@module_name, "test_ruby", get_default_params)
     FileUtils.move("#{gemfile_path}_tmp", gemfile_path)
 

@@ -35,8 +35,9 @@ class BrpmScriptExecutor
           use_docker = true
         when "if_docker_image_exists"
           BrpmAuto.log "Checking if a docker image exists for bmcrlm/#{modul}:#{module_version}..."
-          output = `docker history -q bmcrlm/#{modul}:#{module_version} 2>&1 >/dev/null`
-          use_docker = output.empty?
+          _, _, _, status = BrpmAuto.execute_command("docker history -q bmcrlm/#{modul}:#{module_version}")
+
+          use_docker = status.success?
         else
           use_docker = false
         end
@@ -48,19 +49,19 @@ class BrpmScriptExecutor
         automation_results_path = params["SS_automation_results_dir"] || working_path
         script_support_path = params["SS_script_support_path"] || working_path
 
+        params_for_process = params.clone # we don't want to modify the current session's params
         if use_docker
-          params = params.clone # we don't want to modify the current session's params
-          params["SS_output_dir"] = "/workdir"
-          params["SS_output_file"] = params["SS_output_file"].sub(working_path, "/workdir") if params["SS_output_file"]
-          params["SS_automation_results_dir"] = "/automation_results"
-          params["SS_script_support_path"] = "/script_support"
+          params_for_process["SS_output_dir"] = "/workdir"
+          params_for_process["SS_output_file"] = params_for_process["SS_output_file"].sub(working_path, "/workdir") if params_for_process["SS_output_file"]
+          params_for_process["SS_automation_results_dir"] = "/automation_results"
+          params_for_process["SS_script_support_path"] = "/script_support"
 
-          params["log_file"] = params["log_file"].sub(working_path, "/workdir") if params["log_file"]
+          params_for_process["log_file"] = params_for_process["log_file"].sub(working_path, "/workdir") if params_for_process["log_file"]
         end
 
         BrpmAuto.log "Temporarily storing the params to #{params_path}..."
         File.open(params_path, "w") do |file|
-          file.puts(params.to_yaml)
+          file.puts(params_for_process.to_yaml)
         end
 
         if use_docker
@@ -71,7 +72,6 @@ class BrpmScriptExecutor
             command += " \"#{offset}\"" if offset
             command += " \"#{max_records}\"" if max_records
           end
-          result = BrpmAuto.execute_shell(command)
 
         else
           env_var_gem_home = "export GEM_HOME=#{ENV["BRPM_CONTENT_HOME"] || "#{ENV["BRPM_HOME"]}/modules"};"
@@ -96,26 +96,23 @@ class BrpmScriptExecutor
           end
 
           BrpmAuto.log "Executing the script in a separate process..."
-          command = <<EOR
+          ruby_command = <<EOR
 #{require_bundler}
 require \\"brpm_script_executor\\"
 BrpmScriptExecutor.execute_automation_script_from_other_process(\\"#{modul}\\", \\"#{name}\\", \\"#{params_path}\\", \\"#{automation_type}\\", \\"#{parent_id}\\", \\"#{offset}\\", \\"#{max_records}\\")
 EOR
-          result = Bundler.with_clean_env { BrpmAuto.execute_shell("#{env_var_gem_home}#{env_var_bundler}ruby -e \"#{command}\"") }
+          command = "#{env_var_gem_home}#{env_var_bundler}ruby -e \"#{ruby_command}\""
+        end
+
+        _, stderr, _, status = Bundler.with_clean_env do
+          BrpmAuto.execute_command(command) do |stdout_err|
+            BrpmAuto.log "    #{stdout_err.chomp}"
+          end
         end
 
         FileUtils.rm(params_path) if File.exists?(params_path)
 
-        unless result["status"] == 0
-          if result["stdout"] and !result["stdout"].empty?
-            BrpmAuto.log "stdout of the executed process:"
-            BrpmAuto.log "-----------------------------------------------------------"
-            BrpmAuto.log result["stdout"]
-            BrpmAuto.log "-----------------------------------------------------------"
-          end
-
-          raise result["stderr"]
-        end
+        raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
 
         if automation_type == "resource_automation"
           result_path = params_path.sub!("params", "result")
@@ -139,11 +136,11 @@ EOR
     def execute_automation_script_from_other_process(modul, name, params_file, automation_type, parent_id = nil, offset = nil, max_records = nil)
       raise "Params file #{params_file} doesn't exist." unless File.exists?(params_file)
 
-      puts "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}|  Loading the params from #{params_file} and cleaning it up..."
+      puts "Loading the params from #{params_file} and cleaning it up..."
       params = YAML.load_file(params_file)
       FileUtils.rm(params_file)
 
-      puts "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}|  Setting up the BRPM Content framework..."
+      puts "Setting up the BRPM Content framework..."
       BrpmAuto.setup(params)
       BrpmAuto.log "  BRPM Content framework is version #{BrpmAuto.version}."
 
