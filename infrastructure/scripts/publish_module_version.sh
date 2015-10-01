@@ -36,8 +36,10 @@ if [ -f "docker/Dockerfile" ]; then
     echo ">>> Publishing docker image bmcrlm/$MODULE_NAME:$MODULE_VERSION to the docker hub..."
     docker push bmcrlm/$MODULE_NAME:$MODULE_VERSION || { echo 'Aborting' ; exit 1; }
 
-    echo ""
-    echo ">>> Tagging bmcrlm/$MODULE_NAME:$MODULE_VERSION as bmcrlm/$MODULE_NAME:latest..."
-    docker tag -f bmcrlm/$MODULE_NAME:$MODULE_VERSION bmcrlm/$MODULE_NAME:latest || { echo 'Aborting' ; exit 1; }
-    docker push bmcrlm/$MODULE_NAME:latest || { echo 'Aborting' ; exit 1; }
+    if [[ "$MODULE_NAME" == brpm_content_framework ]]; then
+        echo ""
+        echo ">>> Tagging bmcrlm/$MODULE_NAME:$MODULE_VERSION as bmcrlm/$MODULE_NAME:latest..."
+        docker tag -f bmcrlm/$MODULE_NAME:$MODULE_VERSION bmcrlm/$MODULE_NAME:latest || { echo 'Aborting' ; exit 1; }
+        docker push bmcrlm/$MODULE_NAME:latest || { echo 'Aborting' ; exit 1; }
+    fi
 fi
