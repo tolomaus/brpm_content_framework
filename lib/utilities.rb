@@ -318,6 +318,14 @@ module Utilities
     end
   end
 
+  def replace_in_file(file_path, pattern, replacement)
+    file_content = File.read(file_path)
+
+    File.open(file_path, "w") do |file|
+      file << file_content.gsub(pattern, replacement)
+    end
+  end
+
   private
 
     #TODO: still needed? the framework's error handling should take care of this already

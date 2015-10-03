@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+require "brpm_auto"
+
+if ARGV.size < 1
+  puts "Missing arguments."
+  puts "Usage: \n  build_docker_image <path to module>"
+  exit
+end
+
+begin
+  BrpmAuto.setup({ "log_file" => "/tmp/brpm_install.log", "also_log_to_console" => "true" })
+
+  module_path = File.expand_path(ARGV[0])
+
+  module_name = File.basename(module_path)
+  module_config = YAML.load_file("#{module_path}/config.yml")
+  module_version = module_config["version"]
+
+  BrpmAuto.log "Module #{module_name} #{module_version}"
+
+  if module_name == "brpm_content_framework"
+    dockerfile_path = File.expand_path("#{File.dirname(__FILE__)}/../docker/framework/Dockerfile")
+  else
+    dockerfile_path = File.expand_path("#{File.dirname(__FILE__)}/../docker/modules/Dockerfile")
+  end
+
+  dockerfile_content = File.read(dockerfile_path)
+  dockerfile_original_content = File.read(dockerfile_path)
+
+  unless module_name == "brpm_content_framework"
+    dockerfile_content.sub!(/(?<=ENV MODULE )(.*)/, module_name)
+  end
+  dockerfile_content.sub!(/(?<=ENV VERSION )(.*)/, module_version)
+
+  File.open(dockerfile_path, "w") do |file|
+    file << dockerfile_content
+  end
+
+  BrpmAuto.log ""
+  BrpmAuto.log ">>> Building docker image bmcrlm/#{module_name}:#{module_version}..."
+  _, stderr, _, status = BrpmAuto.execute_command("docker build -t bmcrlm/#{module_name}:#{module_version} #{File.dirname(dockerfile_path)}") do |stdout_err|
+    BrpmAuto.log "    #{stdout_err.chomp}"
+  end
+  raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
+
+  File.open(dockerfile_path, "w") do |file|
+    file << dockerfile_original_content
+  end
+
+rescue Exception => e
+  BrpmAuto.log_error "#{e}"
+  BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
+
+  raise e
+end
