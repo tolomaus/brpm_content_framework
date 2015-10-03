@@ -177,13 +177,18 @@ class ModuleInstaller
       stdout, stderr, _, status = BrpmAuto.execute_command("docker pull bmcrlm/#{spec.name}:#{spec.version}") do |stdout_err|
         BrpmAuto.log "    #{stdout_err.chomp}"
       end
-      raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
 
-      unless stdout =~ /Image is up to date for/ or stdout =~ /Downloaded newer image for/
-        if BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "always"
-          raise "Docker image bmcrlm/#{spec.name}:#{spec.version} doesn't exist."
-        elsif BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "if_docker_image_exists"
-          BrpmAuto.log "Docker image bmcrlm/#{spec.name}:#{spec.version} doesn't exist."
+      if stdout =~ /Image is up to date for/ or stdout =~ /Downloaded newer image for/
+        #all went fine
+      else
+        if stderr =~ /not found/
+          if BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "always"
+            raise stderr
+          elsif BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "if_docker_image_exists"
+            BrpmAuto.log stderr
+          end
+        else
+          raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
         end
       end
     end
