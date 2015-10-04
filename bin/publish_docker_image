@@ -16,7 +16,7 @@ begin
   module_config = YAML.load_file("#{module_path}/config.yml")
   module_version = module_config["version"]
 
-  BrpmAuto.log "Module #{module_name} #{module_version}"
+  BrpmAuto.log "Publishing a docker image for module #{module_name} #{module_version}"
 
   if module_name == "brpm_content_framework"
     dockerfile_path = File.expand_path("#{File.dirname(__FILE__)}/../docker/framework/Dockerfile")

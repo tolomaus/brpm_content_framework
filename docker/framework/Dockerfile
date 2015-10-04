@@ -2,14 +2,13 @@ FROM atlashealth/ruby:1.9.3
 MAINTAINER Niek Bartholomeus <niek.bartholomeus@gmail.com>
 
 ENV GEM_HOME /usr/lib/ruby/gems/1.9.1
+ENV MODULE brpm_content_framework
 ENV VERSION 1.0.0
 
-RUN gem install brpm_content_framework -v $VERSION && \
-    cd $GEM_HOME/gems/brpm_content_framework-$VERSION && \
-    bundle install && \
-    rm -rf $GEM_HOME/cache
+COPY install_gem.sh /
+RUN /install_gem.sh
 
-ADD . /
+COPY docker_execute_automation /
 
 VOLUME [ "/workdir" ]
 VOLUME [ "/automation_results" ]

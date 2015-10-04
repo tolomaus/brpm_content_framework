@@ -183,9 +183,9 @@ class ModuleInstaller
       else
         if stderr =~ /not found/
           if BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "always"
-            raise stderr
+            raise stderr.chomp
           elsif BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "if_docker_image_exists"
-            BrpmAuto.log stderr
+            BrpmAuto.log stderr.chomp
           end
         else
           raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
