@@ -24,7 +24,7 @@ begin
       ARGV[1]
     else
       module_spec = Gem::Specification.find_by_name(module_name)
-      module_spec.version
+      module_spec.version.to_s
     end
   end
 
