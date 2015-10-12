@@ -32,11 +32,9 @@ if [ ! -f "$LOCATION" ]; then
     exit 1
 fi
 
-if [ -f ~/shell_scripts/backup_database.sh ]; then
-    echo "Found ~/shell_scripts/backup_database.sh so taking a database backup first..."
-    ~/shell_scripts/backup_database.sh
-    echo ""
-fi
+echo "Taking a database backup..."
+$(dirname $0)/backup_database.sh
+echo ""
 
 echo "Stopping BRPM..."
 /etc/init.d/bmcrpm-4.6.00 stop
