@@ -186,6 +186,7 @@ class ModuleInstaller
             raise stderr.chomp
           elsif BrpmAuto.global_params["execute_automation_scripts_in_docker"] == "if_docker_image_exists"
             BrpmAuto.log stderr.chomp
+            BrpmAuto.log "docker is only optional so ignoring the error."
           end
         else
           raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
@@ -198,7 +199,7 @@ class ModuleInstaller
     case BrpmAuto.global_params["execute_automation_scripts_in_docker"]
     when "always", "if_docker_image_exists"
       BrpmAuto.log "Removing the docker image..."
-      _, stderr, _, status = BrpmAuto.execute_command("docker images | grep bmcrlm/#{module_name} | grep #{module_version} | awk {'print $3'} | xargs docker rmi") do |stdout_err|
+      _, stderr, _, status = BrpmAuto.execute_command("docker images | grep bmcrlm/#{module_name} | grep #{module_version} | awk {'print $3'} | xargs -r docker rmi") do |stdout_err|
         BrpmAuto.log "    #{stdout_err.chomp}"
       end
       raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
