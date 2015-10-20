@@ -8,12 +8,16 @@ class SimpleLogger < LoggerBase
     print "Logging to #{@log_file}\n" unless also_log_to_console
   end
 
-  def log(message)
+  def log(message, with_prefix = true)
     message = message.to_s # in case booleans or whatever are passed
     timestamp = "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}"
 
-    prefix = "#{timestamp}|"
-    message = message.gsub("\n", "\n" + (" " * prefix.length))
+    if with_prefix
+      prefix = ""
+    else
+      prefix = "#{timestamp}|"
+      message = message.gsub("\n", "\n" + (" " * prefix.length))
+    end
 
     log_message = "#{prefix}#{message}\n"
 
