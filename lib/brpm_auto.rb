@@ -121,6 +121,21 @@ class BrpmAuto
       @logger.message_box(message, m_type)
     end
 
+    def pack_response(argument_name, response)
+      flag = "#------ Block to Set Pack Response ---------------#\n"
+      unless argument_name.nil?
+        if response.is_a?(Hash)
+          # Used for out-table output parameter
+          flag += "$$SS_Pack_Response{#{argument_name}@@#{response.to_json}}$$"
+        else
+          flag += "$$SS_Pack_Response{#{argument_name}=>#{response}}$$"
+        end
+      end
+      flag += "\n#------- End Set Pack Response Block ---------------#\n"
+      @logger.log(flag, false)
+      flag
+    end
+
     def initialize_request_params(path)
       @request_params = RequestParams.new(path)
     end

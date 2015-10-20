@@ -133,6 +133,8 @@ EOR
         BrpmAuto.log "\n\t" + e.backtrace.join("\n\t")
 
         raise e
+      ensure
+        load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/write_to.rb") if BrpmAuto.params.run_from_brpm
       end
     end
 
@@ -207,8 +209,6 @@ EOR
 
         BrpmAuto.log ">>>>>>>>>>>>>> STOP #{automation_type} #{modul} #{name} - total duration: #{Time.at(duration).utc.strftime("%H:%M:%S")}"
         BrpmAuto.log ""
-
-        #load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/write_to.rb") if BrpmAuto.params.run_from_brpm
       end
     end
 
