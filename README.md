@@ -134,7 +134,8 @@ gem sources -a http://your-private-gem-server:9292/
 
 You can simply execute (or debug if your ruby IDE supports it, e.g. RubyMine) the scripts on your development machine. See further the section on Testability.
 
-For an example see the [Bladelogic](https://github.com/BMC-RLM/brpm_module_bladelogic) module.
+See the [recorded demo](https://youtu.be/08NuePJakGE) for a step-by-step explanation on how you can easily create your own module.
+
  
 ## Re-usability
 
