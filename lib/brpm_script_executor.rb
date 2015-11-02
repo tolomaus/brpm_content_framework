@@ -64,6 +64,13 @@ class BrpmScriptExecutor
           file.puts(params_for_process.to_yaml)
         end
 
+        destination_utf_file = File.expand("file_in_utf.rb", script_support_path)
+        source_utf_file = File.expand("../../config/initializers/file_in_utf.rb", script_support_path)
+        unless File.size(destination_utf_file) == File.size(source_utf_file)
+          BrpmAuto "Copying file_in_utf.rb from RPM/config/initializers to #{script_support_path}..."
+          FileUtils.copy(source_utf_file, destination_utf_file)
+        end
+
         if use_docker
           BrpmAuto.log "Executing the script in a docker container..."
           command = "docker run -v #{working_path}:/workdir -v #{automation_results_path}:/automation_results -v #{script_support_path}:/script_support --rm bmcrlm/#{modul}:#{module_version} /docker_execute_automation \"#{name}\" \"/workdir/#{params_file}\" \"#{automation_type}\""
@@ -101,7 +108,7 @@ class BrpmScriptExecutor
 require \\"brpm_script_executor\\"
 BrpmScriptExecutor.execute_automation_script_from_other_process(\\"#{modul}\\", \\"#{name}\\", \\"#{params_path}\\", \\"#{automation_type}\\", \\"#{parent_id}\\", \\"#{offset}\\", \\"#{max_records}\\")
 EOR
-          command = "#{env_var_gem_home}#{env_var_bundler}ruby -e \"#{ruby_command}\""
+          command = "#{env_var_gem_home}#{env_var_bundler}#{BrpmAuto.global_params["automation_scripts_ruby_command"] || "jruby"} -e \"#{ruby_command}\""
         end
 
         result = Bundler.with_clean_env do
