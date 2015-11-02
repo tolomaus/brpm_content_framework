@@ -1,4 +1,6 @@
 # This file should be located in BRPM_HOME/config
 # See the README for more information on how to use this file
-execute_automation_scripts_in_docker: "if_docker_image_exists" #possible values: never, if_docker_image_exists, always
+execute_automation_scripts_in_docker: "if_docker_image_exists" # possible values: never, if_docker_image_exists, always
+automation_scripts_ruby_command: "ruby" # specify ruby when you want to execute the automation scripts from a non-jruby interpreter, defaults to jruby
+
 my_parameter: "abc"
