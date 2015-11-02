@@ -11,9 +11,10 @@ It is designed around a number of core concepts like modularity, re-usability, t
 ## Getting started
 
 ### Installation
+By default the automation scripts will be executed by the jruby interpreter that is included with the BRPM install. See the end of this section if you want to use a custom ruby interpreter instead.
 
 #### environment variables
-First of all, make sure that the necessary environment variables are set on the BRPM instance, e.g. for a default BRPM installation:
+First of all, make sure that the necessary environment variables are set, e.g. for a default BRPM installation:
 ```shell
 export BRPM_HOME=/opt/bmc/RLM
 export JAVA_HOME="$BRPM_HOME/lib/jre"
@@ -23,7 +24,7 @@ export GEM_HOME="$BRPM_HOME/modules"
 export PATH="$GEM_HOME/bin:$JRUBY_HOME/bin:$PATH"
 ```
 
-If BRPM is installed on a custom location you can modify the first line accordingly. The PATH variable is modified to make sure the ruby scripts that come with the modules are in the PATH.  
+If BRPM is installed on a custom location you can modify the first line accordingly. The PATH variable is modified to make sure the ruby scripts that come with the modules are in the PATH. 
 
 #### .brpm
 Then create a file .brpm with the following contents in the root directory of the user account that runs BRPM:
@@ -67,6 +68,22 @@ brpm_install /path/to/module-name-x.x.x.gem
 ```
 
 The gem file of the module can be found on rubygems.org. 
+
+#### custom ruby interpreter
+To improve the performance of the automation scripts you can also decide to have the scripts executed by a ruby interpreter of your choice.
+
+In that case make sure that the location of the ruby command is added to the PATH environment variable. There is no more need to set the JAVA_HOME or JRUBY_HOME environment variables anymore, the remaining environment variables can be set as following:
+```shell
+export BRPM_HOME=/opt/bmc/RLM
+export GEM_HOME="$BRPM_HOME/modules"
+
+export PATH="$GEM_HOME/bin:$PATH"
+```
+
+Create a file server.yml in $BRPM_HOME/config and add the following key/value pair to it, in YAML format:
+```
+automation_scripts_ruby_command: "ruby"
+```
 
 ### Usage
 Once the module is installed you can immediately start using its contained automation scripts by linking the requests' steps to them.  
@@ -327,6 +344,19 @@ For an example of how to synchronize JIRA issues with BRPM tickets see the [web 
 ### Messaging engine
 
 BRPM comes with a messaging engine that can send a notification for many events like the creation or update or requests, plans etc. The framework contains an [event handler script](https://github.com/BMC-RLM/brpm_content_framework/blob/master/bin/event_handler) with an associated [bash wrapper script](https://github.com/BMC-RLM/brpm_content_framework/blob/master/infrastructure/scripts/run_event_handler.sh) that can be set up to listen to these incoming events. You can pass it a custom script that can take care of processing the received events. Typically this event processing script will then execute the appropriate automation scripts.
+
+The messaging can be enabled by activating the "Create queue messages for integrations?" checkbox in the Systems - Settings - General section of BRPM and by adding the following sections to the file ```$BRPM_HOME/server/jboss/standalone/configuration/standalone.xml```:
+In the ```<acceptors>``` section of ```<hornetq-server>```:
+```
+<netty-acceptor name="stomp-acceptor" socket-binding="messaging-stomp">
+    <param key="protocol" value="stomp"/>
+</netty-acceptor>
+```
+ 
+In the ```<socket-binding-group name="standard-sockets">``` section:
+```
+<socket-binding name="messaging-stomp" port="61613"/>
+```
 
 A messaging solution can be used for extending the out-of-the-box BRPM feature set or for synchronizing BRPM owned data with other systems. 
 
