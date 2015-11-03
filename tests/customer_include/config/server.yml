@@ -1,4 +1,5 @@
 # This file should be located in BRPM_HOME/config
 # See the README for more information on how to use this file
 key2: "value2"
+automation_scripts_ruby_command: "ruby"
 # a_commented_out_key: "comment"
