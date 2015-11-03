@@ -64,10 +64,10 @@ class BrpmScriptExecutor
           file.puts(params_for_process.to_yaml)
         end
 
-        destination_utf_file = File.expand_path("file_in_utf.rb", script_support_path)
         source_utf_file = File.expand_path("../../config/initializers/file_in_utf.rb", script_support_path)
+        destination_utf_file = File.expand_path("file_in_utf.rb", script_support_path)
         if File.exists?(source_utf_file) and File.size(destination_utf_file) != File.size(source_utf_file)
-          BrpmAuto "Copying file_in_utf.rb from RPM/config/initializers to #{script_support_path}..."
+          BrpmAuto.log "Copying file_in_utf.rb from RPM/config/initializers to #{script_support_path}..."
           FileUtils.copy(source_utf_file, destination_utf_file)
         end
 
