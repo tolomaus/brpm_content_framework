@@ -13,10 +13,10 @@ class SimpleLogger < LoggerBase
     timestamp = "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}"
 
     if with_prefix
-      prefix = ""
-    else
       prefix = "#{timestamp}|"
       message = message.gsub("\n", "\n" + (" " * prefix.length))
+    else
+      prefix = ""
     end
 
     log_message = "#{prefix}#{message}\n"
