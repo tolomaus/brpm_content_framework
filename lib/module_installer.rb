@@ -54,6 +54,8 @@ class ModuleInstaller
         end
       end
     end
+
+    BrpmAuto.log "Module #{module_spec.name} #{module_spec.version} is now installed."
   end
 
   def uninstall_module(module_name, module_version)
