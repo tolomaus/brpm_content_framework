@@ -1,9 +1,18 @@
+require 'rbconfig'
 require 'open3'
 
 module Utilities
   EXIT_CODE_FAILURE = 'Exit_Code_Failure'
-  Windows = (RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/) unless defined?(Windows)
-  
+
+  def is_windows?
+    RbConfig::CONFIG['host_os'] =~ /mswin|msys|mingw|cygwin|bccwin|wince|emc/i
+  end
+
+  def is_jruby?
+
+    RbConfig::CONFIG['ruby_install_name'] =~ /jruby/i
+  end
+
   # Returns the dos path from a standard path
   #
   # ==== Attributes
@@ -47,7 +56,7 @@ module Utilities
 
     output_dir = File.join(BrpmAuto.params.output_dir,"#{precision_timestamp}")
     errfile = "#{output_dir}_stderr.txt"
-    complete_command = "#{escaped_command} 2>#{errfile}" unless Windows
+    complete_command = "#{escaped_command} 2>#{errfile}" unless is_windows?
     fil = File.open(errfile, "w+")
     fil.close
 
@@ -78,7 +87,11 @@ module Utilities
     cmd_result
   end
 
-  def execute_command(*commands)
+  def execute_command(command)
+    *commands=command
+    if is_jruby? #TODO work around for buggy jruby implementation of popen3
+      *commands = RbConfig::CONFIG['SHELL'], is_windows? ? "?C" : "-c", command
+    end
     Open3.popen3(*commands) do |stdin, stdout, stderr, thread|
       logs = {:out => "", :err => ""}
 
@@ -280,10 +293,6 @@ module Utilities
     result
   end
 
-  def windows?
-    Windows
-  end
-  
   def privatize(expression, sensitive_data = BrpmAuto.params.private_params.values)
     unless sensitive_data.nil? or sensitive_data.empty?
       sensitive_data = [sensitive_data] if sensitive_data.kind_of?(String)
@@ -330,7 +339,7 @@ module Utilities
 
     #TODO: still needed? the framework's error handling should take care of this already
     def exit_code_failure
-      return "" if Windows
+      return "" if is_windows?
       size_ = EXIT_CODE_FAILURE.size
       exit_code_failure_first_part  = EXIT_CODE_FAILURE[0..3]
       exit_code_failure_second_part = EXIT_CODE_FAILURE[4..size_]

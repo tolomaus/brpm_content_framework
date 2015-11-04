@@ -291,7 +291,7 @@ class DispatchBase
     instance_path = File.join(staging_path, package_file)
     staging_artifacts = Dir.entries(staging_path).reject{|k| [".",".."].include?(k) }
     return {"instance_path" => "ERROR - no files in staging area", "md5" => ""} if staging_artifacts.size < 1
-    cmd = "cd #{staging_path} && zip -r #{package_file} *" unless Windows
+    cmd = "cd #{staging_path} && zip -r #{package_file} *" unless BrpmAuto.is_windows?
     result = execute_shell(cmd)
     md5 = Digest::MD5.file(instance_path).hexdigest
     {"instance_path" => instance_path, "md5" => md5, "manifest" => staging_artifacts}

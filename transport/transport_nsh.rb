@@ -186,7 +186,7 @@ class TransportNSH
     err_file = touch_file("#{script_dir}/nsh_errors_#{Time.now.strftime("%Y%m%d%H%M%S%L")}.txt")
     script_path = "\"#{script_path}\"" if script_path.include?(" ")
     cmd = "#{nsh_cmd("scriptutil")} -d \"#{nsh_path(target_path)}\" -h #{target_hosts.join(" ")} -s #{script_path}"
-    cmd = cmd + " 2>#{err_file}" unless BrpmAuto.windows?
+    cmd = cmd + " 2>#{err_file}" unless BrpmAuto.is_windows?
     result = execute_shell(cmd)
     result["stderr"] = "#{result["stderr"]}\n#{File.open(err_file).read}"
     result = display_result(result) unless raw_result
@@ -353,7 +353,7 @@ class TransportNSH
   
   def platform_temp
     res = "/tmp"
-    res = "C:/Windows/temp" if BrpmAuto.windows?
+    res = "C:/Windows/temp" if BrpmAuto.is_windows?
     res
   end
 end
