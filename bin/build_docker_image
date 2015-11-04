@@ -1,6 +1,4 @@
 #!/usr/bin/env ruby
-require "brpm_auto"
-
 usage =  "Usage: \n  build_docker_image <path to module>\n  build_docker_image <module name> [<module version>]"
 
 if ARGV.size < 1
@@ -9,8 +7,11 @@ if ARGV.size < 1
   exit
 end
 
+require 'tmpdir'
+require "brpm_auto"
+
 begin
-  BrpmAuto.setup({ "log_file" => "/tmp/brpm_install.log", "also_log_to_console" => "true" })
+  BrpmAuto.initialize_logger("#{Dir.tmpdir}/brpm_install.log",true)
 
   if File.directory?(File.expand_path(ARGV[0]))
     module_path = File.expand_path(ARGV[0])

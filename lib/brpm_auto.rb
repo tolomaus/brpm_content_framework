@@ -105,6 +105,12 @@ class BrpmAuto
       @logger = SimpleLogger.new(log_file, also_log_to_console)
     end
 
+    def is_windows?
+      require 'rbconfig'
+
+      RbConfig::CONFIG['host_os'] =~ /mswin|msys|mingw|cygwin|bccwin|wince|emc/i
+    end
+
     def run_from_brpm
       @params.run_from_brpm
     end
