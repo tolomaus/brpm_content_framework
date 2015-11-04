@@ -11,7 +11,10 @@ require "brpm_auto"
 require "module_installer"
 
 begin
-  BrpmAuto.initialize_logger("#{Dir.tmpdir}/brpm_install.log",true)
+  params = {}
+  params["log_file"] = "#{Dir.tmpdir}/brpm_install.log"
+  params["also_log_to_console"] = "true"
+  BrpmAuto.setup(params)
 
   module_name_or_path = ARGV[0]
   module_version = ARGV[1] # optional
