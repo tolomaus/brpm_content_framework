@@ -149,7 +149,11 @@ class ModuleInstaller
     else
       BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " " + module_version}..."
       version_req = module_version ? Gem::Requirement.create(Gem::Version.new(module_version)) : Gem::Requirement.default
-      specs = Gem.install(module_name_or_path, version_req)
+
+      require "rubygems/dependency_installer"
+      inst = Gem::DependencyInstaller.new({ :ignore_dependencies => true })
+      inst.install module_name_or_path, version_req
+      specs = inst.installed_gems
 
       BrpmAuto.log "Installed gems:"
       specs.each do |spec|
