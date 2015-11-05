@@ -143,7 +143,7 @@ class ModuleInstaller
 
       gem = source.download module_spec
 
-      inst = Gem::Installer.new gem
+      inst = Gem::Installer.new gem, { :ignore_dependencies => true }
       inst.install
       BrpmAuto.log "Done."
     else
