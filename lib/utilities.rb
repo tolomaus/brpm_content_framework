@@ -90,7 +90,7 @@ module Utilities
   def execute_command(command)
     *commands=command
     if is_jruby? #TODO work around for buggy jruby implementation of popen3
-      *commands = RbConfig::CONFIG['SHELL'], is_windows? ? "?C" : "-c", command
+      *commands = RbConfig::CONFIG['SHELL'], is_windows? ? "/C" : "-c", command
     end
     Open3.popen3(*commands) do |stdin, stdout, stderr, thread|
       logs = {:out => "", :err => ""}
