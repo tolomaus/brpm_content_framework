@@ -12,7 +12,8 @@ class ModuleInstaller
 
       brpm_content_spec = specs.find { |spec| spec.name == "brpm_content_framework" } if specs
 
-      install_bundle(module_spec)
+      is_local = is_module_path?(module_name_or_path)
+      install_bundle(module_spec, is_local)
       pull_docker_image(module_spec)
     else
       module_name = module_name_or_path
@@ -128,8 +129,12 @@ class ModuleInstaller
     true
   end
 
+  def is_module_path?(module_name_or_path)
+    module_name_or_path =~ /\.gem$/ and File.file? module_name_or_path
+  end
+
   def install_gem(module_name_or_path, module_version)
-    if module_name_or_path =~ /\.gem$/ and File.file? module_name_or_path
+    if is_module_path?(module_name_or_path)
       BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " " + module_version} from file..."
       require 'rubygems/name_tuple'
       source = Gem::Source::SpecificFile.new module_name_or_path
@@ -157,11 +162,12 @@ class ModuleInstaller
     return module_spec, specs
   end
 
-  def install_bundle(spec)
+  def install_bundle(spec, is_local = false)
     gemfile_path = File.join(spec.gem_dir, "Gemfile")
 
     if File.exists?(gemfile_path)
-      command = "cd #{spec.gem_dir}; bundle install"
+      command = "cd #{spec.gem_dir}; bundle install --without development test"
+      command += " --local" if is_local
       BrpmAuto.log "Found a Gemfile so executing command '#{command}'..."
       _, stderr, _, status = BrpmAuto.execute_command(command) do |stdout_err|
         BrpmAuto.log "    #{stdout_err.chomp}"
