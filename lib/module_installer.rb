@@ -134,45 +134,38 @@ class ModuleInstaller
   end
 
   def install_gem(module_name_or_path, module_version)
+    BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " " + module_version}..."
+    command = "gem install #{module_name_or_path}#{module_version.nil? ? "" : " -v " + module_version} --ignore-dependencies"
+    BrpmAuto.log command
+    _, stderr, _, status = BrpmAuto.execute_command(command) do |stdout_err|
+      BrpmAuto.log "    #{stdout_err.chomp}"
+    end
+    raise "The process failed with status #{status.exitstatus}.\n#{stderr}" unless status.success?
+
     if is_module_path?(module_name_or_path)
-      BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " (ignoring dependencies) " + module_version} from file..."
       require 'rubygems/name_tuple'
       source = Gem::Source::SpecificFile.new module_name_or_path
-      module_spec = source.spec
-      specs = [module_spec]
-
-      gem = source.download module_spec
-
-      inst = Gem::Installer.new gem, { :ignore_dependencies => true }
-      inst.install
-      BrpmAuto.log "Done."
+      module_name = source.spec.name
+      module_version = source.spec.version
     else
-      BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " " + module_version} (ignoring dependencies)..."
-      version_req = module_version ? Gem::Requirement.create(Gem::Version.new(module_version)) : Gem::Requirement.default
-
-      require "rubygems/dependency_installer"
-      inst = Gem::DependencyInstaller.new({ :ignore_dependencies => true })
-      inst.install module_name_or_path, version_req
-      specs = inst.installed_gems
-
-      BrpmAuto.log "Installed gems:"
-      specs.each do |spec|
-        BrpmAuto.log "  - #{spec.name} #{spec.version}"
-      end
-
-      module_spec = specs.find { |spec| spec.name == module_name_or_path}
+      module_name = module_name_or_path
     end
 
-    return module_spec, specs
+    Gem.refresh
+    version_req = module_version ? Gem::Requirement.create(Gem::Version.new(module_version)) : Gem::Requirement.default
+    module_spec = Gem::Specification.find_by_name(module_name, version_req)
+
+    module_spec
   end
 
   def install_bundle(spec, is_local = false)
     gemfile_path = File.join(spec.gem_dir, "Gemfile")
 
     if File.exists?(gemfile_path)
+      BrpmAuto.log "Found a Gemfile so doing a 'bundle install'..."
       command = "export BRPM_CONTENT_FRAMEWORK_DEPLOYMENT=true; cd #{spec.gem_dir}; bundle install --without development test"
       command += " --local" if is_local
-      BrpmAuto.log "Found a Gemfile so executing command '#{command}'..."
+      BrpmAuto.log command
       _, stderr, _, status = BrpmAuto.execute_command(command) do |stdout_err|
         BrpmAuto.log "    #{stdout_err.chomp}"
       end
