@@ -135,7 +135,7 @@ class ModuleInstaller
 
   def install_gem(module_name_or_path, module_version)
     if is_module_path?(module_name_or_path)
-      BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " " + module_version} from file..."
+      BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " (ignoring dependencies) " + module_version} from file..."
       require 'rubygems/name_tuple'
       source = Gem::Source::SpecificFile.new module_name_or_path
       module_spec = source.spec
@@ -147,7 +147,7 @@ class ModuleInstaller
       inst.install
       BrpmAuto.log "Done."
     else
-      BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " " + module_version}..."
+      BrpmAuto.log "Installing gem #{module_name_or_path}#{module_version.nil? ? "" : " " + module_version} (ignoring dependencies)..."
       version_req = module_version ? Gem::Requirement.create(Gem::Version.new(module_version)) : Gem::Requirement.default
 
       require "rubygems/dependency_installer"
@@ -170,7 +170,7 @@ class ModuleInstaller
     gemfile_path = File.join(spec.gem_dir, "Gemfile")
 
     if File.exists?(gemfile_path)
-      command = "cd #{spec.gem_dir}; bundle install --without development test"
+      command = "export BRPM_CONTENT_FRAMEWORK_DEPLOYMENT=true; cd #{spec.gem_dir}; bundle install --without development test"
       command += " --local" if is_local
       BrpmAuto.log "Found a Gemfile so executing command '#{command}'..."
       _, stderr, _, status = BrpmAuto.execute_command(command) do |stdout_err|

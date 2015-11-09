@@ -29,8 +29,10 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "stomp"
   spec.add_runtime_dependency "xml-simple"
 
-  spec.add_development_dependency "rake"
-  spec.add_development_dependency "rspec"
+  unless ENV["BRPM_CONTENT_FRAMEWORK_DEPLOYMENT"]
+    spec.add_development_dependency "rake"
+    spec.add_development_dependency "rspec"
+  end
 
   spec.files         = `git ls-files`.split("\n")
   spec.require_path  = 'lib'
