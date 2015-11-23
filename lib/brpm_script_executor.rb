@@ -94,7 +94,7 @@ class BrpmScriptExecutor
           gemfile_path = "#{module_path}/Gemfile"
           if File.exists?(gemfile_path)
             BrpmAuto.log "Using Gemfile #{gemfile_path}."
-            env_var_bundler = "export BUNDLE_GEMFILE=#{gemfile_path} && "
+            env_var_bundler = "export BUNDLE_GEMFILE=#{gemfile_path} && export BRPM_CONTENT_FRAMEWORK_DEPLOYMENT=true && "
             require_bundler = "require 'bundler/setup';"
           else
             BrpmAuto.log("This module doesn't have a Gemfile.")
