@@ -8,9 +8,9 @@ class ModuleInstaller
     brpm_content_spec = nil
 
     if true #TODO: support no-gem-install mode
-      module_spec, specs = install_gem(module_name_or_path, module_version)
+      module_spec = install_gem(module_name_or_path, module_version)
 
-      brpm_content_spec = specs.find { |spec| spec.name == "brpm_content_framework" } if specs
+      brpm_content_spec = module_spec if spec.name == "brpm_content_framework"
 
       is_local = is_module_path?(module_name_or_path)
       install_bundle(module_spec, is_local)
