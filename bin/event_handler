@@ -17,8 +17,12 @@ require process_event_script
 def process(message)
   begin
     BrpmAuto.log "Processing new event..."
-    BrpmAuto.log "Message content:" if ENV["EVENT_HANDLER_LOG_EVENT"]=="1"
-    BrpmAuto.log message if ENV["EVENT_HANDLER_LOG_EVENT"]=="1"
+
+    if ENV["EVENT_HANDLER_LOG_EVENT"]=="1"
+      BrpmAuto.log "Message content:"
+      BrpmAuto.log message
+    end
+
     xml = "<root>#{message}</root>"
 
     event = XmlSimple.xml_in(xml)

@@ -19,6 +19,11 @@ class EventProcessor < WEBrick::HTTPServlet::AbstractServlet
       event = JSON.parse(request.body)
 
       BrpmAuto.log "Processing new event..."
+      if ENV["WEBHOOK_RECEIVER_LOG_EVENT"] == "1"
+        BrpmAuto.log "Message content:"
+        BrpmAuto.log event
+      end
+
       process_event(event)
 
       response.status = 200
