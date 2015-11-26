@@ -368,5 +368,6 @@ For an example of how to update the status of the associated JIRA tickets after 
 ### [JIRA](https://github.com/BMC-RLM/brpm_module_jira)
 ### [Jenkins](https://github.com/BMC-RLM/brpm_module_jenkins)
 ### [Ansible](https://github.com/BMC-RLM/brpm_module_ansible)
+### [ServiceNow](https://github.com/BMC-RLM/brpm_module_servicenow)
 ### [Demo customer](https://github.com/BMC-RLM/brpm_module_demo)
 
