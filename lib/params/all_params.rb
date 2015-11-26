@@ -17,6 +17,14 @@ class AllParams < ParamsBase
     raise RuntimeError.new("This is a virtual hash based on two physical hashes, use the add method instead.")
   end
 
+  def [](key)
+    if @params[key] and ! @params[key].empty?
+      @params[key]
+    else
+      @request_params[key]
+    end
+  end
+
   #TODO: refactor out the where functionality
   # Test if a param is present
   #

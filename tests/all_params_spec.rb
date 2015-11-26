@@ -18,13 +18,44 @@ describe 'All params' do
   end
 
   it 'should get a param from the request_param store' do
+    input_request_params = {}
+    input_request_params["key1"] = "value1"
+    set_request_params(input_request_params)
+
     input_params = get_default_params
-    input_params["key1"] = "value1"
 
     BrpmAuto.setup(input_params)
     all_params = BrpmAuto.all_params
 
     expect(all_params).to have_key("key1")
+    expect(all_params["key1"]).to eql("value1")
+  end
+
+  it 'should get a param from the param store if a param with the same name exists in the param and the request_param store' do
+    input_request_params = {}
+    input_request_params["key1"] = "value1"
+    set_request_params(input_request_params)
+
+    input_params = get_default_params
+    input_params["key1"] = "value2"
+
+    BrpmAuto.setup(input_params)
+    all_params = BrpmAuto.all_params
+
+    expect(all_params["key1"]).to eql("value2")
+  end
+
+  it 'should get a param from the request param store if a param with the same name exists in the param and the request_param store but the one from the param store is empty' do
+    input_request_params = {}
+    input_request_params["key1"] = "value1"
+    set_request_params(input_request_params)
+
+    input_params = get_default_params
+    input_params["key1"] = ""
+
+    BrpmAuto.setup(input_params)
+    all_params = BrpmAuto.all_params
+
     expect(all_params["key1"]).to eql("value1")
   end
 
