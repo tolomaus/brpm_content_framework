@@ -97,13 +97,14 @@ module Utilities
 
       if block_given?
         { :out => stdout, :err => stderr }.each do |key, stream|
-          Thread.new do
+          log_thread = Thread.new do
             while line = stream.gets
               privatized_line = BrpmAuto.privatize(line)
               logs[key] += privatized_line
               yield privatized_line
             end
-          end if block_given?
+          end
+          log_thread.join
         end
 
         thread.join
