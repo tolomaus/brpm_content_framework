@@ -110,6 +110,7 @@ describe 'Params' do
     input_params = get_default_params
 
     #trick it into thinking that it is run from BRPM
+    input_params["application"] = "Test"
     input_params["run_key"] = "123"
     input_params["automation_results_dir"] = input_params["output_dir"]
     input_params["request_id"] = "123"
