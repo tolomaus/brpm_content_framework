@@ -52,7 +52,6 @@ unzip -d $BRPM_HOME/releases/$NEW_VERSION/RPM $BRPM_HOME/releases/$NEW_VERSION/R
 echo "Copying over the config files from $BRPM_HOME/releases/$OLD_VERSION/RPM/config ..."
 /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/config/database.yml $BRPM_HOME/releases/$NEW_VERSION/RPM/config
 /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/config/automation_settings.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/config
-/bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/config/smtp_settings.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/config
 /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/config/wicked_pdf_config.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/config
 /bin/cp $BRPM_HOME/releases/$OLD_VERSION/RPM/config/carrierwave_settings.rb $BRPM_HOME/releases/$NEW_VERSION/RPM/config
 
