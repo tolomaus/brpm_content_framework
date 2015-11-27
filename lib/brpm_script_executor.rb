@@ -118,11 +118,11 @@ EOR
         FileUtils.rm(params_path) if File.exists?(params_path)
 
         unless result["status"] == 0
-          BrpmAuto.log "stdout:#{result["stdout"]}"
+          BrpmAuto.log "stdout from the executed script:#{result["stdout"]}"
           raise "The process failed with status #{result["status"]}.\n#{result["stderr"]}"
         end
 
-        BrpmAuto.log "The process finished succesfully."
+        BrpmAuto.log "The process finished successfully."
 
         if automation_type == "resource_automation"
           result_path = params_path.sub!("params", "result")
@@ -162,6 +162,7 @@ EOR
       end
 
       result = execute_automation_script_internal(modul, name, params, automation_type, parent_id, offset, max_records)
+
       if automation_type == "resource_automation"
         result_file = params_file.sub("params", "result")
         BrpmAuto.log "  Temporarily storing the result to #{result_file}..."
