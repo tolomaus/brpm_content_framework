@@ -6,11 +6,14 @@ class RequestParams < ParamsBase
   def initialize(path)
     @file_path = "#{path}/request_data.json"
 
-    self.merge!(get_request_params)
+    if File.exist?(@file_path)
+      BrpmAuto.log "Loading the request params from #{@file_path}..."
+      self.merge!(get_request_params)
+    end
   end
 
   def self.new_for_request(automation_results_dir, app_name, request_id)
-    self.new("#{automation_results_dir}/request/#{app_name}/#{request_id}")
+    self.new("#{automation_results_dir}/request/#{app_name.gsub(" ", "_")}/#{request_id}")
   end
 
   def []=(key,val)
