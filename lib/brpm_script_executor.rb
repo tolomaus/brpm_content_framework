@@ -141,7 +141,7 @@ EOR
 
         raise e
       ensure
-        load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/write_to.rb") if BrpmAuto.params.run_from_brpm and ! automation_type == "resource_automation"
+        load File.expand_path("#{File.dirname(__FILE__)}/../infrastructure/write_to.rb") if BrpmAuto.params.run_from_brpm and automation_type != "resource_automation"
       end
     end
 
