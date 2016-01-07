@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e #commands which fail will cause the shell script to exit immediately
 
 USAGE="patch_brpm.sh <new version> <location (ftp or local file system)>"
 
