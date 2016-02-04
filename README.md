@@ -39,6 +39,7 @@ Note that he brpm_api_token should be the token of a user that is defined in BRP
 Finally you can install the framework and the BRPM module (needed to configure the automation script wrappers of the modules) as following:
 ```shell
 gem install brpm_content_framework
+brpm_install brpm_content_framework
 brpm_install brpm_module_brpm
 ```
 
